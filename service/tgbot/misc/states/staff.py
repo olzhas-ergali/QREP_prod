@@ -10,4 +10,5 @@ class AuthState(StatesGroup):
 class AuthClientState(StatesGroup):
     waiting_phone = State()
     waiting_name = State()
-
+    waiting_birthday_date = State()
+    waiting_gender = State()

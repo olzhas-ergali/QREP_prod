@@ -21,8 +21,11 @@ async def start_handler(
     await state.finish()
     await remove(message, 1)
     await remove(message, 0)
-    #text = "Добро пожаловать в дружную команду Qazaq Republic, " + staff.name + "🤗"
-    text = f"Дорогой {user.name}, вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗"
+    if user.gender == 'M':
+        gender = 'Дорогой'
+    else:
+        gender = 'Дорогая'
+    text = f"{gender} {user.name}, вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗"
     await message.answer(
         text=text,
         reply_markup=await main_btns()

@@ -14,7 +14,10 @@ async def authorization(
 ):
     js = {"phone": user.phone_number,
           "clientFullName": user.name,
-          "user_tlg_id": user.id}
+          "user_tlg_id": user.id,
+          "qr": True,
+          "birthDate": user.birthday_date,
+          "gender": user.gender}
     if await OneC.get_answer(
         request=REQUESTS.AUTHORIZATION,
         type_request=TYPES.POST,

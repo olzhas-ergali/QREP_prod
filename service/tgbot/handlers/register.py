@@ -3,6 +3,7 @@ from aiogram.dispatcher.dispatcher import Dispatcher
 from service.tgbot.handlers import staff
 from service.tgbot.handlers import client
 from service.tgbot.misc.states.staff import AuthState, AuthClientState
+from service.tgbot.keyboards import query_cb
 
 
 def register_staff(dp: Dispatcher):
@@ -48,6 +49,36 @@ def register_client(dp):
     )
 
     dp.register_message_handler(
-        client.auth.auth_client_handler,
+        client.auth.get_years_handler,
         state=AuthClientState.waiting_name
+    )
+
+    dp.register_callback_query_handler(
+        client.auth.auth_get_other_year_handler,
+        query_cb.CalendarCallback.filter(action='year'),
+        state=AuthClientState.waiting_birthday_date
+    )
+
+    dp.register_callback_query_handler(
+        client.auth.auth_birthday_date_handler,
+        query_cb.CalendarCallback.filter(action='birth_year'),
+        state=AuthClientState.waiting_birthday_date
+    )
+
+    dp.register_callback_query_handler(
+        client.auth.auth_get_other_month_handler,
+        query_cb.CalendarCallback.filter(action='calendar'),
+        state=AuthClientState.waiting_birthday_date
+    )
+
+    dp.register_callback_query_handler(
+        client.auth.auth_gender_handler,
+        query_cb.CalendarCallback.filter(action='mast'),
+        state=AuthClientState.waiting_birthday_date
+    )
+
+    dp.register_callback_query_handler(
+        client.auth.auth_client_handler,
+        query_cb.GenderCallback.filter(action='gender'),
+        state=AuthClientState.waiting_gender
     )
