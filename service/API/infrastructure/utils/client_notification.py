@@ -13,11 +13,11 @@ async def send_notification_from_client(
         'review', 'grade', 'action'
     )
     btns = {
-        1: 'Очень плохо',
-        2: 'Плохо',
-        3: 'Удовлетворительно',
-        4: 'Хорошо',
         5: 'Отлично',
+        4: 'Хорошо',
+        3: 'Удовлетворительно',
+        2: 'Плохо',
+        1: 'Очень плохо',
     }
     markup = InlineKeyboardMarkup()
 

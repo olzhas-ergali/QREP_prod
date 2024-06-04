@@ -64,8 +64,8 @@ async def get_client_review_handler(
     await message.delete()
     await remove(message, 1)
     await message.answer(
-        text="Принято! Все читаем и составляем список задач для улучшения. "
-             "Если сообщение требует ответа, вернемся к вам с ответом в ближайшее время.",
+        text="Спасибо за покупку! Ваши отзывы важны для улучшения нашей команды Qazaq Republic. "
+             "В случае если ваш отзыв требует ответа, мы свяжемся с вами в ближайшее время.",
         reply_markup=await main_btns()
     )
     await state.finish()
