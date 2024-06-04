@@ -3,7 +3,7 @@ import typing
 
 from sqlalchemy import (BigInteger, Column, String, select, Date,
                         DateTime, func, Integer, ForeignKey, Boolean,
-                        ARRAY, JSON, not_, desc, VARCHAR, Text)
+                        ARRAY, JSON, not_, desc, VARCHAR, Text, CHAR)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship
@@ -151,6 +151,8 @@ class Client(Base):
     name = Column(String)
     fullname = Column(String)
     phone_number = Column(String, unique=True, default=None)
+    gender = Column(CHAR)
+    birthday_date = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now())
     update_data = Column(DateTime, default=None)
     is_active = Column(Boolean, default=False)
