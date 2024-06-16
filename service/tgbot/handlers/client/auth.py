@@ -32,26 +32,43 @@ async def auth_fio_handler(
 ):
     await message.delete()
     phone_number = parse_phone(message.contact.phone_number)
-    if not user.phone_number:
+    if client := await Client.get_client_by_phone(
+        session=session,
+        phone=phone_number
+    ):
+        if client.id != user.id:
+            user.phone_number = phone_number
+            user.gender = client.gender
+            user.name = client.name
+            user.birthday_date = client.birthday_date
+            await user.save(session)
+            await session.delete(client)
+            await session.commit()
+            await start_handler(
+                message=message,
+                user=user,
+                state=state
+            )
+        else:
+            if user.phone_number != phone_number:
+                user.phone_number = phone_number
+                user.update_data = datetime.datetime.now()
+                await user.save(session=session)
+
+            await authorization(user=user, bot=message.bot)
+            await start_handler(
+                message=message,
+                user=user,
+                state=state
+            )
+    elif not user.phone_number:
         await state.update_data(phone=phone_number)
         await remove(message, 1)
         await message.answer(
             "Введите ваше ФИО"
         )
         await AuthClientState.waiting_name.set()
-    else:
-        if user.phone_number != phone_number:
-            user.phone_number = phone_number
-            user.update_data = datetime.datetime.now()
-            await user.save(session=session)
-
-        await authorization(user=user, bot=message.bot)
-        await start_handler(
-            message=message,
-            user=user,
-            state=state
-        )
-
+        
 
 async def get_years_handler(
         message: Message,
@@ -150,7 +167,7 @@ async def auth_client_handler(
     user.is_active = True
     await user.save(session=session)
 
-    await authorization(user=user, bot=message.bot)
+    await authorization(user=user, bot=query.message.bot)
     await start_handler(
         message=query.message,
         user=user,

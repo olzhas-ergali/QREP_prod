@@ -107,6 +107,18 @@ class Client(Base):
     is_active = Column(Boolean, default=False)
     source = Column(String)
 
+    @classmethod
+    async def get_client_by_phone(
+            cls,
+            session: AsyncSession,
+            phone: str
+    ) -> 'Client':
+        stmt = select(Client).where(
+            phone == Client.phone_number
+        )
+
+        return await session.scalar(stmt)
+
 
 class ClientReview(Base):
     __tablename__ = "clients_review"
