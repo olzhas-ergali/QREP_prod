@@ -129,3 +129,12 @@ async def add_purchases_return_process(
             "statusCode": status.HTTP_403_FORBIDDEN,
             "message": "Return id не может быть пустым",
         }
+
+
+@router.get("/client/get_purchases")
+async def get_client_purchases(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    pass
+    

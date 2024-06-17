@@ -51,10 +51,11 @@ async def auth_staff(
     elif await User.get_by_iin(session, iin):
         await message.answer("Такой ИИН уже зарегистрирован")
     else:
-        user_staff = User()
-        user_staff.id = user.id
-        user_staff.fullname = user.fullname
-        user_staff.phone_number = phone_number
+        if not (user_staff := await session.get(User, user.id)):
+            user_staff = User()
+            user_staff.id = user.id
+            user_staff.fullname = user.fullname
+            user_staff.phone_number = phone_number
         user_staff.name = user_t.name
         user_staff.date_receipt = user_t.date_receipt
         user_staff.date_dismissal = user_t.date_dismissal
