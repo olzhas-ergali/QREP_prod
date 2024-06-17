@@ -37,13 +37,14 @@ async def auth_fio_handler(
         phone=phone_number
     ):
         if client.id != user.id:
-            user.phone_number = phone_number
             user.gender = client.gender
             user.name = client.name
             user.birthday_date = client.birthday_date
-            await user.save(session)
             await session.delete(client)
             await session.commit()
+
+            user.phone_number = phone_number
+            await user.save(session)
             await start_handler(
                 message=message,
                 user=user,
@@ -55,7 +56,7 @@ async def auth_fio_handler(
                 user.update_data = datetime.datetime.now()
                 await user.save(session=session)
 
-            await authorization(user=user, bot=message.bot)
+            #await authorization(user=user, bot=message.bot)
             await start_handler(
                 message=message,
                 user=user,
@@ -68,7 +69,7 @@ async def auth_fio_handler(
             "Введите ваше ФИО"
         )
         await AuthClientState.waiting_name.set()
-        
+
 
 async def get_years_handler(
         message: Message,
@@ -167,7 +168,7 @@ async def auth_client_handler(
     user.is_active = True
     await user.save(session=session)
 
-    await authorization(user=user, bot=query.message.bot)
+    #await authorization(user=user, bot=query.message.bot)
     await start_handler(
         message=query.message,
         user=user,

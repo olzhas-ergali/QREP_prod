@@ -44,22 +44,25 @@ async def get_count(
 @router.get('/client/authorization')
 async def is_authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        authorization: ModelAuth
+        phone: str
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
         session=session,
-        phone=parse_phone(authorization.phone)
+        phone=parse_phone(phone)
     )
 
     if client:
         return {
             "status_code": 200,
+            "clientFullName": client.name,
+            "birthDate": client.birthday_date,
+            "gender": client.gender,
             "message": "Клиент найден"
         }
     return {
-        "status_code": 404,
-        "message": "Клиент не найден"
+        "status_code": 200,
+        "message": "Клиент с указанным номером не найден."
     }
 
 
@@ -69,20 +72,24 @@ async def authorization_client(
         authorization: ModelAuth
 ):
     session: AsyncSession = db_session.get()
-    client = Client()
-    client.phone_number = parse_phone(authorization.phone)
-    client.gender = authorization.gender
-    client.name = authorization.clientFullName
-    client.birthday_date = authorization.birthDate
-    session.add(client)
-    await session.commit()
-    if client:
+    try:
+        client = Client()
+        client.phone_number = parse_phone(authorization.phone)
+        client.gender = authorization.gender
+        client.name = authorization.clientFullName
+        client.birthday_date = authorization.birthDate
+        session.add(client)
+        await session.commit()
+
         return {
             "status_code": 200,
             "message": "Клиент авторизовался"
         }
-    return {
-        "status_code": 404,
-        "message": "Пройзошла ошибка"
-    }
+    except Exception as ex:
+        print(ex)
+        return {
+            "status_code": 404,
+            "message": "Пройзошла ошибка",
+            "error": ex
+        }
 
