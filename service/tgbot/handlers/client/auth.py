@@ -169,6 +169,7 @@ async def auth_client_handler(
     await user.save(session=session)
 
     #await authorization(user=user, bot=query.message.bot)
+    await authorization(user=user, bot=query.bot)
     await start_handler(
         message=query.message,
         user=user,
