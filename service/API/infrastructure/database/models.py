@@ -172,7 +172,7 @@ class Client(Base):
 
 
 class ClientPurchase(Base):
-    __tablename__ = "purchases"
+    __tablename__ = "client_purchases"
     id = Column(String, primary_key=True)
     created_date = Column(DateTime, server_default=func.now())
     user_id = Column(
@@ -190,7 +190,7 @@ class ClientPurchase(Base):
 
 
 class ClientPurchaseReturn(Base):
-    __tablename__ = "purchases_return"
+    __tablename__ = "client_purchases_return"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     purchase_id = Column(
         String,
