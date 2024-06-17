@@ -71,7 +71,7 @@ class ClientPurchase(Base):
     )
 
 
-class ClientReturn(Base):
+class ClientPurchaseReturn(Base):
     __tablename__ = "purchases_return"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     purchase_id = Column(

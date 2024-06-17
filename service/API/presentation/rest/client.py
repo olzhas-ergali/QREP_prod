@@ -9,11 +9,13 @@ from starlette import status
 from starlette.responses import RedirectResponse
 
 from service.API.domain.authentication import security, validate_security
+from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.database.models import Client
 from service.API.infrastructure.utils.client_notification import send_notification_from_client
 from service.API.infrastructure.utils.parse import parse_phone
 from service.API.infrastructure.models.client import ModelAuth
+from service.API.infrastructure.models.purchases import ModelPurchase, ModelPurchaseReturn
 
 
 router = APIRouter()
@@ -93,3 +95,37 @@ async def authorization_client(
             "error": ex
         }
 
+
+@router.post('/client/purchases')
+async def add_purchases_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        purchase: ModelPurchase
+):
+    session: AsyncSession = db_session.get()
+    return await client.add_purchases(
+        purchase_id=purchase.purchaseId,
+        session=session,
+        user_id=purchase.telegramId,
+        products=purchase.products
+    )
+
+
+@router.post('/client/purchases/return')
+async def add_purchases_return_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        purchase: ModelPurchaseReturn
+):
+    session: AsyncSession = db_session.get()
+    if purchase.returnId != '-1':
+        return await client.add_return_purchases(
+            purchase_id=purchase.purchaseId,
+            return_id=purchase.returnId,
+            user_id=purchase.telegramId,
+            session=session,
+            products=purchase.products,
+        )
+    else:
+        return {
+            "statusCode": status.HTTP_403_FORBIDDEN,
+            "message": "Return id не может быть пустым",
+        }
