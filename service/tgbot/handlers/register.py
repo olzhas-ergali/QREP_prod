@@ -15,7 +15,8 @@ def register_staff(dp: Dispatcher):
     )
     dp.register_message_handler(
         staff.auth.auth_phone_handler,
-        commands=['staff'],
+        #commands=['staff'],
+        commands=['start'],
         is_auth=False,
         state="*"
     )
@@ -32,7 +33,7 @@ def register_staff(dp: Dispatcher):
         is_auth=False,
         state=AuthState.waiting_iin
     )
-    register_client(dp)
+    #register_client(dp)
 
 
 def register_client(dp):

@@ -32,7 +32,10 @@ async def all_purchases_handler(
         callback_data: dict,
         state: FSMContext
 ):
-    await callback.message.delete()
+    try:
+        await callback.message.delete()
+    except:
+        pass
     texts = await show_purchases(
         session=session,
         user_id=callback.from_user.id
@@ -55,7 +58,10 @@ async def purchases_by_date_handler(
         callback_data: dict,
         state: FSMContext
 ):
-    await callback.message.delete()
+    try:
+        await callback.message.delete()
+    except:
+        pass
     texts = await show_purchases(
         session=session,
         date=datetime.datetime.now(),
