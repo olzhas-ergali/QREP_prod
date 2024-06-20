@@ -9,7 +9,7 @@ from starlette.responses import RedirectResponse
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import staff
 from service.API.infrastructure.database.session import db_session
-from service.API.infrastructure.models.purchases import ModelPurchase, ModelUser, ModelUserTemp
+from service.API.infrastructure.models.purchases import ModelUserTemp
 
 router = APIRouter()
 
@@ -69,22 +69,53 @@ async def get_user_process(
         identityNumber: str
 ):
     session: AsyncSession = db_session.get()
-    user = await staff.get_user_by_iin(
+    user = await staff.get_staff_by_iin(
         session=session,
         iin=identityNumber
     )
     if user:
         return {
+            "status_code": 200,
             "message": "Сотрудник найден",
-            "idStaff": user.id_staff,
+            #"idStaff": user.id_staff,
             "phoneNumber": user.phone_number,
             "userFullName": user.name,
             "author": user.author,
             "dataReceipt": user.date_receipt,
             "dateDismissal": user.date_dismissal,
             "createdAt": user.created_at,
-            "updateDate": user.update_data,
-            "isFired": user.is_fired
+            #"updateDate": user.update_data,
+            #"isFired": user.is_fired,
+            "isActive": user.is_active
+        }
+    return {
+        "status_code": 404,
+        "error": "Employee not found",
+        "message": "Сотрудник с указанным идентификационным номером не найден"
+    }
+
+
+@router.get('/phoneNumber')
+async def get_user_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    session: AsyncSession = db_session.get()
+    user = await staff.get_user(
+        session=session,
+        phone=phone
+    )
+    if user:
+        return {
+            "status_code": 200,
+            "message": "Сотрудник найден",
+            "phoneNumber": user.phone_number,
+            "userFullName": user.name,
+            "author": user.author,
+            "dataReceipt": user.date_receipt,
+            "dateDismissal": user.date_dismissal,
+            "createdAt": user.created_at,
+            "isActive": user.is_active
         }
     return {
         "status_code": 404,

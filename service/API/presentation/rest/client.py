@@ -22,7 +22,7 @@ router = APIRouter()
 
 
 @router.post('/client/{telegramId}/notifications')
-async def get_count(
+async def client_notification(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         telegramId: int
 ):

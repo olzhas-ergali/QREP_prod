@@ -38,3 +38,6 @@ class ModelUserTemp(BaseModel):
     dateOfReceipt: typing.Optional[datetime.datetime] = None
     dateOfDismissal: typing.Optional[datetime.datetime] = None
 
+
+class ModelStaff(BaseModel):
+    iin: typing.Optional[str] = None

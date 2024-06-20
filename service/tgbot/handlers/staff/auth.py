@@ -48,8 +48,21 @@ async def auth_staff(
     if not (user_t := await UserTemp.get_user_temp(session, iin)):
         await message.answer("Вы не можете пройти регистрацию, "
                              "так как не являетесь сотрудником QR")
-    elif await User.get_by_iin(session, iin):
-        await message.answer("Такой ИИН уже зарегистрирован")
+    elif staff := await User.get_by_iin(session, iin):
+        if staff.id == user.id:
+            await message.answer("Такой ИИН уже зарегистрирован")
+        else:
+            staff.id = user.id
+            staff.phone_number = phone_number
+            staff.fullname = user.fullname
+            await staff.save(session)
+            await session.delete(user)
+            await session.commit()
+            await start_handler(
+                message=message,
+                user=staff,
+                state=state
+            )
     else:
         if not (user_staff := await session.get(User, user.id)):
             user_staff = User()

@@ -157,6 +157,7 @@ class Client(Base):
     update_data = Column(DateTime, default=None)
     is_active = Column(Boolean, default=True)
     source = Column(String)
+    activity = Column(Boolean, default=False)
 
     @classmethod
     async def get_client_by_phone(
