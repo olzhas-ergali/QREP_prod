@@ -125,6 +125,7 @@ async def authorization_client(
         client.gender = authorization.gender
         client.name = authorization.clientFullName
         client.birthday_date = authorization.birthDate
+        client.activity = "wb"
         session.add(client)
         await session.commit()
 
