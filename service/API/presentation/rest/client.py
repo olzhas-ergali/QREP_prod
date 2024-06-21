@@ -43,6 +43,28 @@ async def client_notification(
     }
 
 
+@router.get('/client/{phone}/activity')
+async def get_client_activity(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=parse_phone(phone)
+    )
+    if client.activity == "telegram":
+        return {
+            "status_code": 200,
+            "answer": "telegram"
+        }
+    else:
+        return {
+            "status_code": 200,
+            "answer": "wb"
+        }
+
+
 @router.get('/client/authorization')
 async def is_authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],

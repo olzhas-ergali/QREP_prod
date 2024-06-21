@@ -106,7 +106,7 @@ class Client(Base):
     update_data = Column(DateTime, default=None)
     is_active = Column(Boolean, default=False)
     source = Column(String)
-    activity = Column(Boolean, default=False)
+    activity = Column(String, default="telegram")
 
     @classmethod
     async def get_client_by_phone(

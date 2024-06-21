@@ -37,6 +37,7 @@ class DbMiddleware(LifetimeControllerMiddleware):
         if user:
             data['user'] = user
         else:
+            client.activity = "telegram"
             data['user'] = client
 
     async def post_process(self, obj, data, *args):
