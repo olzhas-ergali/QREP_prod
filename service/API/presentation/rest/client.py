@@ -68,12 +68,12 @@ async def get_client_activity(
 @router.post("/client/set_activity")
 async def get_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
+        authorization: ModelAuth
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
         session=session,
-        phone=parse_phone(phone)
+        phone=parse_phone(authorization.phone)
     )
     if client:
         client.activity = "wb"
