@@ -65,6 +65,29 @@ async def get_client_activity(
         }
 
 
+@router.post("/client/set_activity")
+async def get_client_activity(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=parse_phone(phone)
+    )
+    if client:
+        client.activity = "wb"
+        session.add(client)
+        await session.commit()
+        return {
+            "status_code": 200
+        }
+    return {
+        "status_code": 200,
+        "error": "Клиент не найден"
+    }
+
+
 @router.get('/client/authorization')
 async def is_authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
