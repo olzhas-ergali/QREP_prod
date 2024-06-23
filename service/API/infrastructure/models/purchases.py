@@ -41,3 +41,4 @@ class ModelUserTemp(BaseModel):
 
 class ModelStaff(BaseModel):
     iin: typing.Optional[str] = None
+    phone_number: typing.Optional[str] = None

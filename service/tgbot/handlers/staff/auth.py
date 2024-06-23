@@ -24,14 +24,32 @@ async def auth_phone_handler(
 
 async def auth_iin_handler(
         message: Message,
+        session: AsyncSession,
+        user: Client,
         state: FSMContext
 ):
     phone_number = parse_phone(message.contact.phone_number)
     await state.update_data(phone=phone_number)
-    await message.answer(
-        text="Введите ваш ИИН:",
+    staff = await User.get_by_phone(
+        session=session,
+        phone=phone_number
     )
-    await AuthState.waiting_iin.set()
+    if not staff:
+        await message.answer(
+            text="Введите ваш ИИН:",
+        )
+        await AuthState.waiting_iin.set()
+    elif staff.is_active:
+        staff.id = user.id
+        staff.fullname = user.fullname
+        await session.delete(user)
+        await session.commit()
+        await staff.save(session)
+        await start_handler(
+            message=message,
+            user=staff,
+            state=state
+        )
 
 
 async def auth_staff(
@@ -49,20 +67,7 @@ async def auth_staff(
         await message.answer("Вы не можете пройти регистрацию, "
                              "так как не являетесь сотрудником QR")
     elif staff := await User.get_by_iin(session, iin):
-        if staff.id == user.id:
-            await message.answer("Такой ИИН уже зарегистрирован")
-        else:
-            staff.id = user.id
-            staff.phone_number = phone_number
-            staff.fullname = user.fullname
-            await staff.save(session)
-            await session.delete(user)
-            await session.commit()
-            await start_handler(
-                message=message,
-                user=staff,
-                state=state
-            )
+        await message.answer("Такой ИИН уже зарегистрирован")
     else:
         if not (user_staff := await session.get(User, user.id)):
             user_staff = User()

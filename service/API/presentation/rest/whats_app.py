@@ -23,7 +23,8 @@ async def register_staff(
         staffs: ModelStaff
 ):
     session: AsyncSession = db_session.get()
-    if not (user_t := await UserTemp.get_user_temp(session, staffs.iin)):
+
+    if not (user_t := await UserTemp.get_user_by_iin(session, staffs.iin)):
         return {
             "status_code": 404,
             "error": "Employee not found",
@@ -32,7 +33,7 @@ async def register_staff(
     user_staff = User()
     #user_staff.id = user.id
     #user_staff.fullname = user.fullname
-    #user_staff.phone_number = phone_number
+    user_staff.phone_number = staffs.phone_number
     user_staff.name = user_t.name
     user_staff.date_receipt = user_t.date_receipt
     user_staff.date_dismissal = user_t.date_dismissal

@@ -27,8 +27,8 @@ async def main_btns(user: User):
     for btn in btns:
         markup.add(btn)
 
-    if user.is_admin:
-        markup.add('Админ панель')
+    #if user.is_admin:
+    #    markup.add('Админ панель')
 
     return markup
 

@@ -40,7 +40,8 @@ app: FastAPI = application.create(
     rest_routers=(
         rest.purchases.router,
         rest.staff.router,
-        rest.client.router
+        rest.client.router,
+        rest.whats_app.router
     ),
     middlewares=(
         middleware.db_session_middleware,

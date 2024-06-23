@@ -96,6 +96,18 @@ class UserTemp(Base):
 
         return await session.scalar(stmt)
 
+    @classmethod
+    async def get_user_by_iin(
+            cls,
+            session: AsyncSession,
+            iin: str,
+    ) -> 'UserTemp':
+        stmt = select(UserTemp).where(
+            (iin == UserTemp.iin) & not_(UserTemp.is_fired)
+        ).order_by(desc(UserTemp.created_at)).limit(1)
+
+        return await session.scalar(stmt)
+
 
 class Purchase(Base):
     __tablename__ = "purchases"
@@ -103,7 +115,7 @@ class Purchase(Base):
     created_date = Column(DateTime, server_default=func.now())
     user_id = Column(
         BigInteger,
-        ForeignKey('users.id', ondelete='CASCADE'),
+        ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE'),
     )
     products = Column(ARRAY(JSON))
     source = Column(String)
@@ -125,7 +137,7 @@ class PurchaseReturn(Base):
     created_date = Column(DateTime, server_default=func.now())
     user_id = Column(
         BigInteger,
-        ForeignKey('users.id', ondelete='CASCADE'),
+        ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE'),
     )
     products = Column(ARRAY(JSON))
     return_id = Column(String, default=None)
@@ -178,12 +190,12 @@ class ClientPurchase(Base):
     created_date = Column(DateTime, server_default=func.now())
     user_id = Column(
         BigInteger,
-        ForeignKey('users.id', ondelete='CASCADE'),
+        ForeignKey('clients.id', ondelete='CASCADE', onupdate='CASCADE'),
     )
     products = Column(ARRAY(JSON))
     source = Column(String)
-    users = relationship(
-        'User',
+    client = relationship(
+        'Client',
         foreign_keys=[user_id],
         uselist=True,
         lazy='selectin'
@@ -195,24 +207,24 @@ class ClientPurchaseReturn(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     purchase_id = Column(
         String,
-        ForeignKey('purchases.id', ondelete='CASCADE'),
+        ForeignKey('client_purchases.id', ondelete='CASCADE'),
     )
     created_date = Column(DateTime, server_default=func.now())
     user_id = Column(
         BigInteger,
-        ForeignKey('users.id', ondelete='CASCADE'),
+        ForeignKey('clients.id', ondelete='CASCADE'),
     )
     products = Column(ARRAY(JSON))
     return_id = Column(String, default=None)
     source = Column(String)
-    users = relationship(
-        'User',
+    client = relationship(
+        'Client',
         foreign_keys=[user_id],
         uselist=True,
         lazy='selectin'
     )
     purchases = relationship(
-        'Purchase',
+        'ClientPurchase',
         foreign_keys=[purchase_id],
         uselist=True,
         lazy='selectin'

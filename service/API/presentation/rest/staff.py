@@ -25,7 +25,7 @@ async def add_user_process(
         phone=phone_number
     )
     if user:
-        print(user.iin)
+        #print(user.iin)
         return {
             "message": "Сотрудник найден",
             "userFullName": user.name,
