@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class ModelPurchase(BaseModel):
     purchaseId: typing.Optional[str] = None
+    phone: typing.Optional[str] = None
     telegramId: typing.Optional[int] = None
     createDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     products: typing.Optional[typing.List[dict]] = None
@@ -14,6 +15,7 @@ class ModelPurchase(BaseModel):
 
 class ModelPurchaseReturn(BaseModel):
     purchaseId: typing.Optional[str] = None
+    phone: typing.Optional[str] = None
     telegramId: typing.Optional[int] = None
     createDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     products: typing.Optional[typing.List[dict]] = None

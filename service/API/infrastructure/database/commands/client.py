@@ -4,15 +4,22 @@ from datetime import datetime
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn
+from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn, Client
 
 
 async def add_purchases(
         session: AsyncSession,
         purchase_id: str,
         user_id: int,
+        phone: str,
         products: list
 ):
+    if not user_id:
+        client = await Client.get_client_by_phone(
+            session=session,
+            phone=phone
+        )
+        user_id = client.id
     purchases = ClientPurchase(
         id=purchase_id,
         user_id=user_id,
@@ -32,10 +39,16 @@ async def add_return_purchases(
         session: AsyncSession,
         purchase_id: str,
         user_id: int,
+        phone: str,
         products: list,
         return_id: str
 ):
-
+    if not user_id:
+        client = await Client.get_client_by_phone(
+            session=session,
+            phone=phone
+        )
+        user_id = client.id
     if not await session.get(ClientPurchase, purchase_id):
         return {
             "statusCode": 404,
