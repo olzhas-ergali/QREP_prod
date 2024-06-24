@@ -16,3 +16,9 @@ class ModelAuth(BaseModel):
     birthDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     gender: typing.Optional[str] = 'M'
 
+
+class ModelReview(BaseModel):
+    phone: typing.Optional[str] = None
+    grade: typing.Optional[int] = None
+    review: typing.Optional[str] = None
+

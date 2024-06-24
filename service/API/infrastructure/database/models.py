@@ -212,7 +212,7 @@ class ClientPurchaseReturn(Base):
     created_date = Column(DateTime, server_default=func.now())
     user_id = Column(
         BigInteger,
-        ForeignKey('clients.id', ondelete='CASCADE'),
+        ForeignKey('clients.id', ondelete='CASCADE', onupdate='CASCADE'),
     )
     products = Column(ARRAY(JSON))
     return_id = Column(String, default=None)
@@ -236,7 +236,7 @@ class ClientReview(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     client_id = Column(
         BigInteger,
-        ForeignKey('clients.id', ondelete='CASCADE')
+        ForeignKey('clients.id', ondelete='CASCADE', onupdate='CASCADE')
     )
     client_review = Column(
         Text

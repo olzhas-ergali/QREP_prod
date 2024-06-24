@@ -11,10 +11,10 @@ from starlette.responses import RedirectResponse
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
-from service.API.infrastructure.database.models import Client
+from service.API.infrastructure.database.models import Client, ClientReview
 from service.API.infrastructure.utils.client_notification import send_notification_from_client
 from service.API.infrastructure.utils.parse import parse_phone
-from service.API.infrastructure.models.client import ModelAuth
+from service.API.infrastructure.models.client import ModelAuth, ModelReview
 from service.API.infrastructure.models.purchases import ModelPurchase, ModelPurchaseReturn
 
 
@@ -183,4 +183,33 @@ async def get_client_purchases(
         phone: str
 ):
     pass
-    
+
+
+@router.post("/client/reviews")
+async def add_client_review(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        review: ModelReview
+):
+    session: AsyncSession = db_session.get()
+    grades = {
+        5: 'Отлично',
+        4: 'Хорошо',
+        3: 'Удовлетворительно',
+        2: 'Плохо',
+        1: 'Очень плохо',
+    }
+    c = await Client.get_client_by_phone(
+        session=session,
+        phone=review.phone
+    )
+    r = ClientReview()
+    r.client_grade = review.grade
+    r.client_review = review.review
+    r.client_grade_str = grades.get(review.grade)
+    r.client_id = c.id
+    session.add(r)
+    await session.commit()
+    return {
+        "status_code": status.HTTP_200_OK,
+        "message": "Отзыв добавлен"
+    }

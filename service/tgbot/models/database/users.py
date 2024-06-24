@@ -126,7 +126,7 @@ class ClientReview(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     client_id = Column(
         BigInteger,
-        ForeignKey('clients.id', ondelete='CASCADE')
+        ForeignKey('clients.id', ondelete='CASCADE', onupdate='CASCADE')
     )
     client_review = Column(
         Text
