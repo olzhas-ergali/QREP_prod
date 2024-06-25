@@ -105,7 +105,8 @@ async def is_authorization_client(
             "clientFullName": client.name,
             "birthDate": client.birthday_date,
             "gender": client.gender,
-            "message": "Клиент найден"
+            "message": "Клиент найден",
+            "activity": client.activity
         }
     return {
         "status_code": 200,

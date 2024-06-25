@@ -52,7 +52,7 @@ async def register_staff(
 async def get_purchases_staff(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         identityNumber: str,
-        date: bool = False
+        date: bool
 ):
     session: AsyncSession = db_session.get()
     user = await User.get_by_iin(session=session, iin=identityNumber)
@@ -80,7 +80,7 @@ async def get_purchases_staff(
 async def get_client_purchases(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
-        date: bool = False
+        date: bool
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
