@@ -10,9 +10,9 @@ from loguru import logger
 
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.session import db_session
-from service.API.infrastructure.database.models import UserTemp, User
+from service.API.infrastructure.database.models import UserTemp, User, Client
 from service.API.infrastructure.models.purchases import ModelStaff
-from service.API.infrastructure.utils.show_purchases import show_purchases
+from service.API.infrastructure.utils.show_purchases import show_purchases, show_client_purchases
 
 router = APIRouter()
 
@@ -56,16 +56,51 @@ async def get_purchases_staff(
 ):
     session: AsyncSession = db_session.get()
     user = await User.get_by_iin(session=session, iin=identityNumber)
-    if arr := await show_purchases(
-        session=session,
-        user_id=user.id,
-        date=datetime.now() if date else None
-    ):
+    if user:
+        if arr := await show_purchases(
+            session=session,
+            user_id=user.id,
+            date=datetime.now() if date else None
+        ):
+            return {
+                "status_code": 200,
+                "answer": arr
+            }
         return {
-            "status_code": 200,
-            "answer": arr
+            "status_code": 204,
+            "answer": "Нет данных"
         }
     return {
-        "status_code": 404,
-        "answer": "Нет данных"
+        "status_code": 204,
+        "answer": "Нет данных о пользователе"
+    }
+
+
+@router.get("/client/get_purchases")
+async def get_client_purchases(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str,
+        date: bool = False
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=phone)
+    if client:
+        if arr := await show_client_purchases(
+                session=session,
+                user_id=client.id,
+                date=datetime.now() if date else None
+        ):
+            return {
+                "status_code": 200,
+                "answer": arr
+            }
+        return {
+            "status_code": 204,
+            "answer": "Нет данных о пользователе"
+        }
+    return {
+        "status_code": 204,
+        "answer": "Нет данных о пользователе"
     }

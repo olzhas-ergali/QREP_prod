@@ -5,6 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.API.infrastructure.database.commands.staff import (get_all_purchases,
                                                                 get_purchases_by_month, is_return_purchases)
+from service.API.infrastructure.database.commands.client import (get_all_client_purchases,
+                                                                 get_client_purchases_by_month,
+                                                                 is_return_client_purchases)
 
 
 async def show_purchases(
@@ -54,3 +57,53 @@ async def show_purchases(
     if text != "":
         all_text.append(text)
     return all_text
+
+
+async def show_client_purchases(
+        session: AsyncSession,
+        user_id: int,
+        date: datetime = None
+) -> List[str]:
+    all_text = []
+    text = ""
+    if date is not None:
+        purchases = await get_client_purchases_by_month(
+            session=session,
+            date=date,
+            user_id=user_id
+        )
+    else:
+        purchases = await get_all_client_purchases(
+            session=session,
+            user_id=user_id
+        )
+
+    if purchases:
+        for purchase in purchases:
+            products = purchase.products
+            for product in products:
+                is_return = await is_return_client_purchases(
+                    session=session,
+                    purchase_id=purchase.id,
+                    product_id=product['id'],
+                    price=product.get('price') - product.get('discountPrice')
+                )
+                if not is_return:
+                    if len(text) > 800:
+                        all_text.append(text)
+                        text = ""
+                    text += (f"Название товара: {product['name']}\n"
+                             f"Количество: {product['count']}\n")
+                    if product['discount']:
+                        total = int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))
+                        text += (f"Цена: {product['price']}\n"
+                                 f"Скидка: {product['discountPercent']}%\n"
+                                 f"Итог скидки: {product['price'] - total}\n"
+                                 f"Итого с учетом скидки: {int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))}\n")
+                    else:
+                        text += f"Цена: {product['price']}\n"
+                    text += f"Дата покупки: {str(purchase.created_date).split(' ')[0]}\n\n"
+    if text != "":
+        all_text.append(text)
+    return all_text
+

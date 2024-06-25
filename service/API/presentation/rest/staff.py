@@ -109,6 +109,7 @@ async def get_user_process(
         return {
             "status_code": 200,
             "message": "Сотрудник найден",
+            "identityNumber": user.iin,
             "phoneNumber": user.phone_number,
             "userFullName": user.name,
             "author": user.author,

@@ -179,14 +179,6 @@ async def add_purchases_return_process(
         }
 
 
-@router.get("/client/get_purchases")
-async def get_client_purchases(
-        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
-):
-    pass
-
-
 @router.post("/client/reviews")
 async def add_client_review(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
