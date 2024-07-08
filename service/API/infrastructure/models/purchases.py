@@ -20,9 +20,9 @@ class ModelPurchaseClient(BaseModel):
     createDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     products: typing.Optional[typing.List[dict]] = None
     source: typing.Optional[str] = None
-    orderNumber: typing.Optional[str] = None
+    orderNumber: typing.Optional[int] = None
     number: typing.Optional[str] = None
-    shiftNumber: typing.Optional[str] = None
+    shiftNumber: typing.Optional[int] = None
     ticketPrintUrl: typing.Optional[str] = None
 
 
@@ -36,7 +36,7 @@ class ModelPurchaseReturn(BaseModel):
     source: typing.Optional[str] = None
 
 
-class ModelClinetPurchaseReturn(BaseModel):
+class ModelClientPurchaseReturn(BaseModel):
     purchaseId: typing.Optional[str] = None
     phone: typing.Optional[str] = None
     telegramId: typing.Optional[int] = None
@@ -44,9 +44,9 @@ class ModelClinetPurchaseReturn(BaseModel):
     products: typing.Optional[typing.List[dict]] = None
     returnId: typing.Optional[str] = "-1"
     source: typing.Optional[str] = None
-    orderNumber: typing.Optional[str] = None
+    orderNumber: typing.Optional[int] = None
     number: typing.Optional[str] = None
-    shiftNumber: typing.Optional[str] = None
+    shiftNumber: typing.Optional[int] = None
     ticketPrintUrl: typing.Optional[str] = None
 
 

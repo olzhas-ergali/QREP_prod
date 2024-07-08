@@ -63,9 +63,9 @@ class ClientPurchase(Base):
     )
     products = Column(ARRAY(JSON))
     source = Column(String)
-    orderNumber = Column(String)
+    orderNumber = Column(BigInteger)
     number = Column(String)
-    shiftNumber = Column(String)
+    shiftNumber = Column(BigInteger)
     ticketPrintUrl = Column(String)
     users = relationship(
         'Client',
@@ -90,9 +90,9 @@ class ClientPurchaseReturn(Base):
     products = Column(ARRAY(JSON))
     return_id = Column(String, default=None)
     source = Column(String)
-    orderNumber = Column(String)
+    orderNumber = Column(BigInteger)
     number = Column(String)
-    shiftNumber = Column(String)
+    shiftNumber = Column(BigInteger)
     ticketPrintUrl = Column(String)
     users = relationship(
         'Client',
