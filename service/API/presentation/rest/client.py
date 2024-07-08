@@ -15,7 +15,8 @@ from service.API.infrastructure.database.models import Client, ClientReview
 from service.API.infrastructure.utils.client_notification import send_notification_from_client
 from service.API.infrastructure.utils.parse import parse_phone
 from service.API.infrastructure.models.client import ModelAuth, ModelReview
-from service.API.infrastructure.models.purchases import ModelPurchase, ModelPurchaseReturn
+from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
+                                                         ModelPurchaseClient, ModelClinetPurchaseReturn)
 
 
 router = APIRouter()
@@ -146,32 +147,44 @@ async def authorization_client(
 @router.post('/client/purchases')
 async def add_purchases_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        purchase: ModelPurchase
+        purchase: ModelPurchaseClient
 ):
     session: AsyncSession = db_session.get()
-    return await client.add_purchases(
-        purchase_id=purchase.purchaseId,
-        session=session,
-        user_id=purchase.telegramId if purchase.telegramId != "" else None,
-        phone=purchase.phone,
-        products=purchase.products
-    )
+    try:
+        print(purchase.telegramId)
+        return await client.add_purchases(
+            purchase_id=purchase.purchaseId,
+            session=session,
+            user_id=purchase.telegramId if purchase.telegramId != -1 else None,
+            phone=purchase.phone,
+            products=purchase.products,
+            order_number=purchase.orderNumber,
+            number=purchase.number,
+            shift_number=purchase.shiftNumber,
+            ticket_print_url=purchase.ticketPrintUrl
+        )
+    except Exception as ex:
+        print(ex)
 
 
 @router.post('/client/purchases/return')
 async def add_purchases_return_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        purchase: ModelPurchaseReturn
+        purchase: ModelClinetPurchaseReturn
 ):
     session: AsyncSession = db_session.get()
     if purchase.returnId != '-1':
         return await client.add_return_purchases(
             purchase_id=purchase.purchaseId,
             return_id=purchase.returnId,
-            user_id=purchase.telegramId if purchase.telegramId != "" else None,
+            user_id=purchase.telegramId if purchase.telegramId != -1 else None,
             phone=purchase.phone,
             session=session,
             products=purchase.products,
+            order_number=purchase.orderNumber,
+            number=purchase.number,
+            shift_number=purchase.shiftNumber,
+            ticket_print_url=purchase.ticketPrintUrl
         )
     else:
         return {

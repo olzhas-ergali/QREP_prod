@@ -12,7 +12,11 @@ async def add_purchases(
         purchase_id: str,
         user_id: int,
         phone: str,
-        products: list
+        products: list,
+        order_number: str,
+        number: str,
+        shift_number: str,
+        ticket_print_url: str
 ):
     if not user_id:
         client = await Client.get_client_by_phone(
@@ -23,7 +27,11 @@ async def add_purchases(
     purchases = ClientPurchase(
         id=purchase_id,
         user_id=user_id,
-        products=products
+        products=products,
+        order_number=order_number,
+        number=number,
+        shift_number=shift_number,
+        ticket_print_url=ticket_print_url
     )
 
     session.add(purchases)
@@ -41,7 +49,11 @@ async def add_return_purchases(
         user_id: int,
         phone: str,
         products: list,
-        return_id: str
+        return_id: str,
+        order_number: str,
+        number: str,
+        shift_number: str,
+        ticket_print_url: str
 ):
     if not user_id:
         client = await Client.get_client_by_phone(
@@ -65,7 +77,11 @@ async def add_return_purchases(
         purchase_id=purchase_id,
         user_id=user_id,
         products=products,
-        return_id=return_id
+        return_id=return_id,
+        order_number=order_number,
+        number=number,
+        shift_number=shift_number,
+        ticket_print_url=ticket_print_url
     )
     session.add(purchases)
     await session.commit()

@@ -33,7 +33,7 @@ async def add_purchases_process(
     return await staff.add_purchases(
         purchase_id=purchase.purchaseId,
         session=session,
-        user_id=purchase.telegramId if purchase.telegramId != "" else None,
+        user_id=purchase.telegramId if purchase.telegramId != -1 else None,
         phone=purchase.phone,
         products=purchase.products
     )
@@ -49,7 +49,7 @@ async def add_purchases_return_process(
         return await staff.add_return_purchases(
             purchase_id=purchase.purchaseId,
             return_id=purchase.returnId,
-            user_id=purchase.telegramId if purchase.telegramId != "" else None,
+            user_id=purchase.telegramId if purchase.telegramId != -1 else None,
             phone=purchase.phone,
             session=session,
             products=purchase.products,

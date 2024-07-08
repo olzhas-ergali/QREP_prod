@@ -63,6 +63,10 @@ class ClientPurchase(Base):
     )
     products = Column(ARRAY(JSON))
     source = Column(String)
+    orderNumber = Column(String)
+    number = Column(String)
+    shiftNumber = Column(String)
+    ticketPrintUrl = Column(String)
     users = relationship(
         'Client',
         foreign_keys=[user_id],
@@ -86,6 +90,10 @@ class ClientPurchaseReturn(Base):
     products = Column(ARRAY(JSON))
     return_id = Column(String, default=None)
     source = Column(String)
+    orderNumber = Column(String)
+    number = Column(String)
+    shiftNumber = Column(String)
+    ticketPrintUrl = Column(String)
     users = relationship(
         'Client',
         foreign_keys=[user_id],
