@@ -16,7 +16,7 @@ from service.API.infrastructure.utils.client_notification import send_notificati
 from service.API.infrastructure.utils.parse import parse_phone
 from service.API.infrastructure.models.client import ModelAuth, ModelReview
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
-                                                         ModelPurchaseClient, ModelClinetPurchaseReturn)
+                                                         ModelPurchaseClient, ModelClientPurchaseReturn)
 
 
 router = APIRouter()
@@ -170,7 +170,7 @@ async def add_purchases_process(
 @router.post('/client/purchases/return')
 async def add_purchases_return_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        purchase: ModelClinetPurchaseReturn
+        purchase: ModelClientPurchaseReturn
 ):
     session: AsyncSession = db_session.get()
     if purchase.returnId != '-1':

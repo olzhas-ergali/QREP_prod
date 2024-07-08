@@ -13,9 +13,9 @@ async def add_purchases(
         user_id: int,
         phone: str,
         products: list,
-        order_number: str,
+        order_number: int,
         number: str,
-        shift_number: str,
+        shift_number: int,
         ticket_print_url: str
 ):
     if not user_id:
@@ -50,9 +50,9 @@ async def add_return_purchases(
         phone: str,
         products: list,
         return_id: str,
-        order_number: str,
+        order_number: int,
         number: str,
-        shift_number: str,
+        shift_number: int,
         ticket_print_url: str
 ):
     if not user_id:
