@@ -98,7 +98,7 @@ async def get_client_purchases(
             }
         return {
             "status_code": 204,
-            "answer": "Нет данных о пользователе"
+            "answer": "Нет данных"
         }
     return {
         "status_code": 204,

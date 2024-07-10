@@ -110,7 +110,7 @@ async def is_authorization_client(
             "activity": client.activity
         }
     return {
-        "status_code": 200,
+        "status_code": 204,
         "message": "Клиент с указанным номером не найден."
     }
 

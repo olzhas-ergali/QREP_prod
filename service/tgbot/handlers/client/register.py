@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.dispatcher import Dispatcher
 from service.tgbot.handlers import client
-from service.tgbot.keyboards.query_cb import ReviewCallback
+from service.tgbot.keyboards.query_cb import ReviewCallback, ChoiceCallback
 from service.tgbot.misc.states.client import NotificationState
 
 
@@ -30,3 +30,22 @@ def register_client_function(dp: Dispatcher):
         client.reveiw.get_client_review_handler,
         state=NotificationState.waiting_review
     )
+
+    dp.register_message_handler(
+        client.show_purchases.purchases_handler,
+        text='Мои покупки',
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        client.show_purchases.all_purchases_handler,
+        ChoiceCallback.filter(action='client_purchases', choice='by_all'),
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        client.show_purchases.purchases_by_date_handler,
+        ChoiceCallback.filter(action='client_purchases', choice='by_month'),
+        state="*"
+    )
+

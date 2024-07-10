@@ -50,7 +50,9 @@ async def show_purchases(
                                  f"Итого с учетом скидки: {int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))}\n")
                     else:
                         text += f"Цена: {product['price']}\n"
-                    text += f"Дата покупки: {str(purchase.created_date).split(' ')[0]}\n\n"
+                    text += (f"Дата покупки: {str(purchase.created_date).split(' ')[0]}\n"
+                             f"Ссылка на чек: {purchase.ticket_print_url}\n\n")
+
     if text != "":
         all_text.append(text)
     return all_text

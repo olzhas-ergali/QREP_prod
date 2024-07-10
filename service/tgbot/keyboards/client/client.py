@@ -11,7 +11,8 @@ async def main_btns():
         resize_keyboard=True
     )
     btns = ['Мои бонусы',
-            'Мой QR']
+            'Мой QR',
+            'Мои покупки']
     for btn in btns:
         markup.add(btn)
 
