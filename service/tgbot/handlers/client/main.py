@@ -21,9 +21,9 @@ async def start_handler(
     await state.finish()
     await remove(message, 1)
     await remove(message, 0)
-    if user.gender == 'M':
+    if user.gender == b'M':
         gender = 'Дорогой'
-    else:
+    elif user.gender == b'F':
         gender = 'Дорогая'
     text = f"{gender} {user.name}, вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗"
     await message.answer(
