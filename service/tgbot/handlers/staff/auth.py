@@ -34,22 +34,21 @@ async def auth_iin_handler(
         session=session,
         phone=phone_number
     )
-    if not staff:
-        await message.answer(
-            text="Введите ваш ИИН:",
-        )
-        await AuthState.waiting_iin.set()
-    elif staff.is_active:
+    if staff and staff.is_active:
         staff.id = user.id
         staff.fullname = user.fullname
         await session.delete(user)
         await session.commit()
         await staff.save(session)
-        await start_handler(
+        return await start_handler(
             message=message,
             user=staff,
             state=state
         )
+    await message.answer(
+        text="Введите ваш ИИН:",
+    )
+    await AuthState.waiting_iin.set()
 
 
 async def auth_staff(
@@ -73,7 +72,7 @@ async def auth_staff(
             user_staff = User()
             user_staff.id = user.id
             user_staff.fullname = user.fullname
-            user_staff.phone_number = phone_number
+        user_staff.phone_number = phone_number
         user_staff.name = user_t.name
         user_staff.date_receipt = user_t.date_receipt
         user_staff.date_dismissal = user_t.date_dismissal
