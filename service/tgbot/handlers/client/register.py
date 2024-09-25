@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.dispatcher import Dispatcher
 from service.tgbot.handlers import client
-from service.tgbot.keyboards.query_cb import ReviewCallback, ChoiceCallback
+from service.tgbot.keyboards.query_cb import ReviewCallback, ChoiceCallback, FaqCallback
 from service.tgbot.misc.states.client import NotificationState
 
 
@@ -17,6 +17,19 @@ def register_client_function(dp: Dispatcher):
         client.main.get_my_bonus_handler,
         text='Мои бонусы',
         is_client_auth=True,
+        state="*"
+    )
+
+    dp.register_message_handler(
+        client.faq.get_faq_handler,
+        text='FAQ',
+        is_client_auth=True,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        client.faq.faq_chapters_handler,
+        FaqCallback.filter(action='faq'),
         state="*"
     )
 

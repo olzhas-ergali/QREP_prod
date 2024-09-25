@@ -7,9 +7,11 @@ from starlette import status
 from starlette.responses import RedirectResponse
 
 from service.API.domain.authentication import security, validate_security
+from service.API.infrastructure.utils.parse import parse_phone
 from service.API.infrastructure.database.commands import staff
 from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.models.purchases import ModelUserTemp
+from service.API.infrastructure.database.models import Client
 
 router = APIRouter()
 
@@ -34,6 +36,46 @@ async def add_user_process(
         }
     return {
         "message": "Сотрудник не найден",
+    }
+
+
+@router.get('/v2/authorization')
+async def add_user_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone_number: str
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=parse_phone(phone_number)
+    )
+
+    user = await staff.get_user(
+        session=session,
+        phone=phone_number
+    )
+    if user:
+        return {
+            "status_code": 200,
+            "message": "Сотрудник найден",
+            "userFullName": user.name,
+            "telegramId": user.id,
+            "isActive": user.is_active
+        }
+
+    elif client:
+        return {
+            "status_code": 200,
+            "clientFullName": client.name,
+            "birthDate": client.birthday_date,
+            "gender": client.gender,
+            "message": "Клиент найден",
+            "activity": client.activity
+        }
+
+    return {
+        "status_code": 404,
+        "message": "Пользователь с указанным номером не найден."
     }
 
 

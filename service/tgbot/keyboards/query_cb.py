@@ -17,3 +17,7 @@ CalendarCallback = CallbackData(
 GenderCallback = CallbackData(
     'post', 'gender', 'action'
 )
+
+FaqCallback = CallbackData(
+    'faq', 'chapter', 'lvl', 'action'
+)
