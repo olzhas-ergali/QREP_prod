@@ -40,7 +40,7 @@ async def add_user_process(
 
 
 @router.get('/v2/authorization')
-async def add_user_process(
+async def get_user_info_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone_number: str
 ):
