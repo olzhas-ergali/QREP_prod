@@ -21,7 +21,15 @@ async def auth_phone_handler(
         state: FSMContext
 ):
     await state.finish()
-    await phone_handler(message, AuthClientState.waiting_phone)
+    await phone_handler(
+        m=message,
+        state=AuthClientState.waiting_phone,
+        text="Если вы являетесь сотрудникм QR! "
+             "Для прохождения авторизации, пожалуйста, "
+             "введите команду /staff, после чего поделитесь вашим номером телефона. "
+             "Если вы не являетесь сотрудникм QR, "
+             "то просто можете дальше продолжить авторизация поделившись номером телефона"
+    )
 
 
 async def auth_fio_handler(

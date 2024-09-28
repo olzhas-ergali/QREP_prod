@@ -11,8 +11,10 @@ from service.tgbot.keyboards.staff.staff import phone_number_btn
 async def phone_handler(
         m: Message,
         state: State,
+        text: str = None
 ):
-    text = "Поделитесь номером телефона для авторизации"
+    if not text:
+        text = "Поделитесь номером телефона для авторизации"
 
     await m.answer(
         text=text,
