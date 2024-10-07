@@ -1,12 +1,15 @@
 import typing
+from service.API.config import settings
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.responses import RedirectResponse
+from aiogram import Bot
 
 from service.API.domain.authentication import security, validate_security
+from service.API.infrastructure.utils.check_client import check_user_exists
 from service.API.infrastructure.utils.parse import parse_phone
 from service.API.infrastructure.database.commands import staff
 from service.API.infrastructure.database.session import db_session
@@ -45,6 +48,7 @@ async def get_user_info_process(
         phone_number: str
 ):
     session: AsyncSession = db_session.get()
+    bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
     client = await Client.get_client_by_phone(
         session=session,
         phone=parse_phone(phone_number)
@@ -70,7 +74,7 @@ async def get_user_info_process(
             "birthDate": client.birthday_date,
             "gender": client.gender,
             "message": "Клиент найден",
-            "telegramId": client.id,
+            "telegramId": client.id if await check_user_exists(client.id, bot) else None,
             "activity": client.activity
         }
 
