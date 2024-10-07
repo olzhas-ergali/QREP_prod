@@ -64,7 +64,8 @@ async def get_user_info_process(
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
-            "isActive": user.is_active
+            "isActive": user.is_active,
+            "isStaff": True
         }
 
     elif client:
@@ -75,7 +76,8 @@ async def get_user_info_process(
             "gender": client.gender,
             "message": "Клиент найден",
             "telegramId": client.id if await check_user_exists(client.id, bot) else None,
-            "activity": client.activity
+            "activity": client.activity,
+            "isStaff": True
         }
 
     return {
