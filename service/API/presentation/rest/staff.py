@@ -70,6 +70,7 @@ async def get_user_info_process(
             "birthDate": client.birthday_date,
             "gender": client.gender,
             "message": "Клиент найден",
+            "telegramId": client.id,
             "activity": client.activity
         }
 
