@@ -34,7 +34,6 @@ async def post_revenue_date_process(
 async def put_revenue_date_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         documentId: str,
-        rowId: str,
         revenue: RevenueDateModel
 ):
     session = db_session.get()
@@ -43,5 +42,4 @@ async def put_revenue_date_process(
         session=session,
         revenue=revenue,
         document_id=documentId,
-        row_id=rowId
     )

@@ -13,18 +13,17 @@ from service.API.infrastructure.models.revenue import RevenueDateModel
 async def add_revenue_date(
         revenue: RevenueDateModel,
         session: AsyncSession,
-        document_id: str = None,
-        row_id: str = None
+        document_id: str = None
 ):
     msg = "Данные успешно обновлены"
     try:
 
         for r_item in revenue.data:
             #if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), revenue.documentId)):
-            if not (r := await Revenue.get_revenue(session, row_id, document_id)):
+            if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), document_id)):
                 msg = "Данные успешно добавлены в базу данных"
                 r = Revenue()
-                r.row_id = str(r_item.get('row_id'))
+                r.row_id = r_item.get('row_id')
                 r.document_id = revenue.documentId
             r.period = revenue.period
             r.manager = r_item.get('manager')
