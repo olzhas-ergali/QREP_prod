@@ -1,12 +1,13 @@
 import datetime
 import typing
+import uuid
 
 from sqlalchemy import (BigInteger, Column, String, select, Date,
                         DateTime, func, Integer, ForeignKey, Boolean,
-                        ARRAY, JSON, not_, desc, VARCHAR, Text, CHAR)
+                        ARRAY, JSON, not_, desc, VARCHAR, Text, CHAR, and_, UUID)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -272,5 +273,40 @@ class ClientReview(Base):
         stmt = select(ClientReview).where(
             review_id == ClientReview.id
         )
+
+        return await session.scalar(stmt)
+
+
+class Revenue(Base):
+    __tablename__ = 'revenue_data'
+    row_id = mapped_column(UUID(as_uuid=True), primary_key=True)
+    document_id = mapped_column(UUID(as_uuid=True))
+    period = mapped_column(DateTime, server_default=func.now())
+    product_name = mapped_column(String)
+    product_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    param_name = mapped_column(String)
+    param_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    warehouse_name = mapped_column(String)
+    warehouse_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    organization = mapped_column(String)
+    organization_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    partner = mapped_column(String)
+    phone = mapped_column(String)
+    activity_type = mapped_column(String)
+    manager = mapped_column(String)
+    manager_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    quantity = mapped_column(Integer)
+    revenue_with_vat = mapped_column(Integer)
+    revenue_without_vat = mapped_column(Integer)
+    currency = mapped_column(String)
+
+    @classmethod
+    async def get_revenue(
+            cls,
+            session: AsyncSession,
+            row_id: str,
+            document_id: str
+    ) -> typing.Optional['Revenue']:
+        stmt = select(Revenue).where(and_(Revenue.document_id == document_id, Revenue.row_id == row_id))
 
         return await session.scalar(stmt)

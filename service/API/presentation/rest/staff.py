@@ -77,7 +77,7 @@ async def get_user_info_process(
             "message": "Клиент найден",
             "telegramId": client.id if await check_user_exists(client.id, bot) else None,
             "activity": client.activity,
-            "isStaff": True
+            "isStaff": False
         }
 
     return {
