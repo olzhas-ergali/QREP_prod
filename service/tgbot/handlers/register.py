@@ -2,6 +2,7 @@ from aiogram import types
 from aiogram.dispatcher.dispatcher import Dispatcher
 from service.tgbot.handlers import staff
 from service.tgbot.handlers import client
+from service.tgbot.handlers import authorization
 from service.tgbot.misc.states.staff import AuthState, AuthClientState
 from service.tgbot.keyboards import query_cb
 
@@ -13,10 +14,31 @@ def register_staff(dp: Dispatcher):
         is_auth=True,
         state='*'
     )
+
     dp.register_message_handler(
-        staff.auth.auth_phone_handler,
-        commands=['staff'],
-        #commands=['start'],
+        client.auth.auth_phone_handler,
+        commands=['start'],
+        state="*",
+        is_client_auth=True
+    )
+
+    dp.register_message_handler(
+        authorization.first_message_handler,
+        commands=['start'],
+        is_auth=False,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        authorization.authorization_handler,
+        query_cb.AuthCallback.filter(action='auth'),
+        is_auth=False,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        authorization.continue_auth_handler,
+        query_cb.ContinueCallback.filter(action='continue'),
         is_auth=False,
         state="*"
     )
@@ -37,12 +59,6 @@ def register_staff(dp: Dispatcher):
 
 
 def register_client(dp):
-    dp.register_message_handler(
-        client.auth.auth_phone_handler,
-        commands=['start'],
-        state="*"
-    )
-
     dp.register_message_handler(
         client.auth.auth_fio_handler,
         content_types=types.ContentType.CONTACT,

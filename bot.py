@@ -13,6 +13,7 @@ from service.tgbot.filters.auth import AuthFilter
 from service.tgbot.filters.admin import AdminFilter
 from service.tgbot.filters.client_auth import ClientAuthFilter
 from service.tgbot.middlewares.db import DbMiddleware
+from service.tgbot.misc.job import tasks
 from service.tgbot import handlers
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,13 @@ async def main():
 
     bot['config'] = config
     bot['pool'] = db.pool
-
+    scheduler.add_job(
+        tasks.push_client_authorization,
+        'cron',
+        hour=15,
+        minute=00,
+        args=(db.pool, bot)
+    )
     #bot['redis'] = redis
 
     register_all_middlewares(dp)

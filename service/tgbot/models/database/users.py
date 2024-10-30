@@ -2,7 +2,7 @@ import datetime
 import typing
 from sqlalchemy import (BigInteger, Column, String, select, Date,
                         DateTime, func, Integer, ForeignKey, Boolean, update,
-                        desc, not_, VARCHAR, Text, CHAR)
+                        desc, not_, VARCHAR, Text, CHAR, JSON)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship
 
@@ -156,3 +156,22 @@ class ClientReview(Base):
         )
 
         return await session.scalar(stmt)
+
+
+class RegTemp(Base):
+    __tablename__ = "reg_temp"
+    telegram_id = Column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+    state = Column(
+        String
+    )
+    state_time = Column(
+        DateTime, server_default=func.now()
+    )
+    state_data = Column(JSON)
+    created_at = Column(DateTime, server_default=func.now())
+
+

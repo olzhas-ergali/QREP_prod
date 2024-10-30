@@ -63,8 +63,14 @@ async def auth_staff(
     await remove(message, 0)
     await remove(message, 1)
     if not (user_t := await UserTemp.get_user_temp(session, iin)):
-        await message.answer("Вы не можете пройти регистрацию, "
-                             "так как не являетесь сотрудником QR")
+        await message.answer(
+            text='''
+Упс, Вы у нас не работаете
+Если вы еще не являетесь сотрудником, но хотели бы присоединиться к нашей команде, свяжитесь с нашим отделом кадров.
+Контакты HR отдела:
+Телефон: +7 (777) 777-77-77
+Email: hr@qrepublic.com
+''')
     elif staff := await User.get_by_iin(session, iin):
         await message.answer("Такой ИИН уже зарегистрирован")
     else:

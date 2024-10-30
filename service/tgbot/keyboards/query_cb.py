@@ -21,3 +21,12 @@ GenderCallback = CallbackData(
 FaqCallback = CallbackData(
     'faq', 'chapter', 'lvl', 'action'
 )
+
+AuthCallback = CallbackData(
+    'auth', 'id', 'action'
+)
+
+ContinueCallback = CallbackData(
+    'continue', 'action'
+)
+#'state',

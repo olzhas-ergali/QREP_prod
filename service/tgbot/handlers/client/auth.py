@@ -5,7 +5,7 @@ from aiogram.types.callback_query import CallbackQuery
 from aiogram.dispatcher.storage import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.models.database.users import Client
+from service.tgbot.models.database.users import Client, RegTemp
 from service.tgbot.handlers.auth import phone_handler
 from service.tgbot.handlers.client.main import start_handler
 from service.tgbot.misc.states.staff import AuthClientState
@@ -18,17 +18,18 @@ from service.tgbot.keyboards.client.client import get_genders_ikb
 
 async def auth_phone_handler(
         message: Message,
-        state: FSMContext
+        state: FSMContext,
+        reg: RegTemp,
+        session: AsyncSession
 ):
     await state.finish()
+    if reg:
+        reg.state = "AuthClientState:waiting_phone"
+        session.add(reg)
+        await session.commit()
     await phone_handler(
         m=message,
-        state=AuthClientState.waiting_phone,
-        text="Если вы являетесь сотрудникм QR! "
-             "Для прохождения авторизации, пожалуйста, "
-             "введите команду /staff, после чего поделитесь вашим номером телефона. "
-             "Если вы не являетесь сотрудникм QR, "
-             "то просто можете дальше продолжить авторизация поделившись номером телефона"
+        state=AuthClientState.waiting_phone
     )
 
 
@@ -36,10 +37,14 @@ async def auth_fio_handler(
         message: Message,
         user: Client,
         session: AsyncSession,
-        state: FSMContext
+        state: FSMContext,
+        reg: RegTemp
 ):
     await message.delete()
-    phone_number = parse_phone(message.contact.phone_number)
+    if reg and not reg.state_data.get('phone'):
+        phone_number = parse_phone(message.contact.phone_number)
+    else:
+        phone_number = reg.state_data.get('phone')
     if client := await Client.get_client_by_phone(
         session=session,
         phone=phone_number
@@ -72,6 +77,11 @@ async def auth_fio_handler(
             )
     elif not user.phone_number:
         await state.update_data(phone=phone_number)
+        reg.state = "AuthClientState:waiting_name"
+        reg.state_time = datetime.datetime.now()
+        reg.state_data = await state.get_data()
+        session.add(reg)
+        await session.commit()
         await remove(message, 1)
         await message.answer(
             "Введите ваше ФИО"
@@ -83,17 +93,24 @@ async def get_years_handler(
         message: Message,
         user: Client,
         session: AsyncSession,
-        state: FSMContext
+        state: FSMContext,
+        reg: RegTemp
 ):
     await remove(message, 1)
     await message.delete()
-    await state.update_data(name=message.text)
+    if not reg.state_data.get('name'):
+        await state.update_data(name=message.text)
     year = datetime.datetime.now().year
     await message.answer(
         text="Выберите год вашего рождения",
         reply_markup=await make_year_ikb(year)
     )
     await AuthClientState.waiting_birthday_date.set()
+    reg.state = "AuthClientState:waiting_birthday_date"
+    reg.state_time = datetime.datetime.now()
+    reg.state_data = await state.get_data()
+    session.add(reg)
+    await session.commit()
 
 
 async def auth_get_other_year_handler(
@@ -149,15 +166,22 @@ async def auth_gender_handler(
         user: Client,
         session: AsyncSession,
         state: FSMContext,
-        callback_data: dict
+        callback_data: dict,
+        reg: RegTemp
 ):
-    birthday = callback_data.get('id').replace('date,', "")
-    await state.update_data(birthday=birthday.replace(",", "."))
+    if not reg.state_data.get('birthday'):
+        birthday = callback_data.get('id').replace('date,', "")
+        await state.update_data(birthday=birthday.replace(",", "."))
     await query.message.edit_text(
         text="Выберите ваш пол",
         reply_markup=await get_genders_ikb()
     )
     await AuthClientState.waiting_gender.set()
+    reg.state = "AuthClientState:waiting_gender"
+    reg.state_time = datetime.datetime.now()
+    reg.state_data = await state.get_data()
+    session.add(reg)
+    await session.commit()
 
 
 async def auth_client_handler(
@@ -165,9 +189,10 @@ async def auth_client_handler(
         user: Client,
         state: FSMContext,
         session: AsyncSession,
-        callback_data: dict
+        callback_data: dict,
+        reg: RegTemp
 ):
-    data = await state.get_data()
+    data = reg.state_data
     await query.message.delete()
     user.phone_number = data.get('phone')
     user.name = data.get('name')
@@ -175,7 +200,7 @@ async def auth_client_handler(
     user.birthday_date = datetime.datetime.strptime(data.get('birthday'), "%d.%m.%Y")
     user.is_active = True
     await user.save(session=session)
-
+    await session.delete(reg)
     await authorization(user=user, bot=query.bot)
     await start_handler(
         message=query.message,
