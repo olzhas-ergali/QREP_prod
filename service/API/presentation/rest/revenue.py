@@ -38,6 +38,11 @@ async def put_revenue_date_process(
 ):
     session = db_session.get()
 
+    if not await Revenue.get_revenue_by_doc_id(
+            session=session,
+            document_id=documentId
+    ):
+        raise HTTPException(status_code=500, detail="Такой документ не зарегистрирован в базе")
     return await add_revenue_date(
         session=session,
         revenue=revenue,

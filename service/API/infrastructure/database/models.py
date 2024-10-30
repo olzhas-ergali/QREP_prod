@@ -310,3 +310,14 @@ class Revenue(Base):
         stmt = select(Revenue).where(and_(Revenue.document_id == document_id, Revenue.row_id == row_id))
 
         return await session.scalar(stmt)
+
+    @classmethod
+    async def get_revenue_by_doc_id(
+            cls,
+            session: AsyncSession,
+            document_id: str
+    ) -> typing.Sequence['Revenue']:
+        stmt = select(Revenue).where(Revenue.document_id == document_id)
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
