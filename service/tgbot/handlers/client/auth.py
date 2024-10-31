@@ -41,7 +41,7 @@ async def auth_fio_handler(
         reg: RegTemp
 ):
     await message.delete()
-    if reg and not reg.state_data.get('phone'):
+    if not reg.state_data:
         phone_number = parse_phone(message.contact.phone_number)
     else:
         phone_number = reg.state_data.get('phone')
@@ -201,6 +201,7 @@ async def auth_client_handler(
     user.is_active = True
     await user.save(session=session)
     await session.delete(reg)
+    await session.commit()
     await authorization(user=user, bot=query.bot)
     await start_handler(
         message=query.message,
