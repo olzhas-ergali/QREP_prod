@@ -22,10 +22,13 @@ class DbMiddleware(LifetimeControllerMiddleware):
                 id=obj.from_user.id,
                 fullname=obj.from_user.full_name
             )
+            session.add(client)
+            await session.commit()
+
+        if not client.phone_number and not reg:
             reg = RegTemp()
             reg.telegram_id = obj.from_user.id
             reg.state = "start"
-            session.add(client)
             session.add(reg)
             await session.commit()
             # staff = User(
