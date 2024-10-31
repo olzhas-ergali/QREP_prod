@@ -41,9 +41,9 @@ async def auth_fio_handler(
         reg: RegTemp
 ):
     await message.delete()
-    if not reg.state_data:
+    try:
         phone_number = parse_phone(message.contact.phone_number)
-    else:
+    except:
         phone_number = reg.state_data.get('phone')
     if client := await Client.get_client_by_phone(
         session=session,
