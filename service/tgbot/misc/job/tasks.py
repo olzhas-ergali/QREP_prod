@@ -22,7 +22,7 @@ async def push_client_authorization(
     session: AsyncSession = pool()
     now = datetime.now() - timedelta(minutes=3)
     response = await session.execute(select(RegTemp).where(
-        (RegTemp.state_time < now))
+        (RegTemp.state_time < now) & (RegTemp.state != 'start'))
     )
     users: typing.Optional[typing.List, None] = response.scalars().all()
 

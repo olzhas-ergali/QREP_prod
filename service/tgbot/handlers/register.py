@@ -55,6 +55,18 @@ def register_staff(dp: Dispatcher):
         is_auth=False,
         state=AuthState.waiting_iin
     )
+
+    dp.register_callback_query_handler(
+        staff.auth.auth_iin_handler,
+        text="repeat",
+        state=AuthState.waiting_iin
+    )
+
+    dp.register_callback_query_handler(
+        staff.auth.back_handler,
+        text="back",
+        state=AuthState.waiting_iin
+    )
     register_client(dp)
 
 

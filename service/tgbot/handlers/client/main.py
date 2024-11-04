@@ -67,6 +67,13 @@ async def get_my_bonus_handler(
         bot=message.bot
     )
     await message.delete()
-    await message.answer(
-        text=f"У вас: {res} бонусов {msg}",
-    )
+    if res == 0:
+        await message.answer(
+            text="У вас пока нет накопленных бонусов. "
+                 "Совершайте покупки и участвуйте в наших акциях, "
+                 "чтобы начать зарабатывать баллы!"
+        )
+    else:
+        await message.answer(
+            text=f"У вас: {res} бонусов {msg}",
+        )

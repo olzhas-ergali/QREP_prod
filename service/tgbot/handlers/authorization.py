@@ -1,4 +1,5 @@
 import datetime
+import typing
 
 from aiogram.types.message import Message, ContentType
 from aiogram.types.callback_query import CallbackQuery
@@ -6,10 +7,10 @@ from aiogram.dispatcher.storage import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.dispatcher.filters.state import State
 
-from service.tgbot.models.database.users import RegTemp, Client
+from service.tgbot.models.database.users import RegTemp, Client, User
 from service.tgbot.misc.delete import remove
-from service.tgbot.handlers.staff import auth as staff_auth
-from service.tgbot.handlers.client import auth as client_auth
+from service.tgbot.handlers.staff import auth as staff_auth, main as staff_main
+from service.tgbot.handlers.client import auth as client_auth, main as client_main
 from service.tgbot.keyboards.auth import markup
 
 
@@ -31,16 +32,28 @@ async def authorization_handler(
         callback: CallbackQuery,
         callback_data: dict,
         state: FSMContext,
-        user: Client,
+        user: typing.Union[Client, User],
         reg: RegTemp,
         session: AsyncSession
 ):
     await callback.message.delete()
-    #if not user.phone_number:
-    if callback_data.get('id') == 'client':
-        await client_auth.auth_phone_handler(callback.message, state, reg, session)
-    else:
-        await staff_auth.auth_phone_handler(callback.message, state)
+    if not user.phone_number:
+        if callback_data.get('id') == 'client':
+            await client_auth.auth_phone_handler(callback.message, state, reg, session)
+        else:
+            await staff_auth.auth_phone_handler(callback.message, state)
+    elif isinstance(user, Client):
+        await client_main.start_handler(
+            message=callback.message,
+            user=user,
+            state=state
+        )
+    elif isinstance(user, User):
+        await staff_main.start_handler(
+            message=callback.message,
+            user=user,
+            state=state
+        )
 
 
 async def continue_auth_handler(

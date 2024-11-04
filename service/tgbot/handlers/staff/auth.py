@@ -1,4 +1,5 @@
 import datetime
+import typing
 
 from aiogram.types.message import Message, ContentType
 from aiogram.types.callback_query import CallbackQuery
@@ -6,12 +7,13 @@ from aiogram.dispatcher.storage import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.dispatcher.filters.state import State
 
-from service.tgbot.models.database.users import User, UserTemp, Client
+from service.tgbot.models.database.users import User, UserTemp, Client, RegTemp
 from service.tgbot.handlers.auth import phone_handler
 from service.tgbot.handlers.staff.main import start_handler
 from service.tgbot.misc.states.staff import AuthState
 from service.tgbot.misc.parse import parse_phone
 from service.tgbot.misc.delete import remove
+from service.tgbot.keyboards.auth import staff_auth_btns, markup
 
 
 async def auth_phone_handler(
@@ -23,13 +25,16 @@ async def auth_phone_handler(
 
 
 async def auth_iin_handler(
-        message: Message,
+        message: typing.Union[Message, CallbackQuery],
         session: AsyncSession,
         user: Client,
         state: FSMContext
 ):
-    phone_number = parse_phone(message.contact.phone_number)
-    await state.update_data(phone=phone_number)
+    data = await state.get_data()
+    phone_number = data.get('phone')
+    if not phone_number and isinstance(message, Message):
+        phone_number = parse_phone(message.contact.phone_number)
+        await state.update_data(phone=phone_number)
     staff = await User.get_by_phone(
         session=session,
         phone=phone_number
@@ -45,9 +50,14 @@ async def auth_iin_handler(
             user=staff,
             state=state
         )
-    await message.answer(
-        text="Введите ваш ИИН:",
-    )
+    if isinstance(message, Message):
+        await message.answer(
+            text="Введите ваш ИИН:",
+        )
+    else:
+        await message.message.edit_text(
+            text="Введите ваш ИИН:",
+        )
     await AuthState.waiting_iin.set()
 
 
@@ -55,7 +65,8 @@ async def auth_staff(
         message: Message,
         session: AsyncSession,
         user: Client,
-        state: FSMContext
+        state: FSMContext,
+        reg: RegTemp
 ):
     data = await state.get_data()
     phone_number = data.get('phone')
@@ -63,14 +74,16 @@ async def auth_staff(
     await remove(message, 0)
     await remove(message, 1)
     if not (user_t := await UserTemp.get_user_temp(session, iin)):
-        await message.answer(
+        return await message.answer(
             text='''
 Упс, Вы у нас не работаете
 Если вы еще не являетесь сотрудником, но хотели бы присоединиться к нашей команде, свяжитесь с нашим отделом кадров.
 Контакты HR отдела:
 Телефон: +7 (777) 777-77-77
 Email: hr@qrepublic.com
-''')
+''',
+            reply_markup=staff_auth_btns()
+        )
     elif staff := await User.get_by_iin(session, iin):
         await message.answer("Такой ИИН уже зарегистрирован")
     else:
@@ -92,5 +105,19 @@ Email: hr@qrepublic.com
             user=user,
             state=state
         )
+    await session.delete(reg)
     await state.finish()
 
+
+async def back_handler(
+        callback: CallbackQuery,
+        session: AsyncSession,
+        user: Client,
+        state: FSMContext
+):
+    await state.finish()
+    await callback.message.delete()
+    await callback.message.answer(
+        text="Выберите способ авторизация",
+        reply_markup=markup
+    )

@@ -30,3 +30,16 @@ def get_continue_btn():
         )
     )
     return InlineKeyboardMarkup().add(btn_continue)
+
+
+def staff_auth_btns():
+    btn_back = InlineKeyboardButton(
+        text="Назад",
+        callback_data="back"
+    )
+    btn_repeat = InlineKeyboardButton(
+        text="Повторно написать ИИН",
+        callback_data="repeat"
+    )
+
+    return InlineKeyboardMarkup(row_width=1).add(btn_repeat, btn_back)
