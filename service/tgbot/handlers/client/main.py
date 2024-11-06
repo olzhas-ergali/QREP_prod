@@ -62,6 +62,7 @@ async def get_my_bonus_handler(
         state: FSMContext
 ):
     await state.finish()
+    res = 0
     res, msg = await get_balance(
         user=user,
         bot=message.bot

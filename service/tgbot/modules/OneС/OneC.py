@@ -10,10 +10,10 @@ class TYPES:
 
 
 class REQUESTS:
-    BALANCE = "http://185.35.223.50/qr_too_online_ut_test/hs/telegram_bot/balance/"
-    AUTHORIZATION = "http://185.35.223.50/qr_too_online_ut_test/hs/telegram_bot/authorization"
-    STOCK = "http://185.35.223.50/qr_too_online_ut_test/hs/telegram_bot/stock"
-    ACCRUAL = "http://185.35.223.50/qr_too_online_ut_test/hs/telegram_bot/accrual"
+    BALANCE = "http://91.215.139.187/qr_center_ut/hs/telegram_bot/balance/"
+    AUTHORIZATION = "http://91.215.139.187/qr_center_ut/hs/telegram_bot/authorization"
+    STOCK = "http://91.215.139.187/qr_center_ut/hs/telegram_bot/stock"
+    ACCRUAL = "http://91.215.139.187/qr_center_ut/hs/telegram_bot/accrual"
 
 
 class OneC:
@@ -29,29 +29,30 @@ class OneC:
         user_auth = b64encode(bytes(auth_1c.login + ":" + auth_1c.password,
                                     encoding="ascii")).decode("ascii")
         headers = {'Authorization': 'Basic %s' % user_auth}
+        logging.info(f"METHOD -> {type_request}\n"
+                     f"DATA -> {json_data}")
         if type_request == 'post':
             try:
                 headers['Content-Type'] = 'application/json'
                 if json_data:
-                    print(request)
-                    print(json_data)
                     resp = requests.post(request, json=json_data, headers=headers)
+                    logging.info(f"STATUS CODE -> {resp.status_code}")
                 else:
-                    logging.warning("Данные для post запроса пусты")
-            except:
+                    logging.info("Данные для post запроса пусты")
+            except Exception as ex:
+                logging.info(ex)
                 return False
 
         if type_request == 'get':
             try:
-                print(request)
-                print(json_data)
                 resp = requests.get(request, headers=headers)
-            except:
+                logging.info(f"STATUS CODE -> {resp.status_code}")
+            except Exception as ex:
+                logging.info(ex)
                 return False
 
         if resp.status_code == 200:
             test_string = resp.text
             return json.loads(test_string)
 
-        print(resp.status_code)
         return False

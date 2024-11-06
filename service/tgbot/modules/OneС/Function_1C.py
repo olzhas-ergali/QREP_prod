@@ -12,18 +12,23 @@ async def authorization(
         user: Client,
         bot: Bot
 ):
+    try:
+        date = user.birthday_date.isoformat()
+    except:
+        date = user.birthday_date
     js = {"phone": user.phone_number,
           "clientFullName": user.name,
           "user_tlg_id": user.id,
           "qr": True,
-          "birthDate": user.birthday_date,
-          "gender": user.gender}
-    if await OneC.get_answer(
+          "birthDate": date,
+          "gender": user.gender.decode("utf-8")}
+    resp = await OneC.get_answer(
         request=REQUESTS.AUTHORIZATION,
         type_request=TYPES.POST,
         obj=bot,
         json_data=js
-    ):
+    )
+    if resp:
         return True
 
     return False
@@ -41,8 +46,9 @@ async def get_balance(
     )):
         for row in resp["dayOfLastUse"]:
             msg += "\n🔥" + str(row['date']) + " будет списано " + str(row['sum']) + " бонусов (автоматическое сгорание)"
-    print(resp)
-    return resp.get('balance'), msg
+    if resp:
+        return resp.get('balance'), msg
+    return 0, ""
 
 
 async def bonus_accrual(

@@ -102,7 +102,7 @@ Email: hr@qrepublic.com
         #await session.delete(staff)
         await start_handler(
             message=message,
-            user=user,
+            user=user_staff,
             state=state
         )
     await session.delete(reg)
