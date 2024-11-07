@@ -30,6 +30,7 @@ class OneC:
                                     encoding="ascii")).decode("ascii")
         headers = {'Authorization': 'Basic %s' % user_auth}
         logging.info(f"METHOD -> {type_request}\n"
+                     f"REQUEST -> {request}\n"
                      f"DATA -> {json_data}")
         if type_request == 'post':
             try:

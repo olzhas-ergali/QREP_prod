@@ -1,4 +1,5 @@
 import datetime
+import logging
 import typing
 
 from aiogram.types.message import Message, ContentType
@@ -105,7 +106,8 @@ Email: hr@qrepublic.com
             user=user_staff,
             state=state
         )
-    await session.delete(reg)
+    if reg:
+        await session.delete(reg)
     await state.finish()
 
 
