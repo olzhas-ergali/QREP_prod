@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.dispatcher import Dispatcher
 from service.tgbot.handlers import client
-from service.tgbot.keyboards.query_cb import ReviewCallback, ChoiceCallback, FaqCallback
+from service.tgbot.keyboards.query_cb import ReviewCallback, ChoiceCallback, FaqCallback, FaqNewCallback
 from service.tgbot.misc.states.client import NotificationState
 
 
@@ -29,7 +29,7 @@ def register_client_function(dp: Dispatcher):
 
     dp.register_callback_query_handler(
         client.faq.faq_chapters_handler,
-        FaqCallback.filter(action='faq'),
+        FaqNewCallback.filter(action='faq'),
         state="*"
     )
 

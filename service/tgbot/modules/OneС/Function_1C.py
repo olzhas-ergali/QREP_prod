@@ -16,12 +16,16 @@ async def authorization(
         date = user.birthday_date.isoformat()
     except:
         date = user.birthday_date
+    if not isinstance(user.gender, str):
+        gender = user.gender.decode("utf-8")
+    else:
+        gender = user.gender
     js = {"phone": user.phone_number,
           "clientFullName": user.name,
           "user_tlg_id": user.id,
           "qr": True,
           "birthDate": date,
-          "gender": user.gender.decode("utf-8")}
+          "gender": gender}
     resp = await OneC.get_answer(
         request=REQUESTS.AUTHORIZATION,
         type_request=TYPES.POST,

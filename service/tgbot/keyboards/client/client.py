@@ -12,8 +12,8 @@ async def main_btns():
     )
     btns = ['Мои бонусы',
             'Мой QR',
-            'Мои покупки']
-            #'FAQ']
+            'Мои покупки',
+            'FAQ']
     for btn in btns:
         markup.add(btn)
 

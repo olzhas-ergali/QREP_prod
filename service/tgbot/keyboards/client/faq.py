@@ -1,7 +1,10 @@
+import typing
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 from service.tgbot.keyboards import generate
-from service.tgbot.keyboards.query_cb import FaqCallback
+from service.tgbot.keyboards.query_cb import FaqCallback, FaqNewCallback
+from service.tgbot.data.faq import faq_texts_new
 
 
 async def get_faq_ikb(
@@ -65,3 +68,39 @@ async def get_faq_ikb(
         )
         markup.add(btn)
     return markup
+
+
+async def get_faq_btns_new(
+        curr_items=None
+):
+    markup = InlineKeyboardMarkup()
+    #keys = list(faq_texts_new.keys())
+    items = curr_items
+    #print(items)
+    if not isinstance(items, str):
+        for i, (k, v) in enumerate(items.items()):
+            #print(f"key: {k}", f"val: {v}")
+            if k == "rus":
+                k = "На русском"
+            if k == "kaz":
+                k = "На казахском"
+            btn = InlineKeyboardButton(
+                text=k,
+                callback_data=FaqNewCallback.new(
+                    chapter=i,
+                    action='faq'
+                )
+            )
+            markup.add(btn)
+        if curr_items and curr_items != faq_texts_new:
+            btn = InlineKeyboardButton(
+                text="Назад",
+                callback_data=FaqNewCallback.new(
+                    chapter="back",
+                    action='faq'
+                )
+            )
+            markup.add(btn)
+        return markup, curr_items
+
+    return items, {}

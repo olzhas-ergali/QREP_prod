@@ -29,4 +29,8 @@ AuthCallback = CallbackData(
 ContinueCallback = CallbackData(
     'continue', 'action'
 )
+
+FaqNewCallback = CallbackData(
+    'faq', 'chapter', 'action'
+)
 #'state',
