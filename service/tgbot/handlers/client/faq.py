@@ -27,45 +27,6 @@ async def get_faq_handler(
     await state.update_data(items=items)
 
 
-async def get_faq_handler_test(
-        message: Message,
-        state: FSMContext
-):
-    await message.delete()
-
-    await message.answer(
-        text="Выберите раздел",
-        reply_markup=await get_faq_ikb(faq_texts)
-    )
-
-
-async def faq_chapters_handler_test(
-        callback: CallbackQuery,
-        callback_data: dict
-):
-    lvl = int(callback_data.get('lvl'))
-    if lvl > 1:
-        await callback.message.edit_text("Выберите язык")
-    if lvl > 2:
-        return await callback.message.edit_text(
-            text=faq_texts.get(callback_data.get('chapter')),
-            reply_markup=await get_faq_ikb(
-                faq_lvl=faq_texts.get(callback_data.get('chapter')),
-                chapter=callback_data.get('chapter'),
-                btn_lvl=lvl
-            )
-        )
-
-    await callback.message.edit_reply_markup(
-        reply_markup=await get_faq_ikb(
-            faq_lvl=faq_texts.get(callback_data.get('chapter')) if callback_data.get('chapter') else faq_texts,
-            chapter=callback_data.get('chapter'),
-            btn_lvl=lvl
-        )
-    )
-    #await state.update_data(items=items)
-
-
 async def faq_chapters_handler(
         callback: CallbackQuery,
         callback_data: dict,
