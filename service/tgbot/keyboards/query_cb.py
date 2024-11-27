@@ -33,4 +33,17 @@ ContinueCallback = CallbackData(
 FaqNewCallback = CallbackData(
     'faq', 'chapter', 'action'
 )
+
+MailingsNewCallback = CallbackData(
+    'mailing', 'answer', 'action'
+)
+
+OperatorCallback = CallbackData(
+    'operator', 'time', 'action'
+)
+
+AnswerCallback = CallbackData(
+    "answer", "ans", 'action'
+)
+
 #'state',

@@ -84,7 +84,7 @@ async def auth_fio_handler(
         await session.commit()
         await remove(message, 1)
         await message.answer(
-            "Введите ваше ФИО"
+            "Дорогой покупатель, Вас приветствует команда Qazaq Republic!\nНапишите ваше ФИО:"
         )
         await AuthClientState.waiting_name.set()
 
@@ -102,7 +102,7 @@ async def get_years_handler(
         await state.update_data(name=message.text)
     year = datetime.datetime.now().year
     await message.answer(
-        text="Выберите год вашего рождения",
+        text="Благодарим! Теперь укажите вашу дату рождения",
         reply_markup=await make_year_ikb(year)
     )
     await AuthClientState.waiting_birthday_date.set()
@@ -173,7 +173,7 @@ async def auth_gender_handler(
         birthday = callback_data.get('id').replace('date,', "")
         await state.update_data(birthday=birthday.replace(",", "."))
     await query.message.edit_text(
-        text="Выберите ваш пол",
+        text="Отлично! Пожалуйста, выберите ваш пол",
         reply_markup=await get_genders_ikb()
     )
     await AuthClientState.waiting_gender.set()

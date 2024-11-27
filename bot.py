@@ -78,6 +78,13 @@ async def main():
         minute=00,
         args=(db.pool, bot)
     )
+
+    scheduler.add_job(
+        tasks.push_client_answer_operator,
+        'interval',
+        minutes=1,
+        args=(db.pool, bot)
+    )
     #bot['redis'] = redis
 
     register_all_middlewares(dp)

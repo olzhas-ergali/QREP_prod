@@ -175,3 +175,45 @@ class RegTemp(Base):
     created_at = Column(DateTime, server_default=func.now())
 
 
+class ClientMailing(Base):
+    __tablename__ = "clients_mailing"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime, server_default=func.now())
+    telegram_id = Column(
+        BigInteger,
+        ForeignKey("clients.id", onupdate='CASCADE', ondelete='CASCADE')
+    )
+
+    clients = relationship(
+        'Client',
+        primaryjoin="Client.id == ClientMailing.telegram_id",
+        lazy='selectin'
+    )
+
+
+class ClientsApp(Base):
+    __tablename__ = "clients_app"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime, server_default=func.now())
+    waiting_time = Column(DateTime)
+    is_push = Column(Boolean, default=False)
+    telegram_id = Column(
+        BigInteger,
+        ForeignKey("clients.id", onupdate='CASCADE', ondelete='CASCADE')
+    )
+
+    clients = relationship(
+        'Client',
+        primaryjoin="Client.id == ClientsApp.telegram_id",
+        lazy='selectin'
+    )
+
+    @classmethod
+    async def get_last_app(
+            cls,
+            session: AsyncSession,
+            telegram_id: int
+    ):
+        stmt = select(ClientsApp).where((telegram_id == ClientsApp.telegram_id) & (ClientsApp.is_push != True))
+
+        return await session.scalar(stmt)

@@ -3,8 +3,13 @@ import typing
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 from service.tgbot.keyboards import generate
-from service.tgbot.keyboards.query_cb import FaqCallback, FaqNewCallback
-from service.tgbot.data.faq import faq_texts_new
+from service.tgbot.keyboards.query_cb import (
+    FaqCallback,
+    FaqNewCallback,
+    MailingsNewCallback,
+    OperatorCallback,
+    AnswerCallback)
+from service.tgbot.data.faq import faq_texts2
 
 
 async def get_faq_ikb(
@@ -77,6 +82,35 @@ async def get_faq_btns_new(
     #keys = list(faq_texts_new.keys())
     items = curr_items
     #print(items)
+    if isinstance(items, list):
+        markup.add(
+            InlineKeyboardButton(
+                text="Да/Иә",
+                callback_data=MailingsNewCallback.new(
+                    answer="yes",
+                    action='mailing'
+                )
+            )
+        )
+        markup.add(
+            InlineKeyboardButton(
+                text="Нет/Жоқ",
+                callback_data=MailingsNewCallback.new(
+                    answer="no",
+                    action='mailing'
+                )
+            )
+        )
+        markup.add(
+            InlineKeyboardButton(
+                text="Назад",
+                callback_data=FaqNewCallback.new(
+                    chapter="back",
+                    action='faq'
+                )
+            )
+        )
+        return markup, items[0]
     if not isinstance(items, str):
         for i, (k, v) in enumerate(items.items()):
             #print(f"key: {k}", f"val: {v}")
@@ -92,15 +126,116 @@ async def get_faq_btns_new(
                 )
             )
             markup.add(btn)
-        if curr_items and curr_items != faq_texts_new:
-            btn = InlineKeyboardButton(
-                text="Назад",
-                callback_data=FaqNewCallback.new(
-                    chapter="back",
-                    action='faq'
+
+    if curr_items and curr_items != faq_texts2:
+        btn = InlineKeyboardButton(
+            text="Назад",
+            callback_data=FaqNewCallback.new(
+                chapter="back",
+                action='faq'
+            )
+        )
+        markup.add(btn)
+
+    return markup, curr_items
+
+
+async def get_times():
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.add(
+        *[
+            InlineKeyboardButton(
+                text="Сейчас/Дәл қазір",
+                callback_data=OperatorCallback.new(
+                    time="0",
+                    action='application'
+                )
+            ),
+            InlineKeyboardButton(
+                text="Через 30 минут/30 минуттан кейін",
+                callback_data=OperatorCallback.new(
+                    time="30",
+                    action='application'
+                )
+            ),
+            InlineKeyboardButton(
+                text="Через 1 час/1 сағаттан кейін",
+                callback_data=OperatorCallback.new(
+                    time="60",
+                    action='application'
+                )
+            ),
+            InlineKeyboardButton(
+                text="Через 2 час/2 сағаттан кейін",
+                callback_data=OperatorCallback.new(
+                    time="120",
+                    action='application'
                 )
             )
-            markup.add(btn)
-        return markup, curr_items
+        ]
+    )
 
-    return items, {}
+    return markup
+
+
+def get_answer():
+    return InlineKeyboardMarkup().add(
+        *[
+            InlineKeyboardButton(
+                text="Да",
+                callback_data=AnswerCallback.new(
+                    ans="yes",
+                    action='user_answer'
+                )
+            ),
+            InlineKeyboardButton(
+                text="Подключить оператора",
+                callback_data=AnswerCallback.new(
+                    ans="no",
+                    action='user_answer'
+                )
+            )
+        ]
+    )
+
+
+def get_grade_btns():
+    return InlineKeyboardMarkup(row_width=1).add(
+        *[
+            InlineKeyboardButton(
+                text="1",
+                callback_data=AnswerCallback.new(
+                    ans="1",
+                    action='user_grade'
+                )
+            ),
+            InlineKeyboardButton(
+                text="2",
+                callback_data=AnswerCallback.new(
+                    ans="2",
+                    action='user_grade'
+                )
+            ),
+            InlineKeyboardButton(
+                text="3",
+                callback_data=AnswerCallback.new(
+                    ans="3",
+                    action='user_grade'
+                )
+            ),
+            InlineKeyboardButton(
+                text="4",
+                callback_data=AnswerCallback.new(
+                    ans="4",
+                    action='user_grade'
+                )
+            ),
+            InlineKeyboardButton(
+                text="5",
+                callback_data=AnswerCallback.new(
+                    ans="5",
+                    action='user_grade'
+                )
+            )
+        ]
+    )

@@ -10,15 +10,16 @@ from sqlalchemy import select, extract, not_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker, joinedload
 
-from service.tgbot.models.database.users import RegTemp
+from service.tgbot.models.database.users import RegTemp, ClientsApp
 from service.tgbot.keyboards.auth import get_continue_btn
+from service.tgbot.keyboards.client.faq import get_answer
 
 
 async def push_client_authorization(
         pool: sessionmaker,
         bot: Bot,
 ):
-    logging.info("pushing_client")
+    logging.info("Уведомление для клиентов, которые не закончили регистрацию")
     session: AsyncSession = pool()
     now = datetime.now() - timedelta(minutes=3)
     response = await session.execute(select(RegTemp).where(
@@ -36,4 +37,32 @@ async def push_client_authorization(
         except:
             pass
 
+    await session.close()
+
+
+async def push_client_answer_operator(
+        pool: sessionmaker,
+        bot: Bot,
+):
+    logging.info("Уведомление для клиентов по оценке работе оператора")
+    session: AsyncSession = pool()
+
+    now = datetime.now() - timedelta(minutes=3)
+    response = await session.execute(select(ClientsApp).where(
+        (ClientsApp.waiting_time < now) & (ClientsApp.is_push == False))
+    )
+    users: typing.Optional[typing.List, None] = response.scalars().all()
+    print(users)
+    for u in users:
+        try:
+            await bot.send_message(
+                chat_id=u.telegram_id,
+                text="Ваш вопрос решен",
+                reply_markup=get_answer()
+            )
+            u.is_push = True
+            session.add(u)
+        except:
+            pass
+    await session.commit()
     await session.close()

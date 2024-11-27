@@ -11,6 +11,9 @@ from service.tgbot.models.database.users import Client
 from service.tgbot.keyboards.client.client import main_btns
 from service.tgbot.modules.OneС.Function_1C import get_balance
 from service.tgbot.misc.delete import remove
+from service.tgbot.keyboards.client.faq import get_faq_btns_new
+from service.tgbot.data.faq import faq_texts2
+from service.tgbot.misc.states.client import FaqState
 
 
 async def start_handler(
@@ -26,11 +29,20 @@ async def start_handler(
         gender = 'Дорогой'
     elif user.gender == b'F':
         gender = 'Дорогая'
-    text = f"{gender} {user.name}, вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗"
+    text = (f"{gender} {user.name}, вас приветствует команда Qazaq Republic!🤗\n"
+            f"Құрметті {user.name}, Сізбен бірге Qazaq Republic командасы!")
+    btns, items = await get_faq_btns_new(faq_texts2)
     await message.answer(
         text=text,
         reply_markup=await main_btns()
     )
+    await message.answer(
+        text="Чем могу помочь? Выберите одну из опций:\nСізге қандай көмек көрсете аламыз? Опциялардың бірін таңдаңыз:",
+        reply_markup=btns
+    )
+
+    await state.update_data(items=items)
+    await FaqState.start.set()
 
 
 async def get_my_qr_handler(
