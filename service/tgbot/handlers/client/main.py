@@ -1,6 +1,7 @@
 import os
 import segno
 import datetime
+import logging
 
 from aiogram.types.message import Message, ContentType
 from aiogram.types.callback_query import CallbackQuery
@@ -24,6 +25,7 @@ async def start_handler(
     await state.finish()
     await remove(message, 1)
     await remove(message, 0)
+    logging.info(f"Клиент с id: {user.id} авторизовался/зарегался в боте")
     gender = 'Дорогой'
     if user.gender == b'M':
         gender = 'Дорогой'

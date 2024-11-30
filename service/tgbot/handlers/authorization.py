@@ -37,18 +37,18 @@ async def authorization_handler(
         session: AsyncSession
 ):
     await callback.message.delete()
-    if not user.phone_number:
-        if callback_data.get('id') == 'client':
-            await client_auth.auth_phone_handler(callback.message, state, reg, session)
-        else:
-            await staff_auth.auth_phone_handler(callback.message, state)
-    elif isinstance(user, Client):
+    if callback_data.get('id') == 'client' and not user.phone_number:
+        return await client_auth.auth_phone_handler(callback.message, state, reg, user, session)
+    elif isinstance(user, Client) or not user.iin:
+        return await staff_auth.auth_phone_handler(callback.message, state)
+
+    if isinstance(user, Client):
         await client_main.start_handler(
             message=callback.message,
             user=user,
             state=state
         )
-    elif isinstance(user, User):
+    if isinstance(user, User):
         await staff_main.start_handler(
             message=callback.message,
             user=user,

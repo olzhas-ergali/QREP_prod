@@ -24,15 +24,16 @@ class DbMiddleware(LifetimeControllerMiddleware):
                 fullname=obj.from_user.full_name
             )
             session.add(client)
-            await session.commit()
+            #await session.commit()
 
-        if not user and not reg and not client.phone_number:
+        if (not user or not user.iin) and not reg and not client.phone_number:
+            print(user)
             #if client.phone_number:
             reg = RegTemp()
             reg.telegram_id = obj.from_user.id
             reg.state = "start"
             session.add(reg)
-            await session.commit()
+        await session.commit()
             # staff = User(
             #    id=obj.from_user.id,
             #    fullname=obj.from_user.full_name
@@ -42,7 +43,7 @@ class DbMiddleware(LifetimeControllerMiddleware):
 
         data['session'] = session
         data['reg'] = reg
-        if user:
+        if user and user.iin:
             data['user'] = user
         else:
             client.activity = "telegram"

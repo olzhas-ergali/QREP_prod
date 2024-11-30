@@ -1,3 +1,4 @@
+import logging
 import typing
 from service.API.config import settings
 
@@ -94,6 +95,7 @@ async def employees_process(
     session: AsyncSession = db_session.get()
 
     try:
+        logging.info(user.dict())
         return await staff.add_employees(
             session=session,
             id_staff=user.idStaff,

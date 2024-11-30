@@ -6,7 +6,7 @@ from typing import Sequence, Optional
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.API.infrastructure.database.models import User, Purchase, UserTemp, PurchaseReturn
+from service.API.infrastructure.database.models import User, Purchase, UserTemp, PurchaseReturn, Client
 
 
 async def get_staff(
@@ -179,6 +179,10 @@ async def add_employees(
             #user_tg.phone_number = phone
             user.name = fullname
         session.add(user_tg)
+    if (c := await Client.get_client_by_phone(session=session, phone=phone)) is not None:
+        c.is_active = False
+        c.phone_number = None
+        session.add(c)
     user.phone_number = phone
     user.iin = iin
     user.name = fullname

@@ -1,11 +1,12 @@
 import datetime
+import logging
 
 from aiogram.types.message import Message, ContentType
 from aiogram.types.callback_query import CallbackQuery
 from aiogram.dispatcher.storage import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.models.database.users import Client, RegTemp
+from service.tgbot.models.database.users import Client, RegTemp, User
 from service.tgbot.handlers.auth import phone_handler
 from service.tgbot.handlers.client.main import start_handler
 from service.tgbot.misc.states.staff import AuthClientState
@@ -20,8 +21,10 @@ async def auth_phone_handler(
         message: Message,
         state: FSMContext,
         reg: RegTemp,
+        user: User | Client,
         session: AsyncSession
 ):
+    logging.info(f"Авторизация клиента -> {user.id}")
     await state.finish()
     if reg:
         reg.state = "AuthClientState:waiting_phone"

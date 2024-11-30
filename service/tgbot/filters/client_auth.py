@@ -16,9 +16,9 @@ class ClientAuthFilter(BoundFilter):
         data = ctx_data.get()
         client: Client = data.get('user')
 
-        if not client.phone_number and not self.is_client_auth:
+        if not client.is_active and not self.is_client_auth:
             return True
 
-        if client.phone_number and self.is_client_auth:
+        if client.is_active and self.is_client_auth:
             return True
 
