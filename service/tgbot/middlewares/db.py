@@ -27,7 +27,6 @@ class DbMiddleware(LifetimeControllerMiddleware):
             #await session.commit()
 
         if (not user or not user.iin) and not reg and not client.phone_number:
-            print(user)
             #if client.phone_number:
             reg = RegTemp()
             reg.telegram_id = obj.from_user.id

@@ -26,10 +26,17 @@ class Auth1C:
 
 
 @dataclass
+class Bitrix:
+    token: str
+    user_id: str
+
+
+@dataclass
 class Config:
     tg_bot: TgBot
     db: DbConfig
     one_c: Auth1C
+    bitrix: Bitrix
 
 
 def load_config(path):
@@ -52,6 +59,10 @@ def load_config(path):
         one_c=Auth1C(
             login=env.str('LOGIN_1C'),
             password=env.str('PASS_1C')
+        ),
+        bitrix=Bitrix(
+            token=env.str('BITRIX_TOKEN'),
+            user_id=env.str('BITRIX_USER_ID')
         )
     )
 

@@ -47,7 +47,7 @@ async def push_client_answer_operator(
     logging.info("Уведомление для клиентов по оценке работе оператора")
     session: AsyncSession = pool()
 
-    now = datetime.now() - timedelta(minutes=3)
+    now = datetime.now()
     response = await session.execute(select(ClientsApp).where(
         (ClientsApp.waiting_time < now) & (ClientsApp.is_push == False))
     )

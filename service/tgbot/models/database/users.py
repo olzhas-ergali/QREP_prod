@@ -199,13 +199,11 @@ class ClientsApp(Base):
     is_push = Column(Boolean, default=False)
     telegram_id = Column(
         BigInteger,
-        ForeignKey("clients.id", onupdate='CASCADE', ondelete='CASCADE')
+        default=None
     )
-
-    clients = relationship(
-        'Client',
-        primaryjoin="Client.id == ClientsApp.telegram_id",
-        lazy='selectin'
+    phone_number = Column(
+        String,
+        default=None
     )
 
     @classmethod
@@ -215,5 +213,15 @@ class ClientsApp(Base):
             telegram_id: int
     ):
         stmt = select(ClientsApp).where((telegram_id == ClientsApp.telegram_id) & (ClientsApp.is_push != True))
+
+        return await session.scalar(stmt)
+
+    @classmethod
+    async def get_last_app_by_phone(
+            cls,
+            session: AsyncSession,
+            phone: str
+    ):
+        stmt = select(ClientsApp).where((phone == ClientsApp.phone_number) & (ClientsApp.is_push != True))
 
         return await session.scalar(stmt)

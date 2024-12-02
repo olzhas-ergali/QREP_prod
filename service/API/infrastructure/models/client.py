@@ -22,3 +22,7 @@ class ModelReview(BaseModel):
     grade: typing.Optional[int] = None
     review: typing.Optional[str] = None
 
+
+class ModelOperator(BaseModel):
+    phone: typing.Optional[str] = None
+    telegram_id: typing.Optional[str] = None

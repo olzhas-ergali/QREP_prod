@@ -2,142 +2,32 @@ import typing
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from service.tgbot.keyboards import generate
 from service.tgbot.keyboards.query_cb import (
     FaqCallback,
-    FaqNewCallback,
-    MailingsNewCallback,
     OperatorCallback,
     AnswerCallback)
-from service.tgbot.data.faq import faq_texts2
+from service.tgbot.data.faq import faq_lvls
 
 
-async def get_faq_ikb(
-        faq_lvl: dict,
-        chapter: str = None,
-        btn_lvl: int = 0
-):
-    markup = InlineKeyboardMarkup(1)
-    lvl = {
-        0: ['Оформление заказа',
-            'Редактирование данных пользователя',
-            'Восстановление пароля',
-            'Просмотр сделанных заказов',
-            'Возврат и обмен товара',
-            'Доставка',
-            'Оплата'
-            ],
-        1: ['Как оформить заказ на сайте',
-            'Как найти номер заказа',
-            'Как изменить свои данные',
-            'Как восстановить пароль',
-            'Как посмотреть сделанный заказ',
-            'Условия обмена/возврата',
-            'Когда вернут средства',
-            'Как получить трекинг номер',
-            'Условия доставки',
-            'Когда приедет заказ',
-            'Не проходит оплата при оформлении',
-            'Оплата каспи кредит/ред',
-            ],
-        2: ["Каз", "Рус"]
-    }
-    print(btn_lvl, chapter)
-    print()
-    if btn_lvl < 3:
-        for i, (key, value) in enumerate(faq_lvl.items()):
-
-            try:
-                btn = InlineKeyboardButton(
-                    text=lvl.get(btn_lvl)[i],
-                    callback_data=FaqCallback.new(
-                        chapter=key,
-                        lvl=btn_lvl+1,
-                        action='faq'
-                    )
-                )
-                markup.add(btn)
-            except Exception as ex:
-                print(ex)
-
-    if btn_lvl > 0:
-        if btn_lvl - 1 == 0:
-            chapter = str(None)
-        btn = InlineKeyboardButton(
-            text="Назад",
-            callback_data=FaqCallback.new(
-                chapter=chapter,
-                lvl=btn_lvl - 1,
-                action='faq'
-            )
-        )
-        markup.add(btn)
-    return markup
-
-
-async def get_faq_btns_new(
-        curr_items=None
+async def get_faq_btns(
+        current_lvl: str
 ):
     markup = InlineKeyboardMarkup()
-    #keys = list(faq_texts_new.keys())
-    items = curr_items
-    #print(items)
-    if isinstance(items, list):
+    n = len(faq_lvls.get(current_lvl))
+    for i in range(n):
+        faq_lvls.get(current_lvl)[i].get('callback')
+        action = 'faq' if not faq_lvls.get(current_lvl)[i].get('action') else faq_lvls.get(current_lvl)[i].get('action')
         markup.add(
             InlineKeyboardButton(
-                text="Да/Иә",
-                callback_data=MailingsNewCallback.new(
-                    answer="yes",
-                    action='mailing'
+                text=faq_lvls.get(current_lvl)[i].get('text'),
+                callback_data=FaqCallback.new(
+                    chapter=i + 1,
+                    lvl=faq_lvls.get(current_lvl)[i].get('callback'),
+                    action=action
                 )
             )
         )
-        markup.add(
-            InlineKeyboardButton(
-                text="Нет/Жоқ",
-                callback_data=MailingsNewCallback.new(
-                    answer="no",
-                    action='mailing'
-                )
-            )
-        )
-        markup.add(
-            InlineKeyboardButton(
-                text="Назад",
-                callback_data=FaqNewCallback.new(
-                    chapter="back",
-                    action='faq'
-                )
-            )
-        )
-        return markup, items[0]
-    if not isinstance(items, str):
-        for i, (k, v) in enumerate(items.items()):
-            #print(f"key: {k}", f"val: {v}")
-            if k == "rus":
-                k = "На русском"
-            if k == "kaz":
-                k = "На казахском"
-            btn = InlineKeyboardButton(
-                text=k,
-                callback_data=FaqNewCallback.new(
-                    chapter=i,
-                    action='faq'
-                )
-            )
-            markup.add(btn)
-
-    if curr_items and curr_items != faq_texts2:
-        btn = InlineKeyboardButton(
-            text="Назад",
-            callback_data=FaqNewCallback.new(
-                chapter="back",
-                action='faq'
-            )
-        )
-        markup.add(btn)
-
-    return markup, curr_items
+    return markup
 
 
 async def get_times():
@@ -239,3 +129,5 @@ def get_grade_btns():
             )
         ]
     )
+
+

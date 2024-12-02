@@ -1,8 +1,10 @@
+import logging
 from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
-from service.API.infrastructure.database.models import Client
+from sqlalchemy.ext.asyncio import AsyncSession
+from service.API.infrastructure.database.models import Client, ClientsApp
 
 
 async def send_notification_from_client(
@@ -38,4 +40,44 @@ async def send_notification_from_client(
     )
 
 
+async def push_client_answer_operator(
+        session: AsyncSession,
+        bot: Bot,
+        client: ClientsApp
+):
+    ans_callback = CallbackData(
+        "answer", "ans", 'action'
+    )
+    logging.info("Уведомление для клиентов по оценке работе оператора")
+    markup = InlineKeyboardMarkup().add(
+        *[
+            InlineKeyboardButton(
+                text="Да",
+                callback_data=ans_callback.new(
+                    ans="yes",
+                    action='user_answer'
+                )
+            ),
+            InlineKeyboardButton(
+                text="Подключить оператора",
+                callback_data=ans_callback.new(
+                    ans="no",
+                    action='user_answer'
+                )
+            )
+        ]
+    )
+    try:
+        await bot.send_message(
+            chat_id=client.telegram_id,
+            text="Ваш вопрос решен",
+            reply_markup=markup
+        )
+        client.is_push = True
+        session.add(client)
+    except Exception as ex:
+        logging.exception(ex)
 
+    session_bot = await bot.get_session()
+    await session_bot.close()
+    await session.commit()

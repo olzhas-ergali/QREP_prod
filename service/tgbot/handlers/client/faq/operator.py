@@ -1,115 +1,16 @@
-import os
-import segno
 import datetime
 
-from aiogram.types import InlineKeyboardMarkup
 from aiogram.types.message import Message, ContentType
 from aiogram.types.callback_query import CallbackQuery
 from aiogram.dispatcher.storage import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.models.database.users import Client, ClientMailing, ClientsApp
-from service.tgbot.keyboards.client.faq import get_faq_btns_new, get_faq_ikb, get_times, get_grade_btns
-from service.tgbot.data.faq import faq_texts2
+from service.tgbot.models.database.users import Client, ClientsApp
+from service.tgbot.keyboards.client.faq import get_times, get_grade_btns
 from service.tgbot.misc.states.client import FaqState
 from service.tgbot.misc.delete import remove
-
-
-async def get_faq_handler(
-        message: Message,
-        state: FSMContext
-):
-    await message.delete()
-    await state.finish()
-    btns, items = await get_faq_btns_new(faq_texts2)
-    await message.answer(
-        text="Выберите раздел",
-        reply_markup=btns
-    )
-    await state.update_data(items=items)
-    await FaqState.start.set()
-
-
-async def faq_chapters_handler(
-        callback: CallbackQuery,
-        callback_data: dict,
-        state: FSMContext
-):
-    data = await state.get_data()
-    chapter = callback_data.get('chapter')
-
-    text = "Выберите раздел"
-    if chapter != "back":
-        q_text = callback.message.reply_markup.inline_keyboard[int(chapter)][0].text
-        #if q_text == "На русском":
-        #    q_text = "rus"
-        #if q_text == "На казахском":
-        #    q_text = "kaz"
-        if q_text in ['Проблема по доставке', 'Не прошла оплата', 'Подключить оператора']:
-            await FaqState.waiting_operator.set()
-        else:
-            await FaqState.start.set()
-
-        if data.get('prev_items'):
-            prev_items = data.get('prev_items') + ":" + q_text
-        else:
-            prev_items = q_text
-        data['items'] = data['items'].get(q_text)
-        await state.update_data(prev_items=prev_items)
-    else:
-        data['items'] = faq_texts2
-        data_items = data.get('prev_items').split(":")
-        for i in data_items[:len(data_items) - 1]:
-            data['items'] = data['items'].get(i)
-        await state.update_data(prev_items=":".join(data_items[:len(data_items) - 1]))
-    btn, items = await get_faq_btns_new(curr_items=data.get('items'))
-    if isinstance(items, str):
-        text = items
-    await callback.message.edit_text(
-        text=text,
-        reply_markup=btn
-    )
-
-    await state.update_data(items=items)
-
-
-async def mailing_handler(
-        callback: CallbackQuery,
-        session: AsyncSession,
-        callback_data: dict,
-        state: FSMContext,
-        user: Client,
-):
-    btns, items = await get_faq_btns_new(faq_texts2)
-    await state.finish()
-    if callback_data.get('answer') == 'yes':
-        c = ClientMailing(
-            telegram_id=user.id
-        )
-        session.add(c)
-        await session.commit()
-        await callback.message.edit_text(
-            text='''
-Вы подписались на уведомление
- 
-Вы вернулись к основному меню. Чем еще можем помочь?
-
-Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
-''',
-            reply_markup=btns
-        )
-    else:
-        await callback.message.edit_text(
-            text='''
-Вы вернулись к основному меню. Чем еще можем помочь?
-
-Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
-        ''',
-            reply_markup=btns
-        )
-
-    await state.update_data(items=items)
-    await FaqState.start.set()
+from service.tgbot.handlers.client.faq.main import faq_lvl_handler
+from service.tgbot.lib.bitrixAPI.leads import Leads
 
 
 async def operator_handler(
@@ -138,11 +39,13 @@ async def send_operator_handler(
         user: Client,
         callback_data: dict
 ):
-    btns, items = await get_faq_btns_new(faq_texts2)
+    callback_data['lvl'] = 'main'
     waiting_time = callback_data.get('time')
-    date = datetime.datetime.now() + datetime.timedelta(minutes=int(waiting_time) + 5)
+    date = datetime.datetime.now() + datetime.timedelta(minutes=int(waiting_time))
     text = '''
 Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос
+
+Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз
 '''
     if not (c := await ClientsApp.get_last_app(
         session=session,
@@ -153,25 +56,38 @@ async def send_operator_handler(
 
 Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.
         '''
+        resp = await Leads(
+            user_id=callback.bot.get('config').bitrix.user_id,
+            basic_token=callback.bot.get('config').bitrix.token
+        ).create(
+            fields={
+                "FIELDS[TITLE]": "Заявка с Telegram",
+                "FIELDS[NAME]": user.name,
+                "FIELDS[PHONE][0][VALUE]": user.phone_number,
+                "FIELDS[PHONE][0][VALUE_TYPE]": "WORKMOBILE",
+                "FIELDS[UF_CRM_1733080465]": user.id
+            }
+        )
         c = ClientsApp(
+            id=resp.get('result'),
             telegram_id=user.id,
-            waiting_time=date
+            waiting_time=date,
+            phone_number=user.phone_number
         )
         session.add(c)
         await session.commit()
-    await callback.message.edit_text(
-        text=text
-    )
-    await callback.message.answer(
-        text='''
+    text += '''
 Вы вернулись к основному меню. Чем еще можем помочь?
 
 Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
-            ''',
-        reply_markup=btns
+'''
+    callback_data['lvl'] = 'main'
+    await faq_lvl_handler(
+        callback=callback,
+        callback_data=callback_data,
+        state=state,
+        text=text
     )
-    await state.update_data(items=items)
-    await FaqState.start.set()
 
 
 async def user_wait_answer_handler(
@@ -216,7 +132,7 @@ async def user_graded_handler(
         user: Client,
         callback_data: dict
 ):
-    btns, items = await get_faq_btns_new(faq_texts2)
+    callback_data['lvl'] = 'main'
     await state.finish()
     texts = {
         True: '''
@@ -233,25 +149,19 @@ _________________________________________________
         False: '''
 Бізді таңдағаныңыз үшін рақмет! Сізді тағы күтеміз:)
 Құрметпен, Qazaq Republic💙
-
 __________________________________
-
-
 Благодарим Вас за выбор наших услуг! Будем ждать Вас еще:)
 С уважением, Qazaq Republic💙'''
     }
-    await callback.message.edit_text(
-        text=texts.get(callback_data.get('ans') in ['1', '2', '3']))
-
-    await callback.message.answer(
-        text='''
+    text = texts.get(callback_data.get('ans') in ['1', '2', '3'])
+    text += '''
 Вы вернулись к основному меню. Чем еще можем помочь?
 
 Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
-''',
-        reply_markup=btns
+'''
+    await faq_lvl_handler(
+        callback=callback,
+        callback_data=callback_data,
+        state=state,
+        text=text
     )
-    await state.update_data(items=items)
-    await FaqState.start.set()
-
-

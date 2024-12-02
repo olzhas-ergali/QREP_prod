@@ -321,3 +321,39 @@ class Revenue(Base):
         response = await session.execute(stmt)
 
         return response.scalars().all()
+
+
+class ClientsApp(Base):
+    __tablename__ = "clients_app"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime, server_default=func.now())
+    waiting_time = Column(DateTime)
+    is_push = Column(Boolean, default=False)
+    telegram_id = Column(
+        BigInteger,
+        default=None
+    )
+    phone_number = Column(
+        String,
+        default=None
+    )
+
+    @classmethod
+    async def get_last_app(
+            cls,
+            session: AsyncSession,
+            telegram_id: int
+    ):
+        stmt = select(ClientsApp).where((telegram_id == ClientsApp.telegram_id) & (ClientsApp.is_push != True))
+
+        return await session.scalar(stmt)
+
+    @classmethod
+    async def get_last_app_by_phone(
+            cls,
+            session: AsyncSession,
+            phone: str
+    ):
+        stmt = select(ClientsApp).where((phone == ClientsApp.phone_number) & (ClientsApp.is_push != True))
+
+        return await session.scalar(stmt)

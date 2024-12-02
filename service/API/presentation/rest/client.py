@@ -11,13 +11,13 @@ from starlette.responses import RedirectResponse
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
-from service.API.infrastructure.database.models import Client, ClientReview
-from service.API.infrastructure.utils.client_notification import send_notification_from_client
+from service.API.infrastructure.database.models import Client, ClientReview, ClientsApp
+from service.API.infrastructure.utils.client_notification import send_notification_from_client, push_client_answer_operator
 from service.API.infrastructure.utils.parse import parse_phone
-from service.API.infrastructure.models.client import ModelAuth, ModelReview
+from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelOperator
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
-
+from service.API.infrastructure.utils.check_client import check_user_exists
 
 router = APIRouter()
 
@@ -221,3 +221,35 @@ async def add_client_review(
         "status_code": status.HTTP_200_OK,
         "message": "Отзыв добавлен"
     }
+
+
+@router.post("/client/operator/notification")
+async def add_client_operator_grade(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        operator: ModelOperator
+):
+    session: AsyncSession = db_session.get()
+    print(settings.tg_bot.bot_token)
+    bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
+
+    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
+    app = None
+    if c and await check_user_exists(c.id, bot):
+        app = await ClientsApp.get_last_app(session=session, telegram_id=c.id)
+    elif c:
+        app = await ClientsApp.get_last_app_by_phone(session=session, phone=operator.phone)
+
+    if app:
+        if c.activity == 'telegram':
+            await push_client_answer_operator(session=session, client=app, bot=bot)
+        else:
+            pass
+        return {
+            "status_code": status.HTTP_200_OK,
+            "message": "Уведомление отправлено"
+        }
+    else:
+        return {
+            "status_code": status.HTTP_200_OK,
+            "message": f"Пользователь с {operator.phone} не найден в базе"
+        }

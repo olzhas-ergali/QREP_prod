@@ -15,7 +15,7 @@ class ClientAuthFilter(BoundFilter):
     async def check(self, *args) -> bool:
         data = ctx_data.get()
         client: Client = data.get('user')
-
+        print(client.is_active, self.is_client_auth, client.phone_number, client.name)
         if not client.is_active and not self.is_client_auth:
             return True
 

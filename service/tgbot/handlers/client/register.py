@@ -2,7 +2,8 @@ from aiogram import types
 from aiogram.dispatcher.dispatcher import Dispatcher
 from service.tgbot.handlers import client
 from service.tgbot.keyboards import query_cb
-from service.tgbot.misc.states.client import NotificationState, FaqState
+from service.tgbot.misc.states.client import NotificationState
+from service.tgbot.handlers.client.faq.register import register_faq_function
 
 
 def register_client_function(dp: Dispatcher):
@@ -58,52 +59,3 @@ def register_client_function(dp: Dispatcher):
         state="*"
     )
 
-
-def register_faq_function(dp: Dispatcher):
-    dp.register_callback_query_handler(
-        client.faq.faq_chapters_handler,
-        query_cb.FaqNewCallback.filter(action='faq'),
-        state="*"
-    )
-
-    dp.register_callback_query_handler(
-        client.faq.mailing_handler,
-        query_cb.MailingsNewCallback.filter(),
-        state="*"
-    )
-
-    dp.register_callback_query_handler(
-        client.faq.mailing_handler,
-        query_cb.MailingsNewCallback.filter(),
-        state="*"
-    )
-
-    dp.register_message_handler(
-        client.faq.operator_handler,
-        text='55',
-        state=FaqState.waiting_operator
-    )
-
-    dp.register_callback_query_handler(
-        client.faq.send_operator_handler,
-        query_cb.OperatorCallback.filter(),
-        state=FaqState.waiting_time
-    )
-
-    dp.register_callback_query_handler(
-        client.faq.send_operator_handler,
-        query_cb.OperatorCallback.filter(),
-        state=FaqState.waiting_time
-    )
-
-    dp.register_callback_query_handler(
-        client.faq.user_wait_answer_handler,
-        query_cb.AnswerCallback.filter(action='user_answer'),
-        state="*"
-    )
-
-    dp.register_callback_query_handler(
-        client.faq.user_graded_handler,
-        query_cb.AnswerCallback.filter(action='user_grade'),
-        state="*"
-    )
