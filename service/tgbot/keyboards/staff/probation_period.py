@@ -38,7 +38,7 @@ def get_evaluation_btn(
                 callback_data=ProbationPeriodActionCallback.new(
                     current_day=current_day,
                     action=action,
-                    value='value'
+                    value=evaluation
                 )
             )
         )
