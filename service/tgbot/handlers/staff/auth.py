@@ -100,7 +100,6 @@ Email: hr@qrepublic.com
         user_staff.is_active = True
         user_staff.iin = iin
         await user_staff.save(session)
-        #await session.delete(staff)
         await start_handler(
             message=message,
             user=user_staff,
