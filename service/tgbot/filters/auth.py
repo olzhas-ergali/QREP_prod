@@ -3,7 +3,7 @@ from tracemalloc import BaseFilter
 from aiogram.dispatcher.filters import BoundFilter
 from aiogram.dispatcher.handler import ctx_data
 
-from service.tgbot.models.database.users import User
+from service.tgbot.models.database.users import User, Client
 
 
 class AuthFilter(BoundFilter):
@@ -16,8 +16,8 @@ class AuthFilter(BoundFilter):
         data = ctx_data.get()
         user: User = data.get('user')
 
-        if user.__tablename__ == "clients":
-            user.is_active = False
+        if not isinstance(user, User):
+            return False
 
         if not user.is_active and not self.is_auth:
             return True

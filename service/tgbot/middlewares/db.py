@@ -13,21 +13,19 @@ class DbMiddleware(LifetimeControllerMiddleware):
         pool = obj.bot.get('pool')
         session: AsyncSession = pool()
         reg = await session.get(RegTemp, obj.from_user.id)
-        user = await session.get(User, obj.from_user.id)
+        staff = await session.get(User, obj.from_user.id)
         client = await session.get(Client, obj.from_user.id)
         if not isinstance(obj, (Message, CallbackQuery)):
             data['session'] = session
             return
-        if not user and not client:
+        if not staff and not client:
             client = Client(
                 id=obj.from_user.id,
                 fullname=obj.from_user.full_name
             )
             session.add(client)
-            #await session.commit()
 
-        if (not user or not user.iin) and not reg and not client.phone_number:
-            #if client.phone_number:
+        if (not staff or not staff.iin) and not reg and not client.phone_number:
             reg = RegTemp()
             reg.telegram_id = obj.from_user.id
             reg.state = "start"
@@ -42,8 +40,8 @@ class DbMiddleware(LifetimeControllerMiddleware):
 
         data['session'] = session
         data['reg'] = reg
-        if user and user.iin:
-            data['user'] = user
+        if staff and staff.iin:
+            data['user'] = staff
         else:
             client.activity = "telegram"
             data['user'] = client
