@@ -18,6 +18,7 @@ from service.tgbot.keyboards.client.faq import get_faq_btns
 async def start_handler(
         message: Message,
         user: Client,
+        session: AsyncSession,
         state: FSMContext
 ):
     await state.finish()

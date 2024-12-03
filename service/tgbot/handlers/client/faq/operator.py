@@ -41,7 +41,8 @@ async def send_operator_handler(
 ):
     callback_data['lvl'] = 'main'
     waiting_time = callback_data.get('time')
-    date = datetime.datetime.now() + datetime.timedelta(minutes=int(waiting_time))
+    now_date = datetime.datetime.now()
+    date = now_date + datetime.timedelta(minutes=int(waiting_time))
     text = '''
 Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос
 
@@ -65,7 +66,9 @@ async def send_operator_handler(
                 "FIELDS[NAME]": user.name,
                 "FIELDS[PHONE][0][VALUE]": user.phone_number,
                 "FIELDS[PHONE][0][VALUE_TYPE]": "WORKMOBILE",
-                "FIELDS[UF_CRM_1733080465]": user.id
+                "FIELDS[UF_CRM_1733080465]": user.id,
+                "FIELDS[UF_CRM_1733197853]": now_date.strftime("%d.%m.%Y %H:%M:%S"),
+                "FIELDS[UF_CRM_1733197875]": date.strftime("%d.%m.%Y %H:%M:%S"),
             }
         )
         c = ClientsApp(

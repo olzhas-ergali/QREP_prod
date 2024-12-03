@@ -64,7 +64,8 @@ async def auth_fio_handler(
             await start_handler(
                 message=message,
                 user=user,
-                state=state
+                state=state,
+                session=session
             )
         else:
             if user.phone_number != phone_number:
@@ -76,7 +77,8 @@ async def auth_fio_handler(
             await start_handler(
                 message=message,
                 user=user,
-                state=state
+                state=state,
+                session=session
             )
     elif not user.phone_number:
         await state.update_data(phone=phone_number)
@@ -209,5 +211,6 @@ async def auth_client_handler(
     await start_handler(
         message=query.message,
         user=user,
-        state=state
+        state=state,
+        session=session
     )

@@ -46,7 +46,8 @@ async def authorization_handler(
         await client_main.start_handler(
             message=callback.message,
             user=user,
-            state=state
+            state=state,
+            session=session
         )
     if isinstance(user, User):
         await staff_main.start_handler(
