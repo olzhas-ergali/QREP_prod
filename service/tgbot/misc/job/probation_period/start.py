@@ -30,32 +30,38 @@ async def notification_about_lessons(
     """
 
     session: AsyncSession = pool()
-    date_now = datetime.datetime.now()
+    date_now = datetime.datetime.now() + datetime.timedelta(days=5)
+
+    probation_period_days_next = PROBATION_PERIOD_DAYS + 1  # Мы задачу запускаем на следующий день, поэтому так
+
     stmt = select(
         User
     ).where(
-        func.cast(User.date_receipt, Date) + datetime.timedelta(days=PROBATION_PERIOD_DAYS) >= date_now.date()
+        func.cast(User.date_receipt, Date) + datetime.timedelta(days=probation_period_days_next) >= date_now.date()
     )
     response = await session.execute(stmt)
     users: typing.List[User] = response.scalars().all()
 
-
     notification_functions = {
-        0: notification_about_first_day,
-        1: notification_about_second_day,
-        2: notification_about_third_day,
-        3: notification_about_fourth_day,
-        4: notification_about_five_day
+        1: notification_about_first_day,
+        2: notification_about_second_day,
+        3: notification_about_third_day,
+        4: notification_about_fourth_day,
+        5: notification_about_five_day
     }
     await session.close()
 
     for user in users:
         # Получаем текущий день испытательного срока
-        end_date_probation_period = user.date_receipt.date() + datetime.timedelta(days=PROBATION_PERIOD_DAYS)
-        current_day_probation_period = PROBATION_PERIOD_DAYS - (end_date_probation_period - date_now.date()).days
+        end_date_probation_period = user.date_receipt.date() + datetime.timedelta(days=probation_period_days_next)
+        current_day_probation_period = probation_period_days_next - (end_date_probation_period - date_now.date()).days
+
+        notification_function = notification_functions.get(current_day_probation_period)
+
+        if notification_function is None:
+            continue
 
         try:
-            notification_function = notification_functions.get(current_day_probation_period)
 
             await notification_function(
                 bot=bot,

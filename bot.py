@@ -80,6 +80,8 @@ async def main():
         args=(db.pool, bot)
     )
 
+
+
     scheduler.add_job(
         probation_period.notification_about_lessons,
         'cron',

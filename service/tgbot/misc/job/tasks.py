@@ -52,7 +52,6 @@ async def push_client_answer_operator(
         (ClientsApp.waiting_time < now) & (ClientsApp.is_push == False))
     )
     users: typing.Optional[typing.List, None] = response.scalars().all()
-    print(users)
     for u in users:
         try:
             await bot.send_message(
