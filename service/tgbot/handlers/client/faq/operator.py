@@ -43,6 +43,9 @@ async def send_operator_handler(
     waiting_time = callback_data.get('time')
     now_date = datetime.datetime.now()
     date = now_date + datetime.timedelta(minutes=int(waiting_time))
+    data = await state.get_data()
+    if not data.get('tag'):
+        data['tag'] = '[LIST][619][VALUE]'
     text = '''
 Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос
 
@@ -69,6 +72,10 @@ async def send_operator_handler(
                 "FIELDS[UF_CRM_1733080465]": user.id,
                 "FIELDS[UF_CRM_1733197853]": now_date.strftime("%d.%m.%Y %H:%M:%S"),
                 "FIELDS[UF_CRM_1733197875]": date.strftime("%d.%m.%Y %H:%M:%S"),
+                "FIELDS[UF_CRM_1731574397751]": data.get('tag'),
+                "FIELDS[IM][0][VALUE]": "Telegram",
+                "FIELDS[IM][0][VALUE_TYPE]": "Telegram",
+                "FIELDS[BIRTHDATE]": user.birthday_date.strftime("%d.%m.%Y %H:%M:%S")
             }
         )
         c = ClientsApp(

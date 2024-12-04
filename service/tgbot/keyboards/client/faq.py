@@ -16,14 +16,13 @@ async def get_faq_btns(
     n = len(faq_lvls.get(current_lvl))
     for i in range(n):
         faq_lvls.get(current_lvl)[i].get('callback')
-        action = 'faq' if not faq_lvls.get(current_lvl)[i].get('action') else faq_lvls.get(current_lvl)[i].get('action')
         markup.add(
             InlineKeyboardButton(
                 text=faq_lvls.get(current_lvl)[i].get('text'),
                 callback_data=FaqCallback.new(
                     chapter=i + 1,
                     lvl=faq_lvls.get(current_lvl)[i].get('callback'),
-                    action=action
+                    action=faq_lvls.get(current_lvl)[i].get('action', 'faq')
                 )
             )
         )

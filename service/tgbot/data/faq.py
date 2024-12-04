@@ -302,13 +302,13 @@ faq_lvls = {
         {"text": "Гифткарта (подарочный сертификат)", 'callback': 'lvl5'},
         {"text": "Скидки и акции / Жеңілдіктер мен науқандар", 'callback': 'lvl6'},
         {"text": "Сотрудничество", 'callback': 'lvl7'},
-        {"text": "Подключить оператора", 'callback': 'operator_0'}
+        {"text": "Подключить оператора", 'callback': 'lvl8'}
     ],
     'lvl1': [
         {"text": "Статус доставки", 'callback': 'lvl1_*'},
         {"text": "Условия доставки", 'callback': 'lvl1_*'},
         {"text": "Самовывоз — Адреса и условия самовывоза", 'callback': 'lvl1_*'},
-        {"text": "Проблема по доставке/Жеткізу қателіктері", 'callback': 'operator_1'},
+        #{"text": "Проблема по доставке/Жеткізу қателіктері", 'callback': 'operator_1'},
         {"text": "Назад", 'callback': 'main'}
     ],
     'lvl1_*': [
@@ -316,9 +316,9 @@ faq_lvls = {
     ],
 
     'lvl2': [
-        {"text": "Не прошла оплата/Төлем жасалмады", 'callback': 'operator_2'},
+       # {"text": "Не прошла оплата/Төлем жасалмады", 'callback': 'operator_2'},
         {"text": "Превышен лимит на Каспий", 'callback': 'lvl2_*'},
-        {"text": "Подключить оператора", 'callback': 'operator_2'},
+       # {"text": "Подключить оператора", 'callback': 'operator_2'},
         {"text": "Назад", 'callback': 'main'}
     ],
     'lvl2_*': [
@@ -372,16 +372,37 @@ faq_lvls = {
     'lvl7': [
         {"text": "Назад", 'callback': 'main'}
     ],
-
-    'operator_0': [
+    'lvl8': [
+        {'text': 'Вопросы по сайту', 'callback': 'operator_*'},
+        {'text': 'Возврат/обмен', 'callback': 'operator_*'},
+        {'text': 'Доставка', 'callback': 'operator_*'},
+        {'text': 'Оффлайн сторы', 'callback': 'operator_*'},
+        {'text': 'Оплата', 'callback': 'operator_*'},
+        {'text': 'Информация про совершенный заказ', 'callback': 'operator_*'},
+        {'text': 'Прочее', 'callback': 'operator_*'},
         {"text": "Назад", 'callback': 'main'}
     ],
-    'operator_1': [
-        {"text": "Назад", 'callback': 'lvl1'}
-    ],
-    'operator_2': [
-        {"text": "Назад", 'callback': 'lvl2'}
+    'operator_*': [
+        {"text": "Назад", 'callback': 'lvl8'}
     ]
+    # 'operator_0': [
+    #     {"text": "Назад", 'callback': 'main'}
+    # ],
+    # 'operator_1': [
+    #     {"text": "Назад", 'callback': 'lvl1'}
+    # ],
+    # 'operator_2': [
+    #     {"text": "Назад", 'callback': 'lvl2'}
+    # ]
 }
 
 
+tags = {
+    '1': '613',
+    '2': '614',
+    '3': '615',
+    '4': '616',
+    '5': '617',
+    '6': '618',
+    '7': '619'
+}

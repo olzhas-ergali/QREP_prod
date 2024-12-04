@@ -121,17 +121,15 @@ async def get_instruction_handler(
         state: FSMContext,
         callback_data: dict
 ):
-
-    if callback_data.get('choice') == 'rus':
-        text = "Инструкция на русском"
-        filename = "QR staff bot_ru.docx"
-    else:
-        text = "Инструкция на казахском"
-        filename = "QR staff bot_kz.docx"
+    choice = callback_data.get('choice')
+    text = {
+        'rus': {'text': "Инструкция на русском", 'filename': "QR staff bot_ru.docx"},
+        'kaz': {'text': "Инструкция на казахском", 'filename': "QR staff bot_kz.docx"}
+    }
 
     await callback.message.answer_document(
-        document=open(filename, "rb"),
-        caption=text
+        document=open(text.get(choice).get('filename'), "rb"),
+        caption=text.get(choice).get('text')
     )
 
     await callback.message.delete()

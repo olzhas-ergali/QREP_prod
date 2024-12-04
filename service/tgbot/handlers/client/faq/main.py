@@ -3,7 +3,7 @@ from aiogram.types.callback_query import CallbackQuery
 from aiogram.dispatcher.storage import FSMContext
 
 from service.tgbot.keyboards.client.faq import get_faq_btns
-from service.tgbot.data.faq import faq_texts_update
+from service.tgbot.data.faq import faq_texts_update, tags
 from service.tgbot.misc.states.client import FaqState
 
 
@@ -31,6 +31,7 @@ async def faq_lvl_handler(
         text = faq_texts_update.get(lvl) if faq_texts_update.get(lvl) else "Выберите раздел"
         if 'operator' in callback_data.get('lvl'):
             text = faq_texts_update.get('operator')
+            await state.update_data(tag=tags.get(callback_data.get('chapter')))
             await FaqState.waiting_operator.set()
 
     await callback.message.edit_text(
