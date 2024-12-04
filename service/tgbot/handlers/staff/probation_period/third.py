@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent
+from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, FinishProbationEvent
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
 
@@ -37,7 +37,7 @@ async def probation_period_third_day_handler(
 
     await ProbationPeriodAnswer(
         user_id=c.from_user.id,
-        current_day=current_day,
+        day=current_day,
         question="Ты уже есть во всех каналах(Bitrix24, Whatsapp, @qr.family?)",
         answer=value
     ).save(session)
@@ -45,14 +45,14 @@ async def probation_period_third_day_handler(
     await state.update_data(
         current_day=current_day
     )
+    await c.message.delete()
+
 
     await probation_period_third_day_events_handler(
         q=c,
         state=state,
         session=session
     )
-
-    await ProbationPeriodState.third_day.set()
 
 
 async def probation_period_third_day_events_handler(
@@ -76,7 +76,6 @@ async def probation_period_third_day_events_handler(
             text="Если у тебя остались вопросы по Bitrix, прошу обратиться к Жулдыз (@Nurpeissova_Zhuldyz) Спасибо за внимание! До завтра :)",
             is_next=True
         ),
-
     ]
 
     probation_events = ProbationEvents(
@@ -90,12 +89,13 @@ async def probation_period_third_day_events_handler(
 
     try:
         next_stage_id = await probation_events.start(
-            current_stage_id=current_stage_id,
+            active_stage_id=current_stage_id,
             current_stage_answer=q.text if isinstance(q, Message) else None
         )
-
         await state.update_data(
             current_stage_id=next_stage_id,
         )
-    except ProbationMessageEvent:
-        await state.finish()
+        await ProbationPeriodState.third_day.set()
+
+    except FinishProbationEvent:
+        await state.reset_state(with_data=True)

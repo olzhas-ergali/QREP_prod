@@ -1,10 +1,12 @@
 import typing
 
+from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent
+from service.tgbot.data.helpers import FILES_DIRECTORY
+from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, ProbationMedia, FinishProbationEvent
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
 
@@ -24,7 +26,7 @@ async def probation_period_second_day_handler(
 
     await ProbationPeriodAnswer(
         user_id=c.from_user.id,
-        current_day=current_day,
+        day=current_day,
         question="Оцени свой первый день от 1 до 5",
         answer=value
     ).save(session)
@@ -33,12 +35,13 @@ async def probation_period_second_day_handler(
         current_day=current_day
     )
 
+    await c.message.delete()
+
     await probation_period_second_day_events_handler(
         q=c,
         state=state,
         session=session
     )
-    await ProbationPeriodState.second_day.set()
 
 
 async def probation_period_second_day_events_handler(
@@ -55,7 +58,11 @@ async def probation_period_second_day_events_handler(
             is_next=True
         ),
         ProbationMessageEvent(
-            text="А что ты знаешь о Qazaq Republic?"
+            text="А что ты знаешь о Qazaq Republic?",
+            media=ProbationMedia(
+                file_path=FILES_DIRECTORY / "Организационная_структура_компании.pdf",
+                content_type=types.ContentType.DOCUMENT
+            )
         ),
         ProbationMessageEvent(
             text="Очень интересно! А сейчас я покажу тебе орг.структуру)",
@@ -81,14 +88,16 @@ async def probation_period_second_day_events_handler(
 
     try:
         next_stage_id = await probation_events.start(
-            current_stage_id=current_stage_id,
+            active_stage_id=current_stage_id,
             current_stage_answer=q.text if isinstance(q, Message) else None
         )
 
         await state.update_data(
             current_stage_id=next_stage_id,
         )
-    except ProbationMessageEvent:
+        await ProbationPeriodState.second_day.set()
+
+    except FinishProbationEvent:
         await state.finish()
 
 

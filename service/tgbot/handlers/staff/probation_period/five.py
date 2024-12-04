@@ -4,6 +4,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from service.tgbot.keyboards.staff.probation_period import get_answer_question_btn
 from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
@@ -36,20 +37,16 @@ async def probation_period_five_day_handler(
     }
 
     current_question = questions[question_id]
+    next_question_id = question_id + 1
+
 
     await c.message.answer(
-        text=current_question.get('answer'),
-
-
-
+        text=current_question.get('answer')
     )
+    next_question_obj = questions.get(next_question_id)
 
 
-    next_question = question_id + 1
-
-    question_obj = questions.get(next_question)
-
-    if question_obj is None:
+    if next_question_obj is None:
 
         await c.message.answer(
             text="""
@@ -61,8 +58,15 @@ async def probation_period_five_day_handler(
         await state.finish()
         return
 
+    markup = get_answer_question_btn(
+        current_day=5,
+        action='question',
+        question_id=next_question_id
+    )
+
     await c.message.answer(
-        text=question_obj.get('question')
+        text=next_question_obj.get('question'),
+        reply_markup=markup
     )
 
     await ProbationPeriodState.five_day.set()

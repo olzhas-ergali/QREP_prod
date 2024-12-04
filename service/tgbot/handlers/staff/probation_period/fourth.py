@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent
+from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, FinishProbationEvent
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
 
@@ -15,7 +15,6 @@ async def probation_period_fourth_day_handler(
         session: AsyncSession,
         callback_data: dict
 ):
-
     current_day = int(callback_data.get('current_day'))
     evaluation = int(callback_data.get('value'))
 
@@ -35,22 +34,22 @@ async def probation_period_fourth_day_handler(
 
     await ProbationPeriodAnswer(
         user_id=c.from_user.id,
-        current_day=current_day,
+        day=current_day,
         question="Насколько была  полезной информация от 1 до 5?",
-        answer=evaluation
+        answer=str(evaluation)
     ).save(session)
 
     await state.update_data(
         current_day=current_day
     )
 
+    await c.message.delete()
+
     await probation_period_fourth_day_events_handler(
         q=c,
         state=state,
         session=session
     )
-
-    await ProbationPeriodState.third_day.set()
 
 
 async def probation_period_fourth_day_events_handler(
@@ -83,12 +82,16 @@ async def probation_period_fourth_day_events_handler(
 
     try:
         next_stage_id = await probation_events.start(
-            current_stage_id=current_stage_id,
+            active_stage_id=current_stage_id,
             current_stage_answer=q.text if isinstance(q, Message) else None
         )
 
         await state.update_data(
             current_stage_id=next_stage_id,
         )
-    except ProbationMessageEvent:
+
+        await ProbationPeriodState.fourth_day.set()
+    except FinishProbationEvent:
         await state.finish()
+
+

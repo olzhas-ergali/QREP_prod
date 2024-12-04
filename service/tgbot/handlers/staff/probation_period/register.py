@@ -29,7 +29,7 @@ def register_probation_period(dp: Dispatcher):
     dp.register_callback_query_handler(
         probation_period_second_day_handler,
         ProbationPeriodActionCallback.filter(
-            current_day=2,
+            current_day="2",
             action='work_evaluation'
         ),
         state="*"
@@ -44,7 +44,7 @@ def register_probation_period(dp: Dispatcher):
     dp.register_callback_query_handler(
         probation_period_third_day_handler,
         ProbationPeriodActionCallback.filter(
-            current_day=3,
+            current_day="3",
             action='social'
         ),
         state='*'
@@ -59,7 +59,7 @@ def register_probation_period(dp: Dispatcher):
     dp.register_callback_query_handler(
         probation_period_fourth_day_handler,
         ProbationPeriodActionCallback.filter(
-            current_day=4,
+            current_day="4",
             action='evaluation_information'
         ),
         state="*"
@@ -74,7 +74,7 @@ def register_probation_period(dp: Dispatcher):
     dp.register_callback_query_handler(
         probation_period_five_day_handler,
         ProbationPeriodActionCallback.filter(
-            current_day=5,
+            current_day="5",
             action='question'
         ),
         state='*'

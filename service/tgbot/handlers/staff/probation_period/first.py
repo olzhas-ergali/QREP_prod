@@ -10,8 +10,6 @@ async def probation_first_day_handler(
         session: AsyncSession,
         state: FSMContext
 ):
-    data = await state.get_data()
-    current_day = data.get('current_day')
     text = """
 На этом все! 
 Увидимся завтра!
@@ -22,7 +20,7 @@ async def probation_first_day_handler(
 
     await ProbationPeriodAnswer(
         user_id=m.from_user.id,
-        day=current_day,
+        day=1,
         question="Вопрос",
         answer=m.text,
     ).save(session=session)

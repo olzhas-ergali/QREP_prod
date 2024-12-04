@@ -84,7 +84,7 @@ async def main():
         'cron',
         hour=9,
         minute=0,
-        args=(bot, db.pool),
+        args=(bot, db.pool, storage),
 
     )
 

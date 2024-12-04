@@ -1,5 +1,5 @@
-from aiogram import types
 from aiogram.dispatcher.dispatcher import Dispatcher
+
 from service.tgbot.handlers import staff
 from service.tgbot.handlers.staff.probation_period import register_probation_period
 from service.tgbot.keyboards.query_cb import ChoiceCallback
@@ -49,5 +49,5 @@ def register_staff_function(dp: Dispatcher):
     )
 
     # Регистрация обработчиков испытательного срока
-    register_probation_period(dp)
+    staff.probation_period.register_probation_period(dp)
 

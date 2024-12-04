@@ -13,19 +13,13 @@ from service.tgbot.models.database.users import User
 
 async def send_message_about_question(
         bot: Bot,
+        user_id: int,
         text: str,
-        current_day: int
 ):
     await bot.send_message(
-        chat_id=text,
-        text=text,
-        reply_markup=get_input_question_for_probation_period_btn(
-            current_day=current_day
-        )
+        chat_id=user_id,
+        text=text
     )
-
-
-
 
 
 async def notification_about_first_day(
@@ -53,11 +47,11 @@ async def notification_about_first_day(
 
     await send_message_about_question(
         bot=bot,
+        user_id=user.id,
         text="""
 Подскажи, у тебя остались вопросы?
 Если да, то напиши, пожалуйста. Мы свяжемся и ответим на них :)
         """,
-        current_day=1
     )
 
     await storage.set_state(
@@ -69,7 +63,8 @@ async def notification_about_first_day(
 
 async def notification_about_second_day(
         bot: Bot,
-        user: User
+        user: User,
+        **kwargs
 ):
     text = """
 Привет! Как дела? Оцени свой первый день от 1 до 5
@@ -87,7 +82,8 @@ async def notification_about_second_day(
 
 async def notification_about_third_day(
         bot: Bot,
-        user: User
+        user: User,
+        **kwargs
 ):
     text = """
 Привет! Вау, мы уже 3 дня вместе! Сегодня я хотел бы поговорить с тобой о культуре и коммуникации в компании.
@@ -124,7 +120,8 @@ async def notification_about_third_day(
 
 async def notification_about_fourth_day(
         bot: Bot,
-        user: User
+        user: User,
+        **kwargs
 ):
     text = """
 Привет! Я про тебя не забыл :) Сегодня ты узнаешь что такое испытательный срок и какие преимущества есть в Qazaq Republic!
@@ -163,7 +160,8 @@ async def notification_about_fourth_day(
 
 async def notification_about_five_day(
         bot: Bot,
-        user: User
+        user: User,
+        **kwargs
 ):
     text = """
 Привет! Поздравляю, с успешной адаптационной неделей! 
