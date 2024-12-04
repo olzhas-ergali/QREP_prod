@@ -223,21 +223,21 @@ async def add_client_review(
     }
 
 
-@router.post("/client/operator/notification")
+@router.get("/client/operator/notification")
 async def add_client_operator_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        operator: ModelOperator
+        phone: str,
+        telegram_id: str = None
 ):
     session: AsyncSession = db_session.get()
-    print(settings.tg_bot.bot_token)
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
 
-    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
+    c = await Client.get_client_by_phone(session=session, phone=phone)
     app = None
     if c and await check_user_exists(c.id, bot):
         app = await ClientsApp.get_last_app(session=session, telegram_id=c.id)
     elif c:
-        app = await ClientsApp.get_last_app_by_phone(session=session, phone=operator.phone)
+        app = await ClientsApp.get_last_app_by_phone(session=session, phone=phone)
 
     if app:
         if c.activity == 'telegram':
@@ -251,5 +251,5 @@ async def add_client_operator_grade(
     else:
         return {
             "status_code": status.HTTP_200_OK,
-            "message": f"Пользователь с {operator.phone} не найден в базе"
+            "message": f"Пользователь с {phone} не найден в базе"
         }
