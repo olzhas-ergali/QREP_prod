@@ -7,13 +7,14 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.engine import URL
 
+from service.tgbot.misc.job.probation_period import notification_about_lessons
 from service.tgbot.models.database.base import Database
 from service.tgbot.config import load_config
 from service.tgbot.filters.auth import AuthFilter
 from service.tgbot.filters.admin import AdminFilter
 from service.tgbot.filters.client_auth import ClientAuthFilter
 from service.tgbot.middlewares.db import DbMiddleware
-from service.tgbot.misc.job import tasks
+from service.tgbot.misc.job import tasks, probation_period
 from service.tgbot import handlers
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,16 @@ async def main():
         hour=15,
         minute=00,
         args=(db.pool, bot)
+    )
+
+
+    scheduler.add_job(
+        probation_period.notification_about_lessons,
+        'cron',
+        hour=9,
+        minute=0,
+        args=(bot, db.pool, storage),
+
     )
 
     #scheduler.add_job(

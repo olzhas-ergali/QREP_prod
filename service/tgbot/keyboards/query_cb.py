@@ -46,4 +46,12 @@ AnswerCallback = CallbackData(
     "answer", "ans", 'action'
 )
 
+
+ProbationPeriodActionCallback = CallbackData(
+    'probation_period',
+    'current_day',
+    "action",
+    "value"
+)
+
 #'state',
