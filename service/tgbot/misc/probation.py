@@ -7,7 +7,7 @@ from aiogram import Bot, types
 from aiogram.types import InputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.misc.delete import remove
+from service.tgbot.misc.delete import remove, delete_message
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
 
 
@@ -95,7 +95,9 @@ class ProbationEvents:
                 document=InputFile(event_media.file_path, event_media.file_path.name),
                 caption=current_event.text
             )
-        await remove(message=msg, step=0)
+
+
+        await delete_message(msg)
 
     async def start(
             self,

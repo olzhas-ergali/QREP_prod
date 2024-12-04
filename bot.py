@@ -7,6 +7,7 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.engine import URL
 
+from service.tgbot.misc.job.probation_period import notification_about_lessons
 from service.tgbot.models.database.base import Database
 from service.tgbot.config import load_config
 from service.tgbot.filters.auth import AuthFilter
