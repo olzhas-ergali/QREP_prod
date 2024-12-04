@@ -81,7 +81,6 @@ async def main():
     )
 
 
-
     scheduler.add_job(
         probation_period.notification_about_lessons,
         'cron',

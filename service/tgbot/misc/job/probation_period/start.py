@@ -30,7 +30,7 @@ async def notification_about_lessons(
     """
 
     session: AsyncSession = pool()
-    date_now = datetime.datetime.now() + datetime.timedelta(days=5)
+    date_now = datetime.datetime.now()
 
     probation_period_days_next = PROBATION_PERIOD_DAYS + 1  # Мы задачу запускаем на следующий день, поэтому так
 
