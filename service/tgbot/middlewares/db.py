@@ -25,7 +25,7 @@ class DbMiddleware(LifetimeControllerMiddleware):
             )
             session.add(client)
 
-        if (not staff or not staff.iin) and not reg and not client.phone_number:
+        if (not staff or not staff.iin) and not reg and (not client or not client.phone_number):
             reg = RegTemp()
             reg.telegram_id = obj.from_user.id
             reg.state = "start"
