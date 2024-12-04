@@ -223,7 +223,7 @@ async def add_client_review(
     }
 
 
-@router.get("/client/operator/notification")
+@router.post("/client/operator/notification")
 async def add_client_operator_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
