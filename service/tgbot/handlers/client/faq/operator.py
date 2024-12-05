@@ -11,6 +11,7 @@ from service.tgbot.misc.states.client import FaqState
 from service.tgbot.misc.delete import remove
 from service.tgbot.handlers.client.faq.main import faq_lvl_handler
 from service.tgbot.lib.bitrixAPI.leads import Leads
+from service.tgbot.data.faq import grade_text, grades
 
 
 async def operator_handler(
@@ -109,6 +110,7 @@ async def user_wait_answer_handler(
 ):
     await state.finish()
     if callback_data.get('ans') == 'yes':
+        await state.update_data(lid_id=callback_data.get('id'))
         return await user_grade_handler(
             callback=callback,
             session=session,
@@ -143,27 +145,18 @@ async def user_graded_handler(
         callback_data: dict
 ):
     callback_data['lvl'] = 'main'
-    await state.finish()
-    texts = {
-        True: '''
-Сіздің қызмет көрсету ұпайыңыз 4-тен төмен екенін байқадық.
-Туындаған қолайсыздық жайлы ақпаратпен бөліссеңіз, біз алдағы уақытта қызметімізді жақсарту үшін шаралар қабылдаймыз.
-Түсіністік таңытқаныңыз үшін рақмет және Сіздің жауабыңызды асыға күтеміз.
-Құрметпен, Qazaq Republic
-_________________________________________________
-Мы заметили, что Ваша оценка обслуживания ниже 4.
-Если вы поделитесь информацией о причиненных неудобствах, мы примем меры для улучшения нашего сервиса в будущем.
-Благодарим вас за понимание и с нетерпением ждем вашего ответа.
-С уважением, Qazaq Republic
-''',
-        False: '''
-Бізді таңдағаныңыз үшін рақмет! Сізді тағы күтеміз:)
-Құрметпен, Qazaq Republic💙
-__________________________________
-Благодарим Вас за выбор наших услуг! Будем ждать Вас еще:)
-С уважением, Qazaq Republic💙'''
-    }
-    text = texts.get(callback_data.get('ans') in ['1', '2', '3'])
+    data = await state.get_data()
+    resp = await Leads(
+        user_id=callback.bot.get('config').bitrix.user_id,
+        basic_token=callback.bot.get('config').bitrix.token
+    ).update(
+        fields={
+            "ID": grades.get(data.get('lid_id')),
+            "FIELDS[UF_CRM_1731932281238]": "Заявка с Telegram"
+        }
+    )
+
+    text = grade_text.get(callback_data.get('ans') in ['1', '2', '3'])
     text += '''
 Вы вернулись к основному меню. Чем еще можем помочь?
 
@@ -175,3 +168,4 @@ __________________________________
         state=state,
         text=text
     )
+    await state.finish()

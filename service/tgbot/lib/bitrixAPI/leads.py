@@ -12,9 +12,26 @@ class Leads(BaseApi):
 
     async def create(
             self,
-            fields: dict
+            fields: dict,
+            json: dict = None
     ):
         url = self.url.format(method='crm.lead.add')
+        result = await self.request_session(
+            method=MethodRequest.post,
+            url=url,
+            json_status=True,
+            answer_log=False,
+            params=fields,
+            json=json
+        )
+
+        return result
+
+    async def update(
+            self,
+            fields: dict
+    ):
+        url = self.url.format(method='crm.lead.update')
         result = await self.request_session(
             method=MethodRequest.post,
             url=url,

@@ -46,7 +46,7 @@ async def push_client_answer_operator(
         client: ClientsApp
 ):
     ans_callback = CallbackData(
-        "answer", "ans", 'action'
+        "answer", "ans", 'id', 'action'
     )
     logging.info("Уведомление для клиентов по оценке работе оператора")
     markup = InlineKeyboardMarkup().add(
@@ -55,6 +55,7 @@ async def push_client_answer_operator(
                 text="Да",
                 callback_data=ans_callback.new(
                     ans="yes",
+                    id=client.id,
                     action='user_answer'
                 )
             ),
@@ -62,6 +63,7 @@ async def push_client_answer_operator(
                 text="Подключить оператора",
                 callback_data=ans_callback.new(
                     ans="no",
+                    id=client.id,
                     action='user_answer'
                 )
             )
