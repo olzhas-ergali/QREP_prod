@@ -151,8 +151,8 @@ async def user_graded_handler(
         basic_token=callback.bot.get('config').bitrix.token
     ).update(
         fields={
-            "ID": grades.get(data.get('lid_id')),
-            "FIELDS[UF_CRM_1731932281238]": "Заявка с Telegram"
+            "ID": data.get('lid_id'),
+            "FIELDS[UF_CRM_1731932281238]": callback_data.get('id')
         }
     )
 
