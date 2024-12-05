@@ -15,12 +15,12 @@ class AuthFilter(BoundFilter):
     async def check(self, *args) -> bool:
         data = ctx_data.get()
         user: User = data.get('user')
+        is_active = False
+        if isinstance(user, User):
+            is_active = user.is_active
 
-        if not isinstance(user, User):
-            return False
-
-        if not user.is_active and not self.is_auth:
+        if not is_active and not self.is_auth:
             return True
 
-        if user.is_active and self.is_auth:
+        if is_active and self.is_auth:
             return True
