@@ -18,16 +18,16 @@ def register_faq_function(dp: Dispatcher):
         state="*"
     )
 
-    dp.register_message_handler(
-        faq.operator.operator_handler,
-        text='55',
-        state=FaqState.waiting_operator
-    )
+    # dp.register_message_handler(
+    #     faq.operator.operator_handler,
+    #     text='55',
+    #     state=FaqState.waiting_operator
+    # )
 
     dp.register_callback_query_handler(
         faq.operator.send_operator_handler,
-        query_cb.OperatorCallback.filter(),
-        state=FaqState.waiting_time
+        query_cb.FaqCallback.filter(action='faq_time'),
+        state=FaqState.waiting_operator
     )
 
     dp.register_callback_query_handler(

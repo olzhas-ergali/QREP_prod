@@ -40,8 +40,7 @@ async def send_operator_handler(
         user: Client,
         callback_data: dict
 ):
-    callback_data['lvl'] = 'main'
-    waiting_time = callback_data.get('time')
+    waiting_time = callback_data.get('lvl')
     now_date = datetime.datetime.now()
     date = now_date + datetime.timedelta(minutes=int(waiting_time))
     data = await state.get_data()
@@ -144,9 +143,8 @@ async def user_graded_handler(
         user: Client,
         callback_data: dict
 ):
-    callback_data['lvl'] = 'main'
     data = await state.get_data()
-    resp = await Leads(
+    await Leads(
         user_id=callback.bot.get('config').bitrix.user_id,
         basic_token=callback.bot.get('config').bitrix.token
     ).update(
@@ -162,6 +160,7 @@ async def user_graded_handler(
 
 Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
 '''
+    callback_data['lvl'] = 'main'
     await faq_lvl_handler(
         callback=callback,
         callback_data=callback_data,
