@@ -23,6 +23,8 @@ class ModelReview(BaseModel):
     review: typing.Optional[str] = None
 
 
-class ModelOperator(BaseModel):
+class ModelLead(BaseModel):
     phone: typing.Optional[str] = None
-    telegram_id: typing.Optional[str] = None
+    waiting_time: typing.Optional[str] = None
+    tag: typing.Optional[str] = None
+    grade: typing.Optional[str] = None

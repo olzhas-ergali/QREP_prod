@@ -180,14 +180,10 @@ class ClientMailing(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     created_at = Column(DateTime, server_default=func.now())
     telegram_id = Column(
-        BigInteger,
-        ForeignKey("clients.id", onupdate='CASCADE', ondelete='CASCADE')
+        BigInteger, default=None
     )
-
-    clients = relationship(
-        'Client',
-        primaryjoin="Client.id == ClientMailing.telegram_id",
-        lazy='selectin'
+    phone = Column(
+        String, default=None
     )
 
 

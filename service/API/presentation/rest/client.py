@@ -1,4 +1,5 @@
 import typing
+import datetime
 from service.API.config import settings
 
 from aiogram import Bot
@@ -11,13 +12,16 @@ from starlette.responses import RedirectResponse
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
-from service.API.infrastructure.database.models import Client, ClientReview, ClientsApp
-from service.API.infrastructure.utils.client_notification import send_notification_from_client, push_client_answer_operator
+from service.API.infrastructure.database.models import Client, ClientReview, ClientsApp, ClientMailing
+from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
+                                                                  push_client_answer_operator)
 from service.API.infrastructure.utils.parse import parse_phone
-from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelOperator
+from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.utils.check_client import check_user_exists
+from service.tgbot.lib.bitrixAPI.leads import Leads
+from service.tgbot.data.faq import grade_text
 
 router = APIRouter()
 
@@ -253,3 +257,130 @@ async def add_client_operator_grade(
             "status_code": status.HTTP_200_OK,
             "message": f"Пользователь с {phone} не найден в базе"
         }
+
+
+@router.post("/client/mailing")
+async def client_mailing(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    session: AsyncSession = db_session.get()
+    c = await Client.get_client_by_phone(session=session, phone=phone)
+    if c:
+        mailing = ClientMailing(
+            telegram_id=c.id,
+            phone=c.phone_number
+        )
+        session.add(mailing)
+        await session.commit()
+        return {
+            "status_code": status.HTTP_200_OK,
+            "find": True,
+            "message": "Вы подписались на уведомление"
+        }
+    return {
+        "status_code": status.HTTP_200_OK,
+        "find": False,
+        "message": f"Пользователь с {phone} не найден в базе"
+    }
+
+
+@router.post("/client/bitrix/lead")
+async def client_create_lead(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        operator: ModelLead
+):
+    session: AsyncSession = db_session.get()
+    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
+    now_date = datetime.datetime.now()
+    date = now_date + datetime.timedelta(minutes=int(operator.waiting_time))
+    if c:
+        if not (client_app := await ClientsApp.get_last_app(
+                session=session,
+                telegram_id=c.id
+        )):
+            resp = await Leads(
+                user_id=settings.bitrix.user_id,
+                basic_token=settings.bitrix.token
+            ).create(
+                fields={
+                    "FIELDS[TITLE]": "Заявка с Telegram",
+                    "FIELDS[NAME]": c.name,
+                    "FIELDS[PHONE][0][VALUE]": c.phone_number,
+                    "FIELDS[PHONE][0][VALUE_TYPE]": "WORKMOBILE",
+                    "FIELDS[UF_CRM_1733080465]": c.id,
+                    "FIELDS[UF_CRM_1733197853]": now_date.strftime("%d.%m.%Y %H:%M:%S"),
+                    "FIELDS[UF_CRM_1733197875]": date.strftime("%d.%m.%Y %H:%M:%S"),
+                    "FIELDS[UF_CRM_1731574397751]": operator.tag,
+                    "FIELDS[IM][0][VALUE]": "What'sApp",
+                    "FIELDS[IM][0][VALUE_TYPE]": "What'sApp",
+                    "FIELDS[BIRTHDATE]": c.birthday_date.strftime("%d.%m.%Y %H:%M:%S")
+                }
+            )
+            client_app = ClientsApp(
+                id=resp.get('result'),
+                waiting_time=date,
+                phone_number=c.phone_number
+            )
+            session.add(client_app)
+            await session.commit()
+            return {
+                "status_code": status.HTTP_200_OK,
+                "find": True,
+                "create": True,
+                "message": '''
+Спасибо за выбор! Оператор свяжется с вами в указанное время.
+
+Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.
+'''
+            }
+        return {
+            "status_code": status.HTTP_200_OK,
+            "find": True,
+            "create": False,
+            "message": '''
+Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос
+
+Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз
+'''
+        }
+    return {
+        "status_code": status.HTTP_200_OK,
+        "find": False,
+        "create": False,
+        "message": f"Пользователь с {operator.phone} не найден в базе"
+    }
+
+
+@router.patch("/client/bitrix/lead")
+async def client_create_lead(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        operator: ModelLead,
+        lead_id: str
+):
+    session: AsyncSession = db_session.get()
+    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
+
+    if c:
+        await Leads(
+            user_id=settings.bitrix.user_id,
+            basic_token=settings.bitrix.token
+        ).update(
+            fields={
+                "ID": lead_id,
+                "FIELDS[UF_CRM_1731932281238]": operator.grade
+            }
+        )
+        return {
+            "status_code": status.HTTP_200_OK,
+            "find": True,
+            "update": True,
+            "message": grade_text.get(operator.grade in ['1', '2', '3'])
+        }
+
+    return {
+        "status_code": status.HTTP_200_OK,
+        "find": False,
+        "update": False,
+        "message": f"Пользователь с {operator.phone} не найден в базе"
+    }

@@ -63,6 +63,12 @@ class MiscSettings:
 
 
 @dataclass
+class Bitrix:
+    token: str
+    user_id: str
+
+
+@dataclass
 class Settings:
     # Project file system
     root_dir: Path
@@ -73,6 +79,7 @@ class Settings:
     redis: RedisSettings
     misc: MiscSettings
     tg_bot: TgbotSettings
+    bitrix: Bitrix
 
     # Application configuration
     logging: LoggingSettings = LoggingSettings()
@@ -101,6 +108,10 @@ settings = Settings(
     ),
     tg_bot=TgbotSettings(
         bot_token=env.str('BOT_TOKEN')
+    ),
+    bitrix=Bitrix(
+        token=env.str('BITRIX_TOKEN'),
+        user_id=env.str('BITRIX_USER_ID')
     )
 )
 

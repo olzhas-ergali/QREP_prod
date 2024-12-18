@@ -357,3 +357,16 @@ class ClientsApp(Base):
         stmt = select(ClientsApp).where((phone == ClientsApp.phone_number) & (ClientsApp.is_push != True))
 
         return await session.scalar(stmt)
+
+
+class ClientMailing(Base):
+    __tablename__ = "clients_mailing"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime, server_default=func.now())
+    telegram_id = Column(
+        BigInteger, default=None
+    )
+    phone = Column(
+        String, default=None
+    )
+
