@@ -18,7 +18,7 @@ class DbMiddleware(LifetimeControllerMiddleware):
         if not isinstance(obj, (Message, CallbackQuery)):
             data['session'] = session
             return
-        if not staff and not client:
+        if (not staff or not staff.iin) and not client:
             client = Client(
                 id=obj.from_user.id,
                 fullname=obj.from_user.full_name
