@@ -370,3 +370,13 @@ class ClientMailing(Base):
         String, default=None
     )
 
+    @classmethod
+    async def get_by_phone_number(
+            cls,
+            phone: str,
+            session: AsyncSession
+    ) -> typing.Sequence['ClientMailing']:
+        stmt = select(ClientMailing).where(ClientMailing.phone == phone)
+
+        return await session.scalar(stmt)
+

@@ -267,12 +267,16 @@ async def client_mailing(
     session: AsyncSession = db_session.get()
     c = await Client.get_client_by_phone(session=session, phone=phone)
     if c:
-        mailing = ClientMailing(
-            telegram_id=c.id,
-            phone=c.phone_number
-        )
-        session.add(mailing)
-        await session.commit()
+        if not ClientMailing.get_by_phone_number(
+            phone=c.phone_number,
+            session=session
+        ):
+            mailing = ClientMailing(
+                telegram_id=c.id,
+                phone=c.phone_number
+            )
+            session.add(mailing)
+            await session.commit()
         return {
             "status_code": status.HTTP_200_OK,
             "find": True,
@@ -304,11 +308,11 @@ async def client_create_lead(
                 basic_token=settings.bitrix.token
             ).create(
                 fields={
-                    "FIELDS[TITLE]": "Заявка с Telegram",
+                    "FIELDS[TITLE]": "Заявка с What'sApp",
                     "FIELDS[NAME]": c.name,
                     "FIELDS[PHONE][0][VALUE]": c.phone_number,
                     "FIELDS[PHONE][0][VALUE_TYPE]": "WORKMOBILE",
-                    "FIELDS[UF_CRM_1733080465]": c.id,
+                    "FIELDS[UF_CRM_1733080465]": "",
                     "FIELDS[UF_CRM_1733197853]": now_date.strftime("%d.%m.%Y %H:%M:%S"),
                     "FIELDS[UF_CRM_1733197875]": date.strftime("%d.%m.%Y %H:%M:%S"),
                     "FIELDS[UF_CRM_1731574397751]": operator.tag,
