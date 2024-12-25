@@ -1,5 +1,8 @@
 import typing
 import datetime
+
+import requests
+
 from service.API.config import settings
 
 from aiogram import Bot
@@ -246,8 +249,8 @@ async def add_client_operator_grade(
     if app:
         if c.activity == 'telegram':
             await push_client_answer_operator(session=session, client=app, bot=bot)
-        else:
-            pass
+        if c.activity == 'wb':
+            requests.get(url=f"https://chatter.salebot.pro/api/a003aeed95f1655c1fe8b8b447570e19/whatsapp_callback?name=Test&message=grade&phone={phone}&bot_id=124652&txt={app.id}")
         return {
             "status_code": status.HTTP_200_OK,
             "message": "Уведомление отправлено"
