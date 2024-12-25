@@ -295,9 +295,9 @@ async def client_create_lead(
     now_date = datetime.datetime.now()
     date = now_date + datetime.timedelta(minutes=int(operator.waiting_time))
     if c:
-        if not (client_app := await ClientsApp.get_last_app(
+        if not (client_app := await ClientsApp.get_last_app_by_phone(
                 session=session,
-                telegram_id=c.id
+                phone=operator.phone
         )):
             resp = await Leads(
                 user_id=settings.bitrix.user_id,
