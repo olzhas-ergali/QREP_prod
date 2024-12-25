@@ -74,7 +74,7 @@ async def get_client_activity(
 
 
 @router.post("/client/set_activity")
-async def get_client_activity(
+async def set_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         authorization: ModelAuth
 ):
@@ -240,17 +240,20 @@ async def add_client_operator_grade(
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
 
     c = await Client.get_client_by_phone(session=session, phone=phone)
-    app = None
-    if c and await check_user_exists(c.id, bot):
-        app = await ClientsApp.get_last_app(session=session, telegram_id=c.id)
-    elif c:
-        app = await ClientsApp.get_last_app_by_phone(session=session, phone=phone)
-
+    print(c)
+    app = await ClientsApp.get_last_app_by_phone(session=session, phone=c.phone_number)
+    print(app)
     if app:
+        print(c.activity)
         if c.activity == 'telegram':
             await push_client_answer_operator(session=session, client=app, bot=bot)
         if c.activity == 'wb':
-            requests.get(url=f"https://chatter.salebot.pro/api/a003aeed95f1655c1fe8b8b447570e19/whatsapp_callback?name=Test&message=grade&phone={phone}&bot_id=124652&txt={app.id}")
+            resp = requests.get(url=f"https://chatter.salebot.pro/api/a003aeed95f1655c1fe8b8b447570e19/whatsapp_callback?name=Test&message=grade&phone={phone}&bot_id=124652&txt={app.id}")
+            print(resp.status_code)
+            print(resp.text)
+            app.is_push = True
+            session.add(app)
+            await session.commit()
         return {
             "status_code": status.HTTP_200_OK,
             "message": "Уведомление отправлено"
