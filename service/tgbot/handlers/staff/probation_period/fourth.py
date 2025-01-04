@@ -1,10 +1,12 @@
 import typing
 
+from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, FinishProbationEvent
+from service.tgbot.data.helpers import FILES_DIRECTORY
+from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, FinishProbationEvent, ProbationMedia
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
 
@@ -63,6 +65,10 @@ async def probation_period_fourth_day_events_handler(
     events = [
         ProbationMessageEvent(
             text="Какие есть преимущества работы в компании:",
+            media=ProbationMedia(
+                file_path=FILES_DIRECTORY / "преимущества.pdf",
+                content_type=types.ContentType.DOCUMENT
+            ),
             is_next=True
         ),
         ProbationMessageEvent(

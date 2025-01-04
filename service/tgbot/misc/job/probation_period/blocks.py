@@ -2,11 +2,13 @@ import asyncio
 
 from aiogram import Bot
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import InputFile
 
 from service.tgbot.keyboards.staff.probation_period import (
     get_input_question_for_probation_period_btn,
     get_evaluation_btn, get_action_btn, get_answer_question_btn
 )
+from service.tgbot.data.helpers import FILES_DIRECTORY
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.users import User
 
@@ -137,10 +139,17 @@ async def notification_about_fourth_day(
 Давай сперва расскажу про испытательный срок…
     """
 
-    await bot.send_message(
+    path = FILES_DIRECTORY / "ИСПЫТАТЕЛЬНЫЙ ПЕРИОД.pdf"
+    await bot.send_document(
         chat_id=user.id,
-        text=text
+        caption=text,
+        document=InputFile(path, path.name)
     )
+
+    # await bot.send_message(
+    #     chat_id=user.id,
+    #     text=text
+    # )
 
     await asyncio.sleep(0.3)
 

@@ -55,17 +55,25 @@ async def probation_period_second_day_events_handler(
     events = [
         ProbationMessageEvent(
             text="Давай я расскажу про историю появления бренда…",
+            media=ProbationMedia(
+                file_path=FILES_DIRECTORY / "История Бренда.pdf",
+                content_type=types.ContentType.DOCUMENT
+            ),
             is_next=True
         ),
         ProbationMessageEvent(
             text="А что ты знаешь о Qazaq Republic?",
-            media=ProbationMedia(
-                file_path=FILES_DIRECTORY / "Организационная_структура_компании.pdf",
-                content_type=types.ContentType.DOCUMENT
-            )
+            # media=ProbationMedia(
+            #     file_path=FILES_DIRECTORY / "Организационная_структура_компании.pdf",
+            #     content_type=types.ContentType.DOCUMENT
+            # )
         ),
         ProbationMessageEvent(
             text="Очень интересно! А сейчас я покажу тебе орг.структуру)",
+            media=ProbationMedia(
+                file_path=FILES_DIRECTORY / "Организационная_структура_компании.pdf",
+                content_type=types.ContentType.DOCUMENT
+            ),
             is_next=True
         ),
         ProbationMessageEvent(
