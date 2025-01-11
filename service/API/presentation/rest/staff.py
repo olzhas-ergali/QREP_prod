@@ -190,25 +190,22 @@ async def add_user_discount(
         discount: PositionDiscountsModel
 ):
     session: AsyncSession = db_session.get()
-    d = PositionDiscounts()
-    if await User.get_by_position_id(session, discount.positionId):
-        d.discount_percentage = discount.discountPercentage
-        d.position_id = discount.positionId
-        d.monthly_limit = discount.monthly_limit
-        d.position_name = discount.positionName
-        d.is_active = discount.is_active
-        d.update_data = discount.update_data
-        d.description = discount.description
-        d.start_date = discount.start_date
-        d.end_date = discount.end_date
-        session.add(d)
-        await session.commit()
-        return {
-            "status_code": 200,
-            "message": "Данные записаны в БД"
-        }
+
+    if not (d := await staff.get_user_discount(session, discount.positionId)):
+        d = PositionDiscounts(
+            position_id=discount.positionId
+        )
+    d.discount_percentage = discount.discountPercentage
+    d.monthly_limit = discount.monthly_limit
+    d.position_name = discount.positionName
+    d.is_active = discount.is_active
+    d.update_data = discount.update_data
+    d.description = discount.description
+    d.start_date = discount.start_date
+    d.end_date = discount.end_date
+    session.add(d)
+    await session.commit()
     return {
-        "status_code": 404,
-        "error": "Employee not found",
-        "message": "Сотрудник с указанным идентификационным номером не найден"
+        "status_code": 200,
+        "message": "Данные записаны в БД"
     }

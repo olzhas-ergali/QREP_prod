@@ -6,7 +6,8 @@ from typing import Sequence, Optional
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.API.infrastructure.database.models import User, Purchase, UserTemp, PurchaseReturn, Client, PositionDiscounts
+from service.API.infrastructure.database.models import (User, Purchase, UserTemp, PurchaseReturn, Client,
+                                                        PositionDiscounts)
 
 
 async def get_staff(
@@ -65,7 +66,7 @@ async def get_item_count(
         session: AsyncSession,
         user: User | None
 ):
-    discount = await get_user_discount(session, user)
+    discount = await get_user_discount(session, user.position_id)
     stmt = select(Purchase).where(
         ((datetime.now().month == extract('month', Purchase.created_date)) &
          (Purchase.user_id == user.id))
@@ -106,9 +107,9 @@ async def get_item_count(
 
 async def get_user_discount(
         session: AsyncSession,
-        user: User
+        position_id: str
 ):
-    stmt = select(PositionDiscounts).where(PositionDiscounts.position_id == user.position_id)
+    stmt = select(PositionDiscounts).where(position_id == PositionDiscounts.position_id)
     return await session.scalar(stmt)
 
 
@@ -256,6 +257,17 @@ async def add_employees(
     user.position_id = position_id
     user.position_name = position_name
     user.organization_bin = organization_bin
+
+    if not (discount := await get_user_discount(session=session, position_id=user.position_id)):
+        discount = PositionDiscounts(
+            position_id=position_id,
+            position_name=position_name,
+            discount_percentage=30.0,
+            start_date=datetime.strptime("01.01.0001", "%d.%m.%Y"),
+            end_date=datetime.strptime("31.12.9999", "%d.%m.%Y"),
+            monthly_limit=3
+        )
+        session.add(discount)
 
     session.add(user)
 
