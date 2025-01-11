@@ -98,7 +98,7 @@ async def employees_process(
     session: AsyncSession = db_session.get()
 
     try:
-        logging.info(user.dict())
+        #logging.info(user.dict())
         return await staff.add_employees(
             session=session,
             id_staff=user.idStaff,

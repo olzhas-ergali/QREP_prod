@@ -250,7 +250,7 @@ async def add_employees(
     user.organization_name = organization_name
     user.position_id = position_id
     user.position_name = position_name
-    user.organization_iin = organization_bin
+    user.organization_bin = organization_bin
 
     session.add(user)
 
