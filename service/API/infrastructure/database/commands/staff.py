@@ -234,6 +234,11 @@ async def add_employees(
         else:
             #user_tg.phone_number = phone
             user.name = fullname
+            user_tg.organization_id = organization_id
+            user_tg.organization_name = organization_name
+            user_tg.position_id = position_id
+            user_tg.position_name = position_name
+            user_tg.organization_bin = organization_bin
         session.add(user_tg)
     if (c := await Client.get_client_by_phone(session=session, phone=phone)) is not None:
         c.is_active = False
