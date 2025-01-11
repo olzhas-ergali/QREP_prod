@@ -2,7 +2,7 @@ import datetime
 import typing
 from sqlalchemy import (BigInteger, Column, String, select, Date,
                         DateTime, func, Integer, ForeignKey, Boolean, update,
-                        desc, not_, VARCHAR, Text, CHAR, JSON)
+                        desc, not_, VARCHAR, Text, CHAR, JSON, DECIMAL)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import relationship
 
@@ -22,6 +22,11 @@ class User(Base):
     date_dismissal = Column(DateTime)
     is_active = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
+    position_name = Column(String, default=False)
+    position_id = Column(String, default=False)
+    organization_name = Column(String, default=False)
+    organization_iin = Column(String, default=False)
+    organization_id = Column(String, default=False)
 
     @classmethod
     async def get_by_id(
@@ -78,6 +83,11 @@ class UserTemp(Base):
     created_at = Column(DateTime, server_default=func.now())
     update_data = Column(DateTime)
     is_fired = Column(Boolean, default=False)
+    position_name = Column(String, default=False)
+    position_id = Column(String, default=False)
+    organization_name = Column(String, default=False)
+    organization_iin = Column(String, default=False)
+    organization_id = Column(String, default=False)
 
     @classmethod
     async def get_user_temp(
@@ -91,6 +101,25 @@ class UserTemp(Base):
         ).order_by(desc(UserTemp.created_at)).limit(1)
 
         return await session.scalar(stmt)
+
+
+class PositionDiscounts(Base):
+    __tablename__ = "position_discounts"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    position_id = Column(
+        String
+    )
+    position_name = Column(
+        String
+    )
+    discount_percentage = Column(DECIMAL)
+    created_at = Column(DateTime, server_default=func.now())
+    update_data = Column(DateTime, default=None)
+    is_active = Column(Boolean, default=True)
+    description = Column(String, default=None)
+    start_date = Column(DateTime, default=None)
+    end_date = Column(DateTime, default=None)
+    monthly_limit = Column(BigInteger)
 
 
 class Client(Base):

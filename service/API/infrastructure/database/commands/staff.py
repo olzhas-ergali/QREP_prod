@@ -6,7 +6,7 @@ from typing import Sequence, Optional
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.API.infrastructure.database.models import User, Purchase, UserTemp, PurchaseReturn, Client
+from service.API.infrastructure.database.models import User, Purchase, UserTemp, PurchaseReturn, Client, PositionDiscounts
 
 
 async def get_staff(
@@ -59,6 +59,57 @@ async def get_purchases_count(
     return {
         "itemCount": count
     }
+
+
+async def get_item_count(
+        session: AsyncSession,
+        user: User | None
+):
+    discount = await get_user_discount(session, user)
+    stmt = select(Purchase).where(
+        ((datetime.now().month == extract('month', Purchase.created_date)) &
+         (Purchase.user_id == user.id))
+    )
+    response = await session.execute(stmt)
+    purchases = response.scalars().all()
+    count = 0
+    products_purchases = []
+    purchases_id = []
+    for purchase in purchases:
+        products = purchase.products
+        purchases_id.append(purchase.id)
+        for product in products:
+            if product.get('discount'):
+                products_purchases.append(product.get('price') - product.get('discountPrice'))
+                count = count + product['count']
+    stmt = select(PurchaseReturn).where(
+        ((datetime.now().month == extract('month', PurchaseReturn.created_date)) &
+         (PurchaseReturn.user_id == user.id) &
+         (PurchaseReturn.purchase_id.in_(purchases_id)))
+    )
+    response = await session.execute(stmt)
+    purchases_return = response.scalars().all()
+    for purchase in purchases_return:
+        products = purchase.products
+        for product in products:
+            if product.get('price') in products_purchases:
+                # count = count - product['count'] if purchase.is_return else count + product['count']
+                count = count - product['count']
+    count = discount.monthly_limit - count
+    if count < 0:
+        count = 0
+    return {
+        "itemCount": count,
+        "discountPercentage": discount.discount_percentage
+    }
+
+
+async def get_user_discount(
+        session: AsyncSession,
+        user: User
+):
+    stmt = select(PositionDiscounts).where(PositionDiscounts.position_id == user.position_id)
+    return await session.scalar(stmt)
 
 
 async def add_purchases(
@@ -164,6 +215,11 @@ async def add_employees(
         date_dismissal: typing.Optional[datetime] = None,
         phone: typing.Optional[str] = None,
         iin: typing.Optional[str] = None,
+        organization_id: typing.Optional[str] = None,
+        organization_name: typing.Optional[str] = None,
+        organization_iin: typing.Optional[str] = None,
+        position_id: typing.Optional[str] = None,
+        position_name: typing.Optional[str] = None
 ):
     if not (user := await session.get(UserTemp, id_staff)):
         user = UserTemp(
@@ -190,6 +246,11 @@ async def add_employees(
     user.date_receipt = date_receipt
     user.date_dismissal = date_dismissal
     user.update_data = update_date
+    user.organization_id = organization_id
+    user.organization_name = organization_name
+    user.position_id = position_id
+    user.position_name = position_name
+    user.organization_iin = organization_iin
 
     session.add(user)
 

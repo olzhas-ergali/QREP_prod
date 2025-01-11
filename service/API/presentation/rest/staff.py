@@ -15,12 +15,13 @@ from service.API.infrastructure.utils.parse import parse_phone
 from service.API.infrastructure.database.commands import staff
 from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.models.purchases import ModelUserTemp
-from service.API.infrastructure.database.models import Client
+from service.API.infrastructure.models.discount import PositionDiscountsModel
+from service.API.infrastructure.database.models import Client, User, PositionDiscounts
 
 router = APIRouter()
 
 
-@router.get('/authorization')
+@router.get('/authorization', tags=['staff'], summary="Дает информацию про сотрудника(Старая)")
 async def add_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone_number: str
@@ -43,7 +44,7 @@ async def add_user_process(
     }
 
 
-@router.get('/v2/authorization')
+@router.get('/v2/authorization', tags=['staff'], summary="Дает информацию про сотрудника или клиента")
 async def get_user_info_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone_number: str
@@ -60,13 +61,15 @@ async def get_user_info_process(
         phone=phone_number
     )
     if user:
+        discount = await staff.get_user_discount(session=session, user=user)
         return {
             "status_code": 200,
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
             "isActive": user.is_active,
-            "isStaff": True
+            "isStaff": True,
+            "discountPercentage": discount.discount_percentage
         }
 
     elif client:
@@ -87,7 +90,7 @@ async def get_user_info_process(
     }
 
 
-@router.post('/api/employees')
+@router.post('/api/employees', tags=['staff'], summary="Метод что бы добавить сотрудника")
 async def employees_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         user: ModelUserTemp
@@ -105,7 +108,12 @@ async def employees_process(
             update_date=user.updateDate,
             date_receipt=user.dateOfReceipt,
             date_dismissal=user.dateOfDismissal,
-            iin=user.iin
+            iin=user.iin,
+            organization_id=user.organizationId,
+            organization_iin=user.organizationIIN,
+            position_id=user.positionId,
+            position_name=user.positionName,
+            organization_name=user.organizationName
         )
     except Exception as ex:
         return {
@@ -114,7 +122,7 @@ async def employees_process(
         }
 
 
-@router.get('/identityNumber')
+@router.get('/identityNumber', tags=['staff'], summary="Дает информацию про сотрудника по ИИН")
 async def get_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         identityNumber: str
@@ -146,7 +154,7 @@ async def get_user_process(
     }
 
 
-@router.get('/phoneNumber')
+@router.get('/phoneNumber', tags=['staff'], summary="Дает информацию про сотрудника по номеру телефона")
 async def get_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str
@@ -168,6 +176,36 @@ async def get_user_process(
             "dateDismissal": user.date_dismissal,
             "createdAt": user.created_at,
             "isActive": user.is_active
+        }
+    return {
+        "status_code": 404,
+        "error": "Employee not found",
+        "message": "Сотрудник с указанным идентификационным номером не найден"
+    }
+
+
+@router.post('/api/employees/discount', tags=['staff'], summary="Метод для добавление данных скидок сотрудника")
+async def add_user_discount(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        discount: PositionDiscountsModel
+):
+    session: AsyncSession = db_session.get()
+    d = PositionDiscounts()
+    if await User.get_by_position_id(session, discount.positionId):
+        d.discount_percentage = discount.discountPercentage
+        d.position_id = discount.positionId
+        d.monthly_limit = discount.monthly_limit
+        d.position_name = discount.positionName
+        d.is_active = discount.is_active
+        d.update_data = discount.update_data
+        d.description = discount.description
+        d.start_date = discount.start_date
+        d.end_date = discount.end_date
+        session.add(d)
+        await session.commit()
+        return {
+            "status_code": 200,
+            "message": "Данные записаны в БД"
         }
     return {
         "status_code": 404,

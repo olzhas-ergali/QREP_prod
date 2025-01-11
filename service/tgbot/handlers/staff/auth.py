@@ -99,6 +99,11 @@ Email: hr@qrepublic.com
         user_staff.author = user_t.author
         user_staff.is_active = True
         user_staff.iin = iin
+        user_staff.position_id = user_t.position_id
+        user_staff.position_name = user_t.position_name
+        user_staff.organization_name = user_t.organization_name
+        user_staff.organization_id = user_t.organization_id
+        user_staff.organization_iin = user_t.organization_iin
         await user_staff.save(session)
         await start_handler(
             message=message,
