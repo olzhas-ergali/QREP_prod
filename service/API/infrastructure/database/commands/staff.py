@@ -217,7 +217,7 @@ async def add_employees(
         iin: typing.Optional[str] = None,
         organization_id: typing.Optional[str] = None,
         organization_name: typing.Optional[str] = None,
-        organization_iin: typing.Optional[str] = None,
+        organization_bin: typing.Optional[str] = None,
         position_id: typing.Optional[str] = None,
         position_name: typing.Optional[str] = None
 ):
@@ -250,7 +250,7 @@ async def add_employees(
     user.organization_name = organization_name
     user.position_id = position_id
     user.position_name = position_name
-    user.organization_iin = organization_iin
+    user.organization_iin = organization_bin
 
     session.add(user)
 

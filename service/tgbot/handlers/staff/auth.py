@@ -103,7 +103,7 @@ Email: hr@qrepublic.com
         user_staff.position_name = user_t.position_name
         user_staff.organization_name = user_t.organization_name
         user_staff.organization_id = user_t.organization_id
-        user_staff.organization_iin = user_t.organization_iin
+        user_staff.organization_bin = user_t.organization_bin
         await user_staff.save(session)
         await start_handler(
             message=message,

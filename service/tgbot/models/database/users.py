@@ -25,7 +25,7 @@ class User(Base):
     position_name = Column(String, default=False)
     position_id = Column(String, default=False)
     organization_name = Column(String, default=False)
-    organization_iin = Column(String, default=False)
+    organization_bin = Column(String, default=False)
     organization_id = Column(String, default=False)
 
     @classmethod
@@ -86,7 +86,7 @@ class UserTemp(Base):
     position_name = Column(String, default=False)
     position_id = Column(String, default=False)
     organization_name = Column(String, default=False)
-    organization_iin = Column(String, default=False)
+    organization_bin = Column(String, default=False)
     organization_id = Column(String, default=False)
 
     @classmethod

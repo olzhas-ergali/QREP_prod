@@ -69,7 +69,7 @@ class ModelUserTemp(BaseModel):
     positionName: typing.Optional[str] = None
     positionId: typing.Optional[str] = None
     organizationName: typing.Optional[str] = None
-    organizationIIN: typing.Optional[str] = None
+    organizationBIN: typing.Optional[str] = None
     organizationId: typing.Optional[str] = None
 
 
