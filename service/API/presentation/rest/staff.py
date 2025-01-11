@@ -33,11 +33,13 @@ async def add_user_process(
     )
     if user:
         #print(user.iin)
+        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
         return {
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
-            "isActive": user.is_active
+            "isActive": user.is_active,
+            "discountPercentage": discount.discount_percentage if discount else None
         }
     return {
         "message": "Сотрудник не найден",
@@ -61,7 +63,7 @@ async def get_user_info_process(
         phone=phone_number
     )
     if user:
-        discount = await staff.get_user_discount(session=session, user=user)
+        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
         return {
             "status_code": 200,
             "message": "Сотрудник найден",
@@ -69,7 +71,7 @@ async def get_user_info_process(
             "telegramId": user.id,
             "isActive": user.is_active,
             "isStaff": True,
-            "discountPercentage": discount.discount_percentage
+            "discountPercentage": discount.discount_percentage if discount else None
         }
 
     elif client:
