@@ -27,6 +27,7 @@ class User(Base):
     organization_name = Column(String, default=False)
     organization_bin = Column(String, default=False)
     organization_id = Column(String, default=False)
+    local = Column(String, default=False)
 
     @classmethod
     async def get_by_id(

@@ -86,3 +86,25 @@ def get_answer_question_btn(
     )
 
     return markup
+
+
+def get_questions_btn(
+        current_day: int,
+        action: str,
+        question_id: list,
+        texts: list
+):
+    markup = InlineKeyboardMarkup()
+    for i, text in enumerate(texts):
+        markup.add(
+            InlineKeyboardButton(
+                text=text,
+                callback_data=ProbationPeriodActionCallback.new(
+                    action=action,
+                    value=question_id[i],
+                    current_day=current_day
+                )
+            )
+        )
+
+    return markup

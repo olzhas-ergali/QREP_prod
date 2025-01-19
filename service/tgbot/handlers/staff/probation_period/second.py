@@ -24,6 +24,16 @@ async def probation_period_second_day_handler(
     current_day = int(callback_data.get('current_day'))
     value = callback_data.get('value')
 
+    if int(value) <= 3:
+        text = """
+Очень жаль :( Давай HR менеджер свяжется с тобой, чтобы узнать что тебе не понравилось.\n
+Өкінішті : (HR менеджері сенімен не ұнамағанын білу үшін байланысады.
+            """
+    else:
+        text = """
+Керемет! Компаниямен танысуды жалғастырайық!
+Отлично! Давай продолжим знакомство с компанией!\n
+            """
     await ProbationPeriodAnswer(
         user_id=c.from_user.id,
         day=current_day,
@@ -36,7 +46,9 @@ async def probation_period_second_day_handler(
     )
 
     await c.message.delete()
-
+    await c.message.answer(
+        text=text
+    )
     await probation_period_second_day_events_handler(
         q=c,
         state=state,
@@ -54,33 +66,52 @@ async def probation_period_second_day_events_handler(
     current_stage_id = data.get('current_stage_id', 0)
     events = [
         ProbationMessageEvent(
-            text="Давай я расскажу про историю появления бренда…",
+            text="Мен брендтің пайда болу тарихы туралы айтып берейін…",
             media=ProbationMedia(
-                file_path=FILES_DIRECTORY / "История Бренда.pdf",
+                file_path=FILES_DIRECTORY / "История Бренда на каз.pdf",
                 content_type=types.ContentType.DOCUMENT
             ),
             is_next=True
         ),
         ProbationMessageEvent(
-            text="А что ты знаешь о Qazaq Republic?",
+            text="Давай я расскажу про историю появления бренда…",
+            media=ProbationMedia(
+                file_path=FILES_DIRECTORY / "История Бренда на русс.pdf",
+                content_type=types.ContentType.DOCUMENT
+            ),
+            is_next=True
+        ),
+        ProbationMessageEvent(
+            text="Ал сен Qazaq Republic туралы не білесің?\n\nА что ты знаешь о Qazaq Republic?",
             # media=ProbationMedia(
             #     file_path=FILES_DIRECTORY / "Организационная_структура_компании.pdf",
             #     content_type=types.ContentType.DOCUMENT
             # )
         ),
         ProbationMessageEvent(
-            text="Очень интересно! А сейчас я покажу тебе орг.структуру)",
+            text="Өте қызық! Сен staff жеңілдігін қалай қолдануды білесің бе? "
+                 "Мен саған оны қалай қосу керектігін көрсетейін!",
             media=ProbationMedia(
-                file_path=FILES_DIRECTORY / "Организационная_структура_компании.pdf",
+                file_path=FILES_DIRECTORY / "QR staff скидка на каз.pdf",
                 content_type=types.ContentType.DOCUMENT
             ),
             is_next=True
         ),
         ProbationMessageEvent(
-            text='Какие вопросы у тебя остались?'
+            text="Очень интересно! А ты знаешь как пользоваться staff скидкой? "
+                 "Давай я тебе покажу, как его активировать!",
+            media=ProbationMedia(
+                file_path=FILES_DIRECTORY / "QR staff скидка на русс.pdf",
+                content_type=types.ContentType.DOCUMENT
+            ),
+            is_next=True
         ),
         ProbationMessageEvent(
-            text="Я вернусь к тебе с ответом в ближайшее время! А пока на этом все :) До завтра!",
+            text='Какие вопросы у тебя остались?\nСенде тағы қандай сұрақтар қалды?'
+        ),
+        ProbationMessageEvent(
+            text="Я вернусь к тебе с ответом в ближайшее время! А пока на этом все :) До завтра!"
+                 "Мен саған жақын арада жауап беремін! Осы уақытқа дейін бәрі осы :) Ертеңге дейін!",
             is_next=True
         )
     ]

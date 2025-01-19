@@ -1,10 +1,11 @@
 import typing
 
 from aiogram.dispatcher import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ContentType
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, FinishProbationEvent
+from service.tgbot.data.helpers import FILES_DIRECTORY
+from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, FinishProbationEvent, ProbationMedia
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
 
@@ -22,9 +23,11 @@ async def probation_period_third_day_handler(
     text = {
         'Да': """
 Круто! Теперь мы можем быть на связи всегда!
+Тамаша! Енді біз әрдайым байланыста бола аламыз!
         """,
         "Нет": """
 Очень жаль… Напиши, пожалуйста, Севинч (@seviiinchx), чтобы она добавила тебя в группы
+Өкінішті… Севинчке (телефон нөмірі) жазып, сені топтарға қосуын сұрай аласын!
         """
     }
 
@@ -65,15 +68,17 @@ async def probation_period_third_day_events_handler(
     current_stage_id = data.get('current_stage_id', 0)
     events = [
         ProbationMessageEvent(
-            text="Коммуникации в компании:",
+            text="А это на случай, если у тебя есть вопросы по работе с Bitrix24:\n\n"
+                 "Бұл жағдайда егер Bitrix24 жүйесімен жұмыс істеуге қатысты сұрақтарың болса, "
+                 "төмендегідей әрекет етуге болады:\n"
+                 "https://bitrix.qazaqrepublic.com/~agiLB",
             is_next=True
         ),
         ProbationMessageEvent(
-            text="А это на случай, если у тебя есть вопросы по работе с Bitrix24:",
-            is_next=True
-        ),
-        ProbationMessageEvent(
-            text="Если у тебя остались вопросы по Bitrix, прошу обратиться к Жулдыз (@Nurpeissova_Zhuldyz) Спасибо за внимание! До завтра :)",
+            text="Если у тебя остались вопросы по Bitrix, "
+                 "прошу обратиться к Жулдыз (@Nurpeissova_Zhuldyz) Спасибо за внимание! До завтра :)"
+                 "Егер Bitrix24 бойынша сұрақтарың болса, Жұлдызға (телефон нөмірі) жаза аласын. "
+                 "Назар аударғаның үшін рахмет! Ертең кездескенше :)",
             is_next=True
         ),
     ]

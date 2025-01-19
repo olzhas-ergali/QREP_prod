@@ -34,14 +34,21 @@ async def notification_about_lessons(
 
     probation_period_days_next = PROBATION_PERIOD_DAYS + 1  # Мы задачу запускаем на следующий день, поэтому так
 
+    # stmt = select(
+    #     User
+    # ).where(
+    #     func.cast(User., Date) + datetime.timedelta(days=probation_period_days_next) >= date_now.date()
+    # )
     stmt = select(
         User
     ).where(
-        func.cast(User.date_receipt, Date) + datetime.timedelta(days=probation_period_days_next) >= date_now.date()
-    )
+        (date_now.date() > func.cast(User.date_receipt, Date)) &
+        (func.cast(User.date_receipt, Date) + datetime.timedelta(days=30) >= date_now.date())
+        )
+
     response = await session.execute(stmt)
     users: typing.List[User] = response.scalars().all()
-
+    print(users)
     notification_functions = {
         1: notification_about_first_day,
         2: notification_about_second_day,
@@ -53,11 +60,14 @@ async def notification_about_lessons(
 
     for user in users:
         # Получаем текущий день испытательного срока
-        end_date_probation_period = user.date_receipt.date() + datetime.timedelta(days=probation_period_days_next)
+        # end_date_probation_period = user.date_receipt.date() + datetime.timedelta(days=probation_period_days_next)
+        # current_day_probation_period = probation_period_days_next - (end_date_probation_period - date_now.date()).days
+        end_date_probation_period = user.created_at.date() + datetime.timedelta(days=probation_period_days_next)
+        print(end_date_probation_period)
         current_day_probation_period = probation_period_days_next - (end_date_probation_period - date_now.date()).days
-
+        print(current_day_probation_period)
         notification_function = notification_functions.get(current_day_probation_period)
-
+        #print(current_day_probation_period)
         if notification_function is None:
             continue
 
