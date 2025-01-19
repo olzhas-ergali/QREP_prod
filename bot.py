@@ -80,15 +80,14 @@ async def main():
         args=(db.pool, bot)
     )
 
-
-    # scheduler.add_job(
-    #     probation_period.notification_about_lessons,
-    #     'cron',
-    #     hour=9,
-    #     minute=0,
-    #     args=(bot, db.pool, storage),
-    #
-    # )
+#     scheduler.add_job(
+#         probation_period.notification_about_lessons,
+#         'interval',
+# #        hour=9,
+#         minutes=1,
+#         args=(bot, db.pool, storage),
+#
+#     )
 
     #scheduler.add_job(
     #    tasks.push_client_answer_operator,

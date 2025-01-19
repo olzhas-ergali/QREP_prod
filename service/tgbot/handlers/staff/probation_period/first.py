@@ -12,9 +12,9 @@ async def probation_first_day_handler(
 ):
     text = """
 На этом все! 
-Увидимся завтра!
+Увидимся завтра!\n
+Ертең көріскенше!
     """
-
 
     await m.answer(text)
 

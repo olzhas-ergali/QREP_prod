@@ -11,20 +11,22 @@ from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import staff
 from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.models.purchases import ModelPurchase, ModelUser, ModelPurchaseReturn
+from service.API.infrastructure.database.models import User
 
 router = APIRouter()
 
 
-@router.get('/purchases/count')
+@router.get('/purchases/count', summary="Дает оставшиеся количество продуктов для скидок", tags=['purchase'])
 async def get_count(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         user_id: int
 ):
     session = db_session.get()
-    return await staff.get_purchases_count(session, user_id)
+    user = await session.get(User, user_id)
+    return await staff.get_item_count(session, user)
 
 
-@router.post('/purchases')
+@router.post('/purchases', summary="Добавляет данные о покупках", tags=['purchase'])
 async def add_purchases_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         purchase: ModelPurchase
@@ -39,7 +41,7 @@ async def add_purchases_process(
     )
 
 
-@router.post('/purchases/return')
+@router.post('/purchases/return', summary="Добавляет данные о возвратных покупках", tags=['purchase'])
 async def add_purchases_return_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         purchase: ModelPurchaseReturn

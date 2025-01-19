@@ -4,7 +4,7 @@ import uuid
 
 from sqlalchemy import (BigInteger, Column, String, select, Date,
                         DateTime, func, Integer, ForeignKey, Boolean,
-                        ARRAY, JSON, not_, desc, VARCHAR, Text, CHAR, and_, UUID)
+                        ARRAY, JSON, not_, desc, VARCHAR, Text, CHAR, and_, UUID, DECIMAL)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship, mapped_column
@@ -27,6 +27,11 @@ class User(Base):
     date_dismissal = Column(DateTime)
     is_active = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
+    position_name = Column(String, default=False)
+    position_id = Column(String, default=False)
+    organization_name = Column(String, default=False)
+    organization_bin = Column(String, default=False)
+    organization_id = Column(String, default=False)
 
     @classmethod
     async def get_by_id(
@@ -64,6 +69,18 @@ class User(Base):
 
         return await session.scalar(stmt)
 
+    @classmethod
+    async def get_by_position_id(
+            cls,
+            session: AsyncSession,
+            position_id: str
+    ) -> 'User':
+        stmt = select(User).where(
+            position_id == User.position_id
+        )
+
+        return await session.scalar(stmt)
+
     def get_mention(self, name=None):
         if name is None:
             name = self.name
@@ -83,6 +100,11 @@ class UserTemp(Base):
     created_at = Column(DateTime, server_default=func.now())
     update_data = Column(DateTime)
     is_fired = Column(Boolean, default=False)
+    position_name = Column(String, default=False)
+    position_id = Column(String, default=False)
+    organization_name = Column(String, default=False)
+    organization_bin = Column(String, default=False)
+    organization_id = Column(String, default=False)
 
     @classmethod
     async def get_user_temp(
@@ -108,6 +130,25 @@ class UserTemp(Base):
         ).order_by(desc(UserTemp.created_at)).limit(1)
 
         return await session.scalar(stmt)
+
+
+class PositionDiscounts(Base):
+    __tablename__ = "position_discounts"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    position_id: Column[str] = Column(
+        String
+    )
+    position_name: Column[str] = Column(
+        String
+    )
+    discount_percentage = Column(DECIMAL)
+    created_at = Column(DateTime, server_default=func.now())
+    update_data = Column(DateTime, default=None)
+    is_active = Column(Boolean, default=True)
+    description = Column(String, default=None)
+    start_date = Column(DateTime, default=None)
+    end_date = Column(DateTime, default=None)
+    monthly_limit = Column(BigInteger)
 
 
 class Purchase(Base):
