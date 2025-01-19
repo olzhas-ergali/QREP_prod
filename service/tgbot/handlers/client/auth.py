@@ -204,7 +204,7 @@ async def auth_client_handler(
     user.gender = callback_data.get('gender')
     user.birthday_date = datetime.datetime.strptime(data.get('birthday'), "%d.%m.%Y")
     user.is_active = True
-    user.activity = 'telegram'
+    user.activity = "telegram"
     await user.save(session=session)
     await session.delete(reg)
     await session.commit()
