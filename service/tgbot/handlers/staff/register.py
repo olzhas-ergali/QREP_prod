@@ -49,5 +49,5 @@ def register_staff_function(dp: Dispatcher):
     )
 
     # Регистрация обработчиков испытательного срока
-    staff.probation_period.register_probation_period(dp)
+    #staff.probation_period.register_probation_period(dp)
 
