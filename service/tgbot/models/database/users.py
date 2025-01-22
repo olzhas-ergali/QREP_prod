@@ -137,6 +137,7 @@ class Client(Base):
     is_active = Column(Boolean, default=False)
     source = Column(String)
     activity = Column(String, default="telegram")
+    #local = Column(String, default="rus")
 
     @classmethod
     async def get_client_by_phone(
