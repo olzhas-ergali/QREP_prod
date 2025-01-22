@@ -33,13 +33,13 @@ async def add_user_process(
     )
     if user:
         #print(user.iin)
-        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+        # discount = await staff.get_user_discount(session=session, position_id=user.position_id)
         return {
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
             "isActive": user.is_active,
-            "discountPercentage": discount.discount_percentage if discount else None
+            # "discountPercentage": discount.discount_percentage if discount else None
         }
     return {
         "message": "Сотрудник не найден",
@@ -110,12 +110,12 @@ async def employees_process(
             update_date=user.updateDate,
             date_receipt=user.dateOfReceipt,
             date_dismissal=user.dateOfDismissal,
-            iin=user.iin,
-            organization_id=user.organizationId,
-            organization_bin=user.organizationBIN,
-            position_id=user.positionId,
-            position_name=user.positionName,
-            organization_name=user.organizationName
+            iin=user.iin
+            # organization_id=user.organizationId,
+            # organization_bin=user.organizationBIN,
+            # position_id=user.positionId,
+            # position_name=user.positionName,
+            # organization_name=user.organizationName
         )
     except Exception as ex:
         return {

@@ -216,11 +216,11 @@ async def add_employees(
         date_dismissal: typing.Optional[datetime] = None,
         phone: typing.Optional[str] = None,
         iin: typing.Optional[str] = None,
-        organization_id: typing.Optional[str] = None,
-        organization_name: typing.Optional[str] = None,
-        organization_bin: typing.Optional[str] = None,
-        position_id: typing.Optional[str] = None,
-        position_name: typing.Optional[str] = None
+        # organization_id: typing.Optional[str] = None,
+        # organization_name: typing.Optional[str] = None,
+        # organization_bin: typing.Optional[str] = None,
+        # position_id: typing.Optional[str] = None,
+        # position_name: typing.Optional[str] = None
 ):
     if not (user := await session.get(UserTemp, id_staff)):
         user = UserTemp(
@@ -235,11 +235,11 @@ async def add_employees(
         else:
             #user_tg.phone_number = phone
             user.name = fullname
-            user_tg.organization_id = organization_id
-            user_tg.organization_name = organization_name
-            user_tg.position_id = position_id
-            user_tg.position_name = position_name
-            user_tg.organization_bin = organization_bin
+            # user_tg.organization_id = organization_id
+            # user_tg.organization_name = organization_name
+            # user_tg.position_id = position_id
+            # user_tg.position_name = position_name
+            # user_tg.organization_bin = organization_bin
         session.add(user_tg)
     if (c := await Client.get_client_by_phone(session=session, phone=phone)) is not None:
         c.is_active = False
@@ -252,22 +252,22 @@ async def add_employees(
     user.date_receipt = date_receipt
     user.date_dismissal = date_dismissal
     user.update_data = update_date
-    user.organization_id = organization_id
-    user.organization_name = organization_name
-    user.position_id = position_id
-    user.position_name = position_name
-    user.organization_bin = organization_bin
+    # user.organization_id = organization_id
+    # user.organization_name = organization_name
+    # user.position_id = position_id
+    # user.position_name = position_name
+    # user.organization_bin = organization_bin
 
-    if not (discount := await get_user_discount(session=session, position_id=user.position_id)):
-        discount = PositionDiscounts(
-            position_id=position_id,
-            position_name=position_name,
-            discount_percentage=30.0,
-            start_date=datetime.strptime("01.01.0001", "%d.%m.%Y"),
-            end_date=datetime.strptime("31.12.9999", "%d.%m.%Y"),
-            monthly_limit=3
-        )
-        session.add(discount)
+    # if not (discount := await get_user_discount(session=session, position_id=user.position_id)):
+    #     discount = PositionDiscounts(
+    #         position_id=position_id,
+    #         position_name=position_name,
+    #         discount_percentage=30.0,
+    #         start_date=datetime.strptime("01.01.0001", "%d.%m.%Y"),
+    #         end_date=datetime.strptime("31.12.9999", "%d.%m.%Y"),
+    #         monthly_limit=3
+    #     )
+    #     session.add(discount)
 
     session.add(user)
 

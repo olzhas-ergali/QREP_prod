@@ -66,11 +66,11 @@ class ModelUserTemp(BaseModel):
     author: typing.Optional[str] = None
     dateOfReceipt: typing.Optional[datetime.datetime] = None
     dateOfDismissal: typing.Optional[datetime.datetime] = None
-    positionName: typing.Optional[str] = None
-    positionId: typing.Optional[str] = None
-    organizationName: typing.Optional[str] = None
-    organizationBIN: typing.Optional[str] = None
-    organizationId: typing.Optional[str] = None
+    # positionName: typing.Optional[str] = None
+    # positionId: typing.Optional[str] = None
+    # organizationName: typing.Optional[str] = None
+    # organizationBIN: typing.Optional[str] = None
+    # organizationId: typing.Optional[str] = None
 
 
 class ModelStaff(BaseModel):
