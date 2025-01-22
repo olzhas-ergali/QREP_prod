@@ -27,7 +27,7 @@ class User(Base):
     organization_name = Column(String, default=False)
     organization_bin = Column(String, default=False)
     organization_id = Column(String, default=False)
-    local = Column(String, default=False)
+    #local = Column(String, default=False)
 
     @classmethod
     async def get_by_id(
@@ -137,7 +137,7 @@ class Client(Base):
     is_active = Column(Boolean, default=False)
     source = Column(String)
     activity = Column(String, default="telegram")
-    #local = Column(String, default="rus")
+    local = Column(String, default="rus")
 
     @classmethod
     async def get_client_by_phone(
