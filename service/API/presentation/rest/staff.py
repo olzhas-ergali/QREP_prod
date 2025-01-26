@@ -63,15 +63,15 @@ async def get_user_info_process(
         phone=phone_number
     )
     if user:
-        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+#        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
         return {
             "status_code": 200,
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
             "isActive": user.is_active,
-            "isStaff": True,
-            "discountPercentage": discount.discount_percentage if discount else None
+            "isStaff": True
+            #"discountPercentage": discount.discount_percentage if discount else None
         }
 
     elif client:
