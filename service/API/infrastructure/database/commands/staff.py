@@ -27,7 +27,7 @@ async def get_purchases_count(
 ):
     stmt = select(Purchase).where(
         ((datetime.now().month == extract('month', Purchase.created_date)) &
-         (Purchase.user_id == user_id))
+         (Purchase.user_id == user_id) & (datetime.now().year == extract('year', Purchase.created_date)))
     )
     response = await session.execute(stmt)
     purchases = response.scalars().all()
@@ -44,6 +44,7 @@ async def get_purchases_count(
                 products_purchases.append(product.get('price') - product.get('discountPrice'))
     stmt = select(PurchaseReturn).where(
         ((datetime.now().month == extract('month', PurchaseReturn.created_date)) &
+         (datetime.now().year == extract('year', PurchaseReturn.created_date)) &
          (PurchaseReturn.user_id == user_id) &
          (PurchaseReturn.purchase_id.in_(purchases_id)))
     )
