@@ -1,3 +1,5 @@
+import typing
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
 from service.tgbot.keyboards.query_cb import GenderCallback
@@ -5,14 +7,16 @@ from service.tgbot.keyboards import generate
 from service.tgbot.keyboards.query_cb import ChoiceCallback
 
 
-async def main_btns():
+async def main_btns(
+        _: typing.Callable[[str], str]
+):
     markup = ReplyKeyboardMarkup(
         row_width=2,
         resize_keyboard=True
     )
-    btns = ['Мои бонусы',
-            'Мой QR',
-            'Мои покупки']
+    btns = [_('Мои бонусы'),
+            _('Мой QR'),
+            _('Мои покупки')]
             #'FAQ']
     for btn in btns:
         markup.add(btn)
@@ -20,14 +24,16 @@ async def main_btns():
     return markup
 
 
-async def get_genders_ikb():
+async def get_genders_ikb(
+        _: typing.Callable[[str], str]
+):
     markup = InlineKeyboardMarkup(1)
 
-    man = InlineKeyboardButton(text="Муж",
+    man = InlineKeyboardButton(text=_("Муж"),
                                callback_data=GenderCallback.new(gender='M',
                                                                 action='gender'))
 
-    women = InlineKeyboardButton(text="Жен",
+    women = InlineKeyboardButton(text=_("Жен"),
                                  callback_data=GenderCallback.new(gender='F',
                                                                   action='gender'))
 
@@ -36,14 +42,16 @@ async def get_genders_ikb():
     return markup
 
 
-async def period_btns():
+async def period_btns(
+        _: typing.Callable[[str], str]
+):
     markup = InlineKeyboardMarkup()
     btns = {
-        "За весь период": ChoiceCallback.new(
+        _("За весь период"): ChoiceCallback.new(
             choice="by_all",
             action="client_purchases"
         ),
-        "За текущий месяц": ChoiceCallback.new(
+        _("За текущий месяц"): ChoiceCallback.new(
             choice="by_month",
             action="client_purchases"
         )

@@ -13,12 +13,13 @@ async def phone_handler(
         state: State,
         text: str = None
 ):
+    _ = m.bot.get("i18n")
     if not text:
-        text = "Поделитесь номером телефона для авторизации"
+        text = _("Поделитесь номером телефона для авторизации")
 
     await m.answer(
         text=text,
-        reply_markup=phone_number_btn()
+        reply_markup=phone_number_btn(_)
     )
 
     await state.set()

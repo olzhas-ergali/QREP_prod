@@ -9,31 +9,33 @@ from service.tgbot.data.helpers import FILES_DIRECTORY
 from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent, ProbationMedia, FinishProbationEvent
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
+from service.tgbot.models.database.users import User
+from aiogram.types import InputFile, MediaGroup, InputMediaVideo
+from service.tgbot.keyboards.staff.probation_period import get_action_btn
 
 
 async def probation_period_second_day_handler(
         c: CallbackQuery,
         session: AsyncSession,
         state: FSMContext,
+        user: User,
         callback_data: dict
 ):
     """
     Cначала оценка
     """
-
+    _ = c.bot.get("i18n")
     current_day = int(callback_data.get('current_day'))
     value = callback_data.get('value')
-
+    videos = {
+        'kaz': FILES_DIRECTORY / "DianaKaz.mp4",
+        'rus': FILES_DIRECTORY / "DianaRus.mp4"
+    }
     if int(value) <= 3:
-        text = """
-Очень жаль :( Давай HR менеджер свяжется с тобой, чтобы узнать что тебе не понравилось.\n
-Өкінішті : (HR менеджері сенімен не ұнамағанын білу үшін байланысады.
-            """
+        text = _("Очень жаль :( Давай HR менеджер свяжется с тобой, чтобы узнать что тебе не понравилось.")
     else:
-        text = """
-Керемет! Компаниямен танысуды жалғастырайық!
-Отлично! Давай продолжим знакомство с компанией!\n
-            """
+        #
+        text = _("Отлично! Рад, что твой первый день был успешным. Давай продолжим знакомство с нашей компанией!")
     await ProbationPeriodAnswer(
         user_id=c.from_user.id,
         day=current_day,
@@ -49,69 +51,66 @@ async def probation_period_second_day_handler(
     await c.message.answer(
         text=text
     )
-    await probation_period_second_day_events_handler(
-        q=c,
-        state=state,
-        session=session
+
+    await c.message.answer_video(
+        video=InputFile(videos.get(user.local), videos.get(user.local).name),
+        caption=_('Сегодня я расскажу тебе вкратце о правилах трудового распорядка в нашей компании, чтобы ты знал(а), как лучше организовать свой рабочий процесс. Это поможет тебе адаптироваться быстрее и комфортнее.')
+    )
+
+    await c.message.answer(
+        text=_('А теперь - кое-что интересное! Ты уже знаешь, что у нас есть статус сотрудника, а значит, ты можешь пользоваться стафф скидкой на наши продукты. Знаешь, как её активировать?'),
+        reply_markup=get_action_btn(
+            values=[
+                _("Да"), _("Нет")
+            ],
+            action='discount',
+            current_day=2
+        )
     )
 
 
 async def probation_period_second_day_events_handler(
         q: typing.Union[CallbackQuery, Message],
         state: FSMContext,
-        session: AsyncSession
+        session: AsyncSession,
+        user: User,
+        callback_data: dict = None
 ):
+    _ = q.bot.get("i18n")
     data = await state.get_data()
     current_day = data.get('current_day')
     current_stage_id = data.get('current_stage_id', 0)
+    value = data.get('value')
+    if isinstance(q, CallbackQuery):
+        await q.message.delete()
+    if callback_data:
+        value = callback_data.get('value')
+    qr = {
+        'kaz': FILES_DIRECTORY / "QR staff жеңілдік.pdf",
+        'rus': FILES_DIRECTORY / "staff скидка.pdf"
+    }
+    discount_info = {
+        _('Нет'): ProbationMessageEvent(
+            text=_('Не переживай, я с радостью помогу! Сейчас расскажу, как активировать твою стафф скидку.'),
+            media=ProbationMedia(
+                file_path=qr.get(user.local),
+                content_type=types.ContentType.DOCUMENT
+            ),
+            is_next=True
+        ),
+        _('Да'): ProbationMessageEvent(
+            text=_('Отлично! Ты уже в курсе, как активировать скидку! Если у тебя возникнут вопросы по этому процессу, не стесняйся обращаться, я всегда рядом, чтобы помочь.'),
+            is_next=True
+        )
+    }
+
     events = [
+        discount_info.get(value),
         ProbationMessageEvent(
-            text="Мен брендтің пайда болу тарихы туралы айтып берейін…",
-            media=ProbationMedia(
-                file_path=FILES_DIRECTORY / "История Бренда на каз.pdf",
-                content_type=types.ContentType.DOCUMENT
-            ),
-            is_next=True
+            text=_('Какие вопросы у тебя остались? Не стесняйся, напиши их сюда — и я обязательно вернусь с ответами!'),
         ),
         ProbationMessageEvent(
-            text="Давай я расскажу про историю появления бренда…",
-            media=ProbationMedia(
-                file_path=FILES_DIRECTORY / "История Бренда на русс.pdf",
-                content_type=types.ContentType.DOCUMENT
-            ),
-            is_next=True
-        ),
-        ProbationMessageEvent(
-            text="Ал сен Qazaq Republic туралы не білесің?\n\nА что ты знаешь о Qazaq Republic?",
-            # media=ProbationMedia(
-            #     file_path=FILES_DIRECTORY / "Организационная_структура_компании.pdf",
-            #     content_type=types.ContentType.DOCUMENT
-            # )
-        ),
-        ProbationMessageEvent(
-            text="Өте қызық! Сен staff жеңілдігін қалай қолдануды білесің бе? "
-                 "Мен саған оны қалай қосу керектігін көрсетейін!",
-            media=ProbationMedia(
-                file_path=FILES_DIRECTORY / "QR staff скидка на каз.pdf",
-                content_type=types.ContentType.DOCUMENT
-            ),
-            is_next=True
-        ),
-        ProbationMessageEvent(
-            text="Очень интересно! А ты знаешь как пользоваться staff скидкой? "
-                 "Давай я тебе покажу, как его активировать!",
-            media=ProbationMedia(
-                file_path=FILES_DIRECTORY / "QR staff скидка на русс.pdf",
-                content_type=types.ContentType.DOCUMENT
-            ),
-            is_next=True
-        ),
-        ProbationMessageEvent(
-            text='Какие вопросы у тебя остались?\nСенде тағы қандай сұрақтар қалды?'
-        ),
-        ProbationMessageEvent(
-            text="Я вернусь к тебе с ответом в ближайшее время! А пока на этом все :) До завтра!"
-                 "Мен саған жақын арада жауап беремін! Осы уақытқа дейін бәрі осы :) Ертеңге дейін!",
+            text=_('Я вернусь к тебе с ответом в ближайшее время. А пока на этом все! Желаю удачного дня, и до завтра!'),
             is_next=True
         )
     ]
@@ -133,6 +132,7 @@ async def probation_period_second_day_events_handler(
 
         await state.update_data(
             current_stage_id=next_stage_id,
+            value=value
         )
         await ProbationPeriodState.second_day.set()
 

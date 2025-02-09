@@ -25,6 +25,7 @@ async def get_purchases_by_month(
 ) -> Sequence['Purchase']:
     stmt = select(Purchase).where(
         (date.month == extract('month', Purchase.created_date)) &
+        (date.year == extract('year', Purchase.created_date)) &
         (user_id == Purchase.user_id)
     )
     response = await session.execute(stmt)

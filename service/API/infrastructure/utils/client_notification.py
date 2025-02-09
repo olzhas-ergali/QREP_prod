@@ -43,16 +43,23 @@ async def send_notification_from_client(
 async def push_client_answer_operator(
         session: AsyncSession,
         bot: Bot,
-        client: ClientsApp
+        client_app: ClientsApp,
+        client: Client
 ):
     ans_callback = CallbackData(
         "answer", "ans", 'id', 'action'
     )
     logging.info("Уведомление для клиентов по оценке работе оператора")
+    text1 = {
+        "kaz": "Да"
+    }
+    text2 = {
+        "kaz": "Иә"
+    }
     markup = InlineKeyboardMarkup().add(
         *[
             InlineKeyboardButton(
-                text="Да",
+                text=text1.get(client.local),
                 callback_data=ans_callback.new(
                     ans="yes",
                     id=client.id,
@@ -60,7 +67,7 @@ async def push_client_answer_operator(
                 )
             ),
             InlineKeyboardButton(
-                text="Подключить оператора",
+                text=text2.get(client.local),
                 callback_data=ans_callback.new(
                     ans="no",
                     id=client.id,
@@ -71,7 +78,7 @@ async def push_client_answer_operator(
     )
     try:
         await bot.send_message(
-            chat_id=client.telegram_id,
+            chat_id=client_app.telegram_id,
             text="Ваш вопрос решен",
             reply_markup=markup
         )

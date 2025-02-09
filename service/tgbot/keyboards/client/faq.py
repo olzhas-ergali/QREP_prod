@@ -5,12 +5,14 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from service.tgbot.keyboards.query_cb import (
     FaqCallback,
     OperatorCallback,
-    AnswerCallback)
+    AnswerCallback,
+    LocalCallback)
 from service.tgbot.data.faq import faq_lvls
 
 
 async def get_faq_btns(
-        current_lvl: str
+        current_lvl: str,
+        i18n_func: typing.Callable[[str], str]
 ):
     markup = InlineKeyboardMarkup()
     n = len(faq_lvls.get(current_lvl))
@@ -18,7 +20,7 @@ async def get_faq_btns(
         faq_lvls.get(current_lvl)[i].get('callback')
         markup.add(
             InlineKeyboardButton(
-                text=faq_lvls.get(current_lvl)[i].get('text'),
+                text=i18n_func(faq_lvls.get(current_lvl)[i].get('text')),
                 callback_data=FaqCallback.new(
                     chapter=i + 1,
                     lvl=faq_lvls.get(current_lvl)[i].get('callback'),
@@ -26,36 +28,51 @@ async def get_faq_btns(
                 )
             )
         )
+    markup.add(
+        InlineKeyboardButton(
+            text=i18n_func("Сменить язык"),
+            callback_data=LocalCallback.new(
+                lang="-",
+                action="change_local"
+            )
+        )
+    )
     return markup
 
 
-async def get_times():
+async def get_times(
+        i18n_func: typing.Callable[[str], str]
+):
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(
         *[
+            #Дәл қазір
             InlineKeyboardButton(
-                text="Сейчас/Дәл қазір",
+                text=i18n_func("Сейчас"),
                 callback_data=OperatorCallback.new(
                     time="0",
                     action='application'
                 )
             ),
+            #30 минуттан кейін
             InlineKeyboardButton(
-                text="Через 30 минут/30 минуттан кейін",
+                text=i18n_func("Через 30 минут"),
                 callback_data=OperatorCallback.new(
                     time="30",
                     action='application'
                 )
             ),
+            #1 сағаттан кейін
             InlineKeyboardButton(
-                text="Через 1 час/1 сағаттан кейін",
+                text=i18n_func("Через 1 час"),
                 callback_data=OperatorCallback.new(
                     time="60",
                     action='application'
                 )
             ),
+            #2 сағаттан кейін
             InlineKeyboardButton(
-                text="Через 2 час/2 сағаттан кейін",
+                text=i18n_func("Через 2 час"),
                 callback_data=OperatorCallback.new(
                     time="120",
                     action='application'
@@ -67,18 +84,20 @@ async def get_times():
     return markup
 
 
-def get_answer():
+def get_answer(
+        i18n_func: typing.Callable[[str], str]
+):
     return InlineKeyboardMarkup().add(
         *[
             InlineKeyboardButton(
-                text="Да",
+                text=i18n_func("Да"),
                 callback_data=AnswerCallback.new(
                     ans="yes",
                     action='user_answer'
                 )
             ),
             InlineKeyboardButton(
-                text="Подключить оператора",
+                text=i18n_func("Подключить оператора"),
                 callback_data=AnswerCallback.new(
                     ans="no",
                     action='user_answer'

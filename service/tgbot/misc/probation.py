@@ -74,10 +74,10 @@ class ProbationEvents:
 
         event_media: ProbationMedia = current_event.media
 
-
+        _ = self.bot.get('i18n')
         msg = await self.bot.send_message(
             chat_id=self.user_id,
-            text="Отправляем файл..."
+            text=_("Отправляем файл...")
         )
 
         if event_media.content_type in types.ContentTypes.PHOTO:

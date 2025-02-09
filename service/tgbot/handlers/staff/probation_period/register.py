@@ -19,6 +19,13 @@ def register_probation_period(dp: Dispatcher):
 
 
     # Первый день испытательного срока
+    dp.register_callback_query_handler(
+        probation_first_day_handler,
+        ProbationPeriodActionCallback.filter(
+            action='first'
+        ),
+        state="*",
+    )
     dp.register_message_handler(
         probation_first_day_handler,
         state=ProbationPeriodState.first_day,
@@ -31,6 +38,15 @@ def register_probation_period(dp: Dispatcher):
         ProbationPeriodActionCallback.filter(
             current_day="2",
             action='work_evaluation'
+        ),
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        probation_period_second_day_events_handler,
+        ProbationPeriodActionCallback.filter(
+            current_day="2",
+            action='discount'
         ),
         state="*"
     )
@@ -56,19 +72,19 @@ def register_probation_period(dp: Dispatcher):
     )
 
     # Четвертый
-    dp.register_callback_query_handler(
-        probation_period_fourth_day_handler,
-        ProbationPeriodActionCallback.filter(
-            current_day="4",
-            action='evaluation_information'
-        ),
-        state="*"
-    )
-
-    dp.register_message_handler(
-        probation_period_fourth_day_events_handler,
-        state=ProbationPeriodState.fourth_day
-    )
+    # dp.register_callback_query_handler(
+    #     probation_period_fourth_day_handler,
+    #     ProbationPeriodActionCallback.filter(
+    #         current_day="4",
+    #         action='evaluation_information'
+    #     ),
+    #     state="*"
+    # )
+    #
+    # dp.register_message_handler(
+    #     probation_period_fourth_day_events_handler,
+    #     state=ProbationPeriodState.fourth_day
+    # )
 
     # Пятый
     dp.register_callback_query_handler(

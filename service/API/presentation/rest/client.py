@@ -245,7 +245,7 @@ async def add_client_operator_grade(
     app = await ClientsApp.get_last_app_by_phone(session=session, phone=c.phone_number)
     if app:
         if c.activity == 'telegram':
-            await push_client_answer_operator(session=session, client=app, bot=bot)
+            await push_client_answer_operator(session=session, client_app=app, bot=bot, client=c)
         if c.activity == 'wb':
             resp = requests.get(url=f"https://chatter.salebot.pro/api/a003aeed95f1655c1fe8b8b447570e19/whatsapp_callback?name=Test&message=grade&phone={phone}&bot_id=124652&txt={app.id}")
             app.is_push = True

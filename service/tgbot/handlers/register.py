@@ -30,6 +30,13 @@ def register_staff(dp: Dispatcher):
     )
 
     dp.register_callback_query_handler(
+        authorization.welcome_message_handler,
+        query_cb.LocalCallback.filter(action='local'),
+        is_auth=False,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
         authorization.authorization_handler,
         query_cb.AuthCallback.filter(action='auth'),
         is_auth=False,

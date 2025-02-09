@@ -32,10 +32,12 @@ async def all_purchases_handler(
         callback_data: dict,
         state: FSMContext
 ):
+    _ = callback.bot.get('i18n')
     await callback.message.delete()
     texts = await show_purchases(
         session=session,
-        user_id=callback.from_user.id
+        user_id=callback.from_user.id,
+        _=_
     )
     if texts:
         for text in texts:
@@ -45,7 +47,7 @@ async def all_purchases_handler(
             )
     else:
         await callback.message.answer(
-            text="Вы пока не совершали покупки"
+            text=_("Вы пока не совершали покупки")
         )
 
 
@@ -55,11 +57,13 @@ async def purchases_by_date_handler(
         callback_data: dict,
         state: FSMContext
 ):
+    _ = callback.bot.get('i18n')
     await callback.message.delete()
     texts = await show_purchases(
         session=session,
         date=datetime.datetime.now(),
-        user_id=callback.from_user.id
+        user_id=callback.from_user.id,
+        _=_
     )
     if texts:
         for text in texts:
@@ -69,6 +73,6 @@ async def purchases_by_date_handler(
             )
     else:
         await callback.message.answer(
-            text="Вы пока не совершали покупки за этот месяц"
+            text=_("Вы пока не совершали покупки за этот месяц")
         )
 

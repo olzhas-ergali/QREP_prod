@@ -21,6 +21,7 @@ async def start_handler(
         session: AsyncSession,
         state: FSMContext
 ):
+    _ = message.bot.get("i18n")
     await state.finish()
     await remove(message, 1)
     await remove(message, 0)
@@ -30,15 +31,18 @@ async def start_handler(
         gender = 'Дорогой'
     elif user.gender == b'F':
         gender = 'Дорогая'
-    text = (f"{gender} {user.name}, вас приветствует команда Qazaq Republic!🤗\n"
-            f"Құрметті {user.name}, Сізбен бірге Qazaq Republic командасы!")
-    btns = await get_faq_btns('main')
+    if user.local == 'kaz':
+        gender = 'Құрметті'
+    text = _("{gender} {name}, вас приветствует команда Qazaq Republic!🤗\n").format(gender=gender, name=user.name)
+    #f"Құрметті {user.name}, Сізбен бірге Qazaq Republic командасы!"
+    btns = await get_faq_btns('main', _)
     await message.answer(
         text=text,
         reply_markup=await main_btns()
     )
+    #Сізге қандай көмек көрсете аламыз? Опциялардың бірін таңдаңыз:
     await message.answer(
-        text="Чем могу помочь? Выберите одну из опций:\nСізге қандай көмек көрсете аламыз? Опциялардың бірін таңдаңыз:",
+        text=_("Чем могу помочь? Выберите одну из опций:"),
         reply_markup=btns
     )
 
@@ -48,8 +52,9 @@ async def get_my_qr_handler(
         user: Client,
         state: FSMContext
 ):
+    _ = message.bot.get('i18n')
     await state.finish()
-    text = "Ваш QR"
+    text = _("Ваш QR")
 
     qrcode = segno.make(user.phone_number, micro=False)
 
@@ -71,6 +76,7 @@ async def get_my_bonus_handler(
         user: Client,
         state: FSMContext
 ):
+    _ = message.bot.get('i18n')
     await state.finish()
     res = 0
     res, msg = await get_balance(
@@ -80,11 +86,11 @@ async def get_my_bonus_handler(
     await message.delete()
     if res == 0:
         await message.answer(
-            text="У вас пока нет накопленных бонусов. "
-                 "Совершайте покупки и участвуйте в наших акциях, "
-                 "чтобы начать зарабатывать баллы!"
+            text=_('''У вас пока нет накопленных бонусов.
+Совершайте покупки и участвуйте в наших акциях, 
+чтобы начать зарабатывать баллы!''')
         )
     else:
         await message.answer(
-            text=f"У вас: {res} бонусов {msg}",
+            text=_("У вас: {res} бонусов {msg}").format(res=res, msg=msg),
         )

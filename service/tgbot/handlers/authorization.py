@@ -11,20 +11,37 @@ from service.tgbot.models.database.users import RegTemp, Client, User
 from service.tgbot.misc.delete import remove
 from service.tgbot.handlers.staff import auth as staff_auth, main as staff_main
 from service.tgbot.handlers.client import auth as client_auth, main as client_main
-from service.tgbot.keyboards.auth import markup
+from service.tgbot.keyboards.auth import get_auth_btns, get_local_btns
 
 
 async def first_message_handler(
         message: Message,
 ):
+
     await message.answer(
-        text="Добро пожаловать в QazaqRepublicBot"
-             "Если вы являетесь сотрудникм QR! "
-             "Для прохождения авторизации, пожалуйста"
-             "нажмите на кнопку 'Авторизоваться как сотрудник'."
-             "Если вы не являетесь сотрудникм QR, "
-             "то нажмите на кнопку 'Авторизоваться как клиент'",
-        reply_markup=markup
+        text="Выберите язык",
+        reply_markup=get_local_btns()
+    )
+
+
+async def welcome_message_handler(
+        query: CallbackQuery,
+        callback_data: dict,
+        session: AsyncSession,
+        user: Client
+):
+    user.local = callback_data.get('lang')
+    await user.save(session)
+    _ = query.bot.get('i18n')
+    text = _('''Добро пожаловать в QazaqRepublicBot
+Если вы являетесь сотрудникм QR! 
+Для прохождения авторизации, пожалуйста
+нажмите на кнопку "Авторизоваться как сотрудник".
+Если вы не являетесь сотрудникм QR, 
+то нажмите на кнопку "Авторизоваться как клиент"''', locale=user.local)
+    await query.message.edit_text(
+        text=text,
+        reply_markup=get_auth_btns(_, local=user.local)
     )
 
 

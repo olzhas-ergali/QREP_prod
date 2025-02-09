@@ -43,6 +43,7 @@ async def auth_fio_handler(
         state: FSMContext,
         reg: RegTemp
 ):
+    _ = message.bot.get("i18n")
     await message.delete()
     try:
         phone_number = parse_phone(message.contact.phone_number)
@@ -89,7 +90,7 @@ async def auth_fio_handler(
         await session.commit()
         await remove(message, 1)
         await message.answer(
-            "Дорогой покупатель, Вас приветствует команда Qazaq Republic!\nНапишите ваше ФИО:"
+            _("Дорогой покупатель, Вас приветствует команда Qazaq Republic!\nНапишите ваше ФИО:")
         )
         await AuthClientState.waiting_name.set()
 
@@ -101,13 +102,14 @@ async def get_years_handler(
         state: FSMContext,
         reg: RegTemp
 ):
+    _ = message.bot.get("i18n")
     await remove(message, 1)
     await message.delete()
     if not reg.state_data.get('name'):
         await state.update_data(name=message.text)
     year = datetime.datetime.now().year
     await message.answer(
-        text="Благодарим! Теперь укажите вашу дату рождения",
+        text=_("Благодарим! Теперь укажите вашу дату рождения"),
         reply_markup=await make_year_ikb(year)
     )
     await AuthClientState.waiting_birthday_date.set()
@@ -137,12 +139,13 @@ async def auth_birthday_date_handler(
         state: FSMContext,
         callback_data: dict
 ):
+    _ = query.bot.get("i18n")
     year = int(callback_data.get('id'))
     month = datetime.datetime.now().month
     await query.message.edit_text(
-        text="Выберите вашу дату рождения",
+        text=_("Выберите вашу дату рождения"),
         reply_markup=await make_ikb_calendar(
-            month_num=month - 1,
+            month_num=month,
             year_num=year
         )
     )
@@ -174,11 +177,12 @@ async def auth_gender_handler(
         callback_data: dict,
         reg: RegTemp
 ):
+    _ = query.bot.get("i18n")
     if not reg.state_data.get('birthday'):
         birthday = callback_data.get('id').replace('date,', "")
         await state.update_data(birthday=birthday.replace(",", "."))
     await query.message.edit_text(
-        text="Отлично! Пожалуйста, выберите ваш пол",
+        text=_("Отлично! Пожалуйста, выберите ваш пол"),
         reply_markup=await get_genders_ikb()
     )
     await AuthClientState.waiting_gender.set()

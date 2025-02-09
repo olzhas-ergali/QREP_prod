@@ -16,19 +16,13 @@ async def probation_period_third_day_handler(
         session: AsyncSession,
         callback_data: dict
 ):
-
+    _ = c.bot.get("i18n")
     current_day = int(callback_data.get('current_day'))
     value = callback_data.get('value')
 
     text = {
-        'Да': """
-Круто! Теперь мы можем быть на связи всегда!
-Тамаша! Енді біз әрдайым байланыста бола аламыз!
-        """,
-        "Нет": """
-Очень жаль… Напиши, пожалуйста, Севинч (@seviiinchx), чтобы она добавила тебя в группы
-Өкінішті… Севинчке (телефон нөмірі) жазып, сені топтарға қосуын сұрай аласын!
-        """
+        _('Да'): _('Круто! Теперь мы можем быть на связи всегда!'),
+        _("Нет"): _('Очень жаль… Напиши, пожалуйста, Севинч (@seviiinchx), чтобы она добавила тебя в группы')
     }
 
     text_by_value = text.get(value)
@@ -46,7 +40,8 @@ async def probation_period_third_day_handler(
     ).save(session)
 
     await state.update_data(
-        current_day=current_day
+        current_day=current_day,
+        value=value
     )
     await c.message.delete()
 
@@ -63,25 +58,25 @@ async def probation_period_third_day_events_handler(
         state: FSMContext,
         session: AsyncSession
 ):
+    _ = q.bot.get("i18n")
     data = await state.get_data()
     current_day = data.get('current_day')
     current_stage_id = data.get('current_stage_id', 0)
-    events = [
+    value = data.get('value')
+    events = []
+    if value == _('Да'):
+        events.append(
+            ProbationMessageEvent(
+                text=_("А это на случай, если у тебя есть вопросы по работе с Bitrix24:") + "\nhttps://bitrix.qazaqrepublic.com/~agiLB",
+                is_next=True
+            )
+        )
+    events.append(
         ProbationMessageEvent(
-            text="А это на случай, если у тебя есть вопросы по работе с Bitrix24:\n\n"
-                 "Бұл жағдайда егер Bitrix24 жүйесімен жұмыс істеуге қатысты сұрақтарың болса, "
-                 "төмендегідей әрекет етуге болады:\n"
-                 "https://bitrix.qazaqrepublic.com/~agiLB",
+            text=_("Если у тебя остались ещё вопросы по Bitrix, прошу обратиться к Жулдыз (+7 778 166 05 65) Спасибо за внимание! До завтра :)"),
             is_next=True
-        ),
-        ProbationMessageEvent(
-            text="Если у тебя остались вопросы по Bitrix, "
-                 "прошу обратиться к Жулдыз (@Nurpeissova_Zhuldyz) Спасибо за внимание! До завтра :)"
-                 "Егер Bitrix24 бойынша сұрақтарың болса, Жұлдызға (телефон нөмірі) жаза аласын. "
-                 "Назар аударғаның үшін рахмет! Ертең кездескенше :)",
-            is_next=True
-        ),
-    ]
+        )
+    )
 
     probation_events = ProbationEvents(
         bot=q.bot,
