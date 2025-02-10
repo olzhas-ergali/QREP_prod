@@ -37,8 +37,8 @@ async def start_handler(
     #f"Құрметті {user.name}, Сізбен бірге Qazaq Republic командасы!"
     btns = await get_faq_btns('main', _)
     await message.answer(
-        text=text,
-        reply_markup=await main_btns()
+        text=text
+        #reply_markup=await main_btns(_)
     )
     #Сізге қандай көмек көрсете аламыз? Опциялардың бірін таңдаңыз:
     await message.answer(

@@ -1,13 +1,12 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from service.tgbot.keyboards.query_cb import AuthCallback, ContinueCallback, LocalCallback
 
-markup = InlineKeyboardMarkup(row_width=1)
-
 
 def get_auth_btns(
         _,
         local: str
 ):
+    markup = InlineKeyboardMarkup(row_width=1)
     btn1 = InlineKeyboardButton(
         text=_("Авторизоваться как клиент", locale=local),
         callback_data=AuthCallback.new(

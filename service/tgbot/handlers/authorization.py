@@ -39,9 +39,10 @@ async def welcome_message_handler(
 нажмите на кнопку "Авторизоваться как сотрудник".
 Если вы не являетесь сотрудникм QR, 
 то нажмите на кнопку "Авторизоваться как клиент"''', locale=user.local)
+    btns = get_auth_btns(_, local=user.local)
     await query.message.edit_text(
         text=text,
-        reply_markup=get_auth_btns(_, local=user.local)
+        reply_markup=btns
     )
 
 

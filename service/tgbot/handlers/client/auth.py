@@ -183,7 +183,7 @@ async def auth_gender_handler(
         await state.update_data(birthday=birthday.replace(",", "."))
     await query.message.edit_text(
         text=_("Отлично! Пожалуйста, выберите ваш пол"),
-        reply_markup=await get_genders_ikb()
+        reply_markup=await get_genders_ikb(_)
     )
     await AuthClientState.waiting_gender.set()
     reg.state = "AuthClientState:waiting_gender"

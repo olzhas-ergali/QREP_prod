@@ -95,7 +95,7 @@ async def main():
         probation_period.notification_about_lessons,
         'cron',
         hour=9,
-        minutes=00,
+        minute=00,
         args=(bot, db.pool, storage),
 
     )

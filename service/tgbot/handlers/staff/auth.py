@@ -14,7 +14,7 @@ from service.tgbot.handlers.staff.main import start_handler
 from service.tgbot.misc.states.staff import AuthState
 from service.tgbot.misc.parse import parse_phone
 from service.tgbot.misc.delete import remove
-from service.tgbot.keyboards.auth import staff_auth_btns, markup
+from service.tgbot.keyboards.auth import staff_auth_btns, get_auth_btns
 
 
 async def auth_phone_handler(
@@ -127,7 +127,8 @@ async def back_handler(
     _ = callback.bot.get("i18n")
     await state.finish()
     await callback.message.delete()
+    btns = get_auth_btns(_, local=user.local)
     await callback.message.answer(
         text=_("Выберите способ авторизация"),
-        reply_markup=markup
+        reply_markup=btns
     )
