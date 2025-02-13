@@ -51,10 +51,12 @@ async def push_client_answer_operator(
     )
     logging.info("Уведомление для клиентов по оценке работе оператора")
     text1 = {
-        "kaz": "Да"
+        "kaz": "Иә",
+        "rus": "Да"
     }
     text2 = {
-        "kaz": "Иә"
+        "kaz": "Подключить оператора",
+        "rus": "Операторды қосу"
     }
     markup = InlineKeyboardMarkup().add(
         *[

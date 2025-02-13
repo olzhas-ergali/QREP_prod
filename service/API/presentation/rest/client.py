@@ -24,7 +24,7 @@ from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPur
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.utils.check_client import check_user_exists
 from service.tgbot.lib.bitrixAPI.leads import Leads
-from service.tgbot.data.faq import grade_text
+from service.tgbot.data.faq import grade_text, grade_text_kaz
 
 router = APIRouter()
 
@@ -268,7 +268,7 @@ async def client_mailing(
         phone: str
 ):
     session: AsyncSession = db_session.get()
-    c = await Client.get_client_by_phone(session=session, phone=phone)
+    c = await Client.get_client_by_phone(session=session, phone=parse_phone(phone))
     if c:
         if not ClientMailing.get_by_phone_number(
             phone=c.phone_number,
@@ -298,13 +298,23 @@ async def client_create_lead(
         operator: ModelLead
 ):
     session: AsyncSession = db_session.get()
-    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
+    c = await Client.get_client_by_phone(session=session, phone=parse_phone(operator.phone))
     now_date = datetime.datetime.now()
+    if operator.waiting_time == '':
+        operator.waiting_time = 0
     date = now_date + datetime.timedelta(minutes=int(operator.waiting_time))
+    texts = {
+        'kaz': 'Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.',
+        'rus': 'Спасибо за выбор! Оператор свяжется с вами в указанное время.'
+    }
+    texts_cancel = {
+        'kaz': 'Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз',
+        'rus': 'Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос'
+    }
     if c:
         if not (client_app := await ClientsApp.get_last_app_by_phone(
                 session=session,
-                phone=operator.phone
+                phone=parse_phone(operator.phone)
         )):
             resp = await Leads(
                 user_id=settings.bitrix.user_id,
@@ -331,25 +341,20 @@ async def client_create_lead(
             )
             session.add(client_app)
             await session.commit()
+
             return {
                 "status_code": status.HTTP_200_OK,
                 "find": True,
                 "create": True,
-                "message": '''
-Спасибо за выбор! Оператор свяжется с вами в указанное время.
-
-Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.
-'''
+                "id": resp.get('result'),
+                "message": texts.get(operator.loc)
             }
         return {
             "status_code": status.HTTP_200_OK,
             "find": True,
             "create": False,
-            "message": '''
-Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос
-
-Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз
-'''
+            'id': client_app.id,
+            "message": texts_cancel.get(operator.loc)
         }
     return {
         "status_code": status.HTTP_200_OK,
@@ -362,19 +367,28 @@ async def client_create_lead(
 @router.patch("/client/bitrix/lead")
 async def client_create_lead(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        operator: ModelLead,
-        lead_id: str
+        operator: ModelLead
 ):
     session: AsyncSession = db_session.get()
-    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
-
+    c = await Client.get_client_by_phone(session=session, phone=parse_phone(operator.phone))
+    text = {
+        'kaz': grade_text_kaz,
+        'rus': grade_text
+    }
     if c:
+        client_app = await ClientsApp.get_last_app_by_phone(
+            session=session,
+            phone=parse_phone(operator.phone)
+        )
+        client_app.is_push = True
+        session.add(client_app)
+        await session.commit()
         await Leads(
             user_id=settings.bitrix.user_id,
             basic_token=settings.bitrix.token
         ).update(
             fields={
-                "ID": lead_id,
+                "ID": client_app.id,
                 "FIELDS[UF_CRM_1731932281238]": operator.grade
             }
         )
@@ -382,7 +396,7 @@ async def client_create_lead(
             "status_code": status.HTTP_200_OK,
             "find": True,
             "update": True,
-            "message": grade_text.get(operator.grade in ['1', '2', '3'])
+            "message": text.get(operator.loc).get(operator.grade in ['1', '2', '3'])
         }
 
     return {

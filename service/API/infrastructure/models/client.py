@@ -29,3 +29,4 @@ class ModelLead(BaseModel):
     waiting_time: typing.Optional[str] = None
     tag: typing.Optional[str] = None
     grade: typing.Optional[str] = None
+    loc: typing.Optional[str] = None
