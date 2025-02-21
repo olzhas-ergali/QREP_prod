@@ -298,9 +298,17 @@ async def client_create_lead(
         operator: ModelLead
 ):
     session: AsyncSession = db_session.get()
-    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
+    c = await Client.get_client_by_phone(session=session, phone=parse_phone(operator.phone))
     now_date = datetime.datetime.now()
     date = now_date + datetime.timedelta(minutes=int(operator.waiting_time))
+    texts = {
+        'kaz': 'Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.',
+        'rus': 'Спасибо за выбор! Оператор свяжется с вами в указанное время.'
+    }
+    texts_cancel = {
+        'kaz': 'Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз',
+        'rus': 'Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос'
+    }
     if c:
         if not (client_app := await ClientsApp.get_last_app_by_phone(
                 session=session,
@@ -335,21 +343,14 @@ async def client_create_lead(
                 "status_code": status.HTTP_200_OK,
                 "find": True,
                 "create": True,
-                "message": '''
-Спасибо за выбор! Оператор свяжется с вами в указанное время.
-
-Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.
-'''
+                "id": resp.get('result'),
+                "message": texts.get(ModelLead.loc)
             }
         return {
             "status_code": status.HTTP_200_OK,
             "find": True,
             "create": False,
-            "message": '''
-Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос
-
-Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз
-'''
+            "message": texts_cancel.get(ModelLead.loc)
         }
     return {
         "status_code": status.HTTP_200_OK,

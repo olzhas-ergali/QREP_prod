@@ -53,7 +53,10 @@ async def auth_fio_handler(
         phone=phone_number
     ):
         if client.id != user.id:
-            user.gender = client.gender.decode("utf-8")
+            try:
+                user.gender = client.gender.decode("utf-8")
+            except:
+                user.gender = client.gender
             user.name = client.name
             user.birthday_date = client.birthday_date
             await session.delete(client)
