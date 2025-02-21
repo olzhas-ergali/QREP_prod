@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, InputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.keyboards.staff.probation_period import get_answer_question_btn
+from service.tgbot.keyboards.staff.probation_period import get_answer_question_btn, get_evaluation_btn
 from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
@@ -83,7 +83,7 @@ async def probation_period_five_day_handler(
 ):
     _ = c.bot.get('i18n')
     question_id = int(callback_data.get('value'))
-
+    current_day = callback_data.get('action')
     await c.message.edit_reply_markup()
 
     questions = {
@@ -98,18 +98,36 @@ async def probation_period_five_day_handler(
             'answer': _('Отлично! Передала информацию руководителю, Welcome training проходит в первые дни каждого месяца. Ждем тебя обязательно в офисе.')
         }
     }
+    current_days = {
+        True: {
+            'answer': _('Рад, что онбординг помог тебе! Если появятся вопросы — всегда можешь обратиться ко мне или HR-команде. Добро пожаловать в QR Family!')
+        },
+        False: {
+            'answer': _('Спасибо за твой отзыв! Нам важно, чтобы процесс адаптации был максимально комфортным. HR-менеджер свяжется с тобой, чтобы узнать, что можно улучшить.')
+        }
+    }
 
+    if current_day == 'five_day':
+        current_question = current_days[False if question_id > 3 else True]
+        await state.finish()
+        return await c.message.answer(
+            text=current_question.get('answer')
+        )
     current_question = questions[question_id]
-
     if current_question.get('files'):
         await c.message.answer_document(
             caption=current_question.get('answer'),
             document=InputFile(current_question.get('files').get(user.local),
                                current_question.get('files').get(user.local).name)
         )
-        await c.message.answer(
-            text=_(
-                'Ура! Ты завершил основной этап онбординга. Если тебе потребуется помощь, помни, что я всегда рядом. Желаю тебе успехов и много позитивных моментов в нашей компании!')
+
+        return await c.message.answer(
+            text=_('Поздравляю! Ты успешно завершил онбординг. Надеюсь, это было полезно и помогло тебе лучше адаптироваться в компании.'
+                   '\nПеред тем как мы закончим, оцени, насколько онбординг был полезным для тебя:'),
+            reply_markup=get_evaluation_btn(
+                current_day=5,
+                action="five_day"
+            )
         )
     else:
         await c.message.answer(
@@ -117,7 +135,4 @@ async def probation_period_five_day_handler(
         )
 
     await state.finish()
-
-
-
 

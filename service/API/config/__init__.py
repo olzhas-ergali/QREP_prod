@@ -69,6 +69,13 @@ class Bitrix:
 
 
 @dataclass
+class SendPlus:
+    wb_bot_id: str
+    client_id: str
+    client_secret: str
+
+
+@dataclass
 class Settings:
     # Project file system
     root_dir: Path
@@ -80,10 +87,12 @@ class Settings:
     misc: MiscSettings
     tg_bot: TgbotSettings
     bitrix: Bitrix
+    wb_cred: SendPlus
 
     # Application configuration
     logging: LoggingSettings = LoggingSettings()
     debug_status: bool = True
+
 
 
 ROOT_PATH = Path(__file__).parent.parent
@@ -112,6 +121,11 @@ settings = Settings(
     bitrix=Bitrix(
         token=env.str('BITRIX_TOKEN'),
         user_id=env.str('BITRIX_USER_ID')
+    ),
+    wb_cred=SendPlus(
+        wb_bot_id=env.str('WB_ID'),
+        client_id=env.str('CLIENT_ID'),
+        client_secret=env.str('CLIENT_SECRET')
     )
 )
 

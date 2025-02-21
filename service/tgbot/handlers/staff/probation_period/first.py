@@ -22,7 +22,7 @@ async def probation_first_day_handler(
     current_day = data.get('current_day')
     value = data.get('value')
     if isinstance(q, CallbackQuery):
-        await q.message.delete()
+        await q.message.delete_reply_markup()
     if callback_data:
         value = callback_data.get('value')
         current_day = int(callback_data.get('current_day'))

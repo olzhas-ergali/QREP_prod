@@ -187,18 +187,20 @@ async def notification_about_fourth_day(
     text = _('Привет! Я про тебя не забыл :) Сегодня расскажу, что помимо работы, мы также ценим хороший отдых. Мы часто проводим тимбилдинги с командой и, кроме того, у нас есть крутой проект — QR Ambassadors для ребят из разных регионов!',
              locale=user.local)
 
-    await bot.send_video(
-        caption=text,
-        video=InputFile(FILES_DIRECTORY / "Ambassador.mp4", (FILES_DIRECTORY / "Ambassador.mp4").name),
+    await bot.send_message(
+        text=text,
         chat_id=user.id
     )
     await asyncio.sleep(1)
 
     text = _('Наш проект направлен на улучшение взаимодействия и сотрудничества между регионами и сотрудниками через наших амбассадоров. Мы уверены, что ты также сможешь привнести свои новые идеи и установить прочные связи с коллегами!',
              locale=user.local)
-    await bot.send_message(
+    await bot.send_video(
         chat_id=user.id,
-        text=text
+        video=InputFile(FILES_DIRECTORY / "Ambassador.mp4", (FILES_DIRECTORY / "Ambassador.mp4").name),
+        caption=text,
+        width=480,
+        height=848
     )
 
     text = _("Надеюсь информация была полезной! До скорой встречи!!",

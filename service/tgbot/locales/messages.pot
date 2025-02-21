@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: QR_staff_bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-02-10 00:52+0600\n"
+"POT-Creation-Date: 2025-02-22 00:27+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -395,7 +395,7 @@ msgstr ""
 msgid "Наличие товаров в сторах"
 msgstr ""
 
-#: data/faq_locales.py:222 keyboards/auth.py:47
+#: data/faq_locales.py:222 keyboards/auth.py:46
 msgid "Назад"
 msgstr ""
 
@@ -449,21 +449,21 @@ msgid ""
 "то нажмите на кнопку \"Авторизоваться как клиент\""
 msgstr ""
 
-#: handlers/client/auth.py:93
+#: handlers/client/auth.py:96
 msgid ""
 "Дорогой покупатель, Вас приветствует команда Qazaq Republic!\n"
 "Напишите ваше ФИО:"
 msgstr ""
 
-#: handlers/client/auth.py:112
+#: handlers/client/auth.py:115
 msgid "Благодарим! Теперь укажите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:146
+#: handlers/client/auth.py:149
 msgid "Выберите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:185
+#: handlers/client/auth.py:188
 msgid "Отлично! Пожалуйста, выберите ваш пол"
 msgstr ""
 
@@ -585,7 +585,7 @@ msgstr ""
 msgid "Такой ИИН уже зарегистрирован"
 msgstr ""
 
-#: handlers/staff/auth.py:131
+#: handlers/staff/auth.py:132
 msgid "Выберите способ авторизация"
 msgstr ""
 
@@ -609,47 +609,49 @@ msgstr ""
 msgid "Вы сменили язык"
 msgstr ""
 
-#: handlers/staff/probation_period/first.py:32
+#: handlers/staff/probation_period/first.py:38
 #: handlers/staff/probation_period/second.py:64
-#: handlers/staff/probation_period/second.py:97
+#: handlers/staff/probation_period/second.py:101
 #: handlers/staff/probation_period/third.py:24
 #: handlers/staff/probation_period/third.py:67
-#: misc/job/probation_period/blocks.py:36
+#: misc/job/probation_period/blocks.py:35
+#: misc/job/probation_period/blocks.py:172
 msgid "Да"
 msgstr ""
 
-#: handlers/staff/probation_period/first.py:32
+#: handlers/staff/probation_period/first.py:38
 msgid "Отлично! Давай я дополню твои знания более детальным объяснением."
 msgstr ""
 
-#: handlers/staff/probation_period/first.py:33
+#: handlers/staff/probation_period/first.py:39
 #: handlers/staff/probation_period/second.py:64
-#: handlers/staff/probation_period/second.py:89
+#: handlers/staff/probation_period/second.py:93
 #: handlers/staff/probation_period/third.py:25
-#: misc/job/probation_period/blocks.py:36
+#: misc/job/probation_period/blocks.py:35
+#: misc/job/probation_period/blocks.py:172
 msgid "Нет"
 msgstr ""
 
-#: handlers/staff/probation_period/first.py:33
+#: handlers/staff/probation_period/first.py:39
 msgid ""
 "Ничего страшного! Я с радостью расскажу тебе больше о нашей истории "
 "бренда."
 msgstr ""
 
-#: handlers/staff/probation_period/first.py:45
+#: handlers/staff/probation_period/first.py:51
 msgid ""
 "Надеюсь, эта информация была для тебя полезной! В первые месяцы работы ты"
 " всегда можешь обратиться к коллегам, указанным в презентации, по "
 "соответствующим вопросам. Обязательно сохрани её, чтобы не потерять!"
 msgstr ""
 
-#: handlers/staff/probation_period/first.py:53
+#: handlers/staff/probation_period/first.py:59
 msgid ""
 "Подскажи, у тебя остались вопросы? Если да, то напиши, пожалуйста. Мы "
 "свяжемся и ответим на них :)"
 msgstr ""
 
-#: handlers/staff/probation_period/first.py:56
+#: handlers/staff/probation_period/first.py:62
 msgid "На этом все! Увидимся завтра!"
 msgstr ""
 
@@ -668,11 +670,25 @@ msgid ""
 "первые дни каждого месяца. Ждем тебя обязательно в офисе."
 msgstr ""
 
-#: handlers/staff/probation_period/five.py:111
+#: handlers/staff/probation_period/five.py:103
 msgid ""
-"Ура! Ты завершил основной этап онбординга. Если тебе потребуется помощь, "
-"помни, что я всегда рядом. Желаю тебе успехов и много позитивных моментов"
-" в нашей компании!"
+"Рад, что онбординг помог тебе! Если появятся вопросы — всегда можешь "
+"обратиться ко мне или HR-команде. Добро пожаловать в QR Family!"
+msgstr ""
+
+#: handlers/staff/probation_period/five.py:106
+msgid ""
+"Спасибо за твой отзыв! Нам важно, чтобы процесс адаптации был максимально"
+" комфортным. HR-менеджер свяжется с тобой, чтобы узнать, что можно "
+"улучшить."
+msgstr ""
+
+#: handlers/staff/probation_period/five.py:125
+msgid ""
+"Поздравляю! Ты успешно завершил онбординг. Надеюсь, это было полезно и "
+"помогло тебе лучше адаптироваться в компании.\n"
+"Перед тем как мы закончим, оцени, насколько онбординг был полезным для "
+"тебя:"
 msgstr ""
 
 #: handlers/staff/probation_period/second.py:35
@@ -701,26 +717,26 @@ msgid ""
 "продукты. Знаешь, как её активировать?"
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:90
+#: handlers/staff/probation_period/second.py:94
 msgid ""
 "Не переживай, я с радостью помогу! Сейчас расскажу, как активировать твою"
 " стафф скидку."
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:98
+#: handlers/staff/probation_period/second.py:102
 msgid ""
 "Отлично! Ты уже в курсе, как активировать скидку! Если у тебя возникнут "
 "вопросы по этому процессу, не стесняйся обращаться, я всегда рядом, чтобы"
 " помочь."
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:106
+#: handlers/staff/probation_period/second.py:110
 msgid ""
 "Какие вопросы у тебя остались? Не стесняйся, напиши их сюда — и я "
 "обязательно вернусь с ответами!"
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:109
+#: handlers/staff/probation_period/second.py:113
 msgid ""
 "Я вернусь к тебе с ответом в ближайшее время. А пока на этом все! Желаю "
 "удачного дня, и до завтра!"
@@ -732,8 +748,8 @@ msgstr ""
 
 #: handlers/staff/probation_period/third.py:25
 msgid ""
-"Очень жаль… Напиши, пожалуйста, Севинч (@seviiinchx), чтобы она добавила "
-"тебя в группы"
+"Очень жаль… Напиши, пожалуйста, Севинч (+7 707 926 6305), чтобы она "
+"добавила тебя в группы"
 msgstr ""
 
 #: handlers/staff/probation_period/third.py:70
@@ -746,19 +762,19 @@ msgid ""
 " 778 166 05 65) Спасибо за внимание! До завтра :)"
 msgstr ""
 
-#: keyboards/auth.py:12
+#: keyboards/auth.py:11
 msgid "Авторизоваться как клиент"
 msgstr ""
 
-#: keyboards/auth.py:20
+#: keyboards/auth.py:19
 msgid "Авторизоваться как сотрудник"
 msgstr ""
 
-#: keyboards/auth.py:35
+#: keyboards/auth.py:34
 msgid "Продолжить регистрацию"
 msgstr ""
 
-#: keyboards/auth.py:51
+#: keyboards/auth.py:50
 msgid "Повторно написать ИИН"
 msgstr ""
 
@@ -802,6 +818,10 @@ msgstr ""
 msgid "Сменить язык"
 msgstr ""
 
+#: misc/probation.py:80
+msgid "Отправляем файл..."
+msgstr ""
+
 #: misc/client/show_purchases.py:44 misc/staff/show_purchases.py:30
 msgid ""
 "Название товара: {name}\n"
@@ -827,7 +847,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:41
+#: misc/job/probation_period/blocks.py:40
 msgid ""
 "Привет, {name}. Я очень рад, что ты стал(а) частью нашей команды. Меня "
 "зовут Qrep, и я буду твоим помощником в период твоей адаптации. Для "
@@ -836,11 +856,11 @@ msgid ""
 "современного человека. А ты знаешь историю появления нашего бренда?"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:127
+#: misc/job/probation_period/blocks.py:126
 msgid "Привет! Как дела? Оцени свой первый день от 1 до 5"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:151
+#: misc/job/probation_period/blocks.py:150
 msgid ""
 "Привет! Вау, мы уже 3 дня вместе! Сегодня я хотел бы поговорить с тобой о"
 " культуре и коммуникации в компании. Мы используем несколько каналов для "
@@ -852,7 +872,7 @@ msgstr ""
 msgid "Ты уже есть во всех каналах(Bitrix24, Whatsapp, @qr.family?)"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:186
+#: misc/job/probation_period/blocks.py:187
 msgid ""
 "Привет! Я про тебя не забыл :) Сегодня расскажу, что помимо работы, мы "
 "также ценим хороший отдых. Мы часто проводим тимбилдинги с командой и, "
@@ -860,7 +880,7 @@ msgid ""
 " регионов!"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:195
+#: misc/job/probation_period/blocks.py:196
 msgid ""
 "Наш проект направлен на улучшение взаимодействия и сотрудничества между "
 "регионами и сотрудниками через наших амбассадоров. Мы уверены, что ты "
@@ -868,18 +888,18 @@ msgid ""
 "коллегами!"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:201
+#: misc/job/probation_period/blocks.py:204
 msgid "Надеюсь информация была полезной! До скорой встречи!!"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:216
+#: misc/job/probation_period/blocks.py:220
 msgid ""
 "Привет! Поздравляю, ты успешно прошел адаптационную неделю! Я рада была "
 "поделиться с тобой всей информацией, которой владею :)  И хочу пригласить"
 " тебя на Welcome Training!"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:227
+#: misc/job/probation_period/blocks.py:232
 msgid "Как тебе будет удобнее пройти его?"
 msgstr ""
 

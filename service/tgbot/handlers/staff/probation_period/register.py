@@ -95,4 +95,12 @@ def register_probation_period(dp: Dispatcher):
         ),
         state='*'
     )
+    dp.register_callback_query_handler(
+        probation_period_five_day_handler,
+        ProbationPeriodActionCallback.filter(
+            current_day="5",
+            action='five_day'
+        ),
+        state='*'
+    )
 

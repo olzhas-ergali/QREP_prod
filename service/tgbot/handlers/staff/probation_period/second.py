@@ -82,7 +82,7 @@ async def probation_period_second_day_events_handler(
     current_stage_id = data.get('current_stage_id', 0)
     value = data.get('value')
     if isinstance(q, CallbackQuery):
-        await q.message.delete()
+        await q.message.delete_reply_markup()
     if callback_data:
         value = callback_data.get('value')
     qr = {
