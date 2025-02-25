@@ -62,7 +62,7 @@ async def get_user_info_process(
         session=session,
         phone=parse_phone(phone_number)
     )
-    if user:
+    if user and user.is_active:
 #        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
         return {
             "status_code": 200,

@@ -284,7 +284,7 @@ async def get_user(
         phone: str
 ) -> User:
     stmt = select(User).where(
-        (User.phone_number == phone) & (User.iin is not None)
+        User.phone_number == phone
     )
     return await session.scalar(stmt)
 
