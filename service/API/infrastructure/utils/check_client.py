@@ -8,7 +8,8 @@ async def check_user_exists(
 ):
     try:
         user = await bot.get_chat(user_id)
-        await bot.close()
+        session = await bot.get_session()
+        await session.close()
         return True
     except ChatNotFound:
         return False
