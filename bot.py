@@ -93,9 +93,9 @@ async def main():
 
     scheduler.add_job(
         probation_period.notification_about_lessons,
-        'cron',
-        hour=9,
-        minute=00,
+        'interval',
+#        hour=9,
+        minutes=1,
         args=(bot, db.pool, storage),
 
     )

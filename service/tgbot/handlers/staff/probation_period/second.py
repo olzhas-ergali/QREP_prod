@@ -47,7 +47,10 @@ async def probation_period_second_day_handler(
         current_day=current_day
     )
 
-    await c.message.delete()
+    try:
+        await c.message.delete_reply_markup()
+    except:
+        pass
     await c.message.answer(
         text=text
     )

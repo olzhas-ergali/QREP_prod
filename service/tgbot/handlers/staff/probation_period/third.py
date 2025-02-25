@@ -26,8 +26,10 @@ async def probation_period_third_day_handler(
     }
 
     text_by_value = text.get(value)
-
-    await c.message.edit_reply_markup()
+    try:
+        await c.message.delete_reply_markup()
+    except:
+        pass
     await c.message.answer(
         text=text_by_value
     )
@@ -43,7 +45,6 @@ async def probation_period_third_day_handler(
         current_day=current_day,
         value=value
     )
-    await c.message.delete()
 
 
     await probation_period_third_day_events_handler(
