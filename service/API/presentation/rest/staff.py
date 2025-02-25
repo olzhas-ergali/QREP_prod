@@ -60,7 +60,7 @@ async def get_user_info_process(
 
     user = await staff.get_user(
         session=session,
-        phone=phone_number
+        phone=parse_phone(phone_number)
     )
     if user:
 #        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
