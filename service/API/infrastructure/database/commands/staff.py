@@ -232,7 +232,6 @@ async def add_employees(
             user_tg.date_dismissal = date_dismissal
             user_tg.iin = None
             user_tg.is_active = False
-            user.is_fired = True
         else:
             #user_tg.phone_number = phone
             user.name = fullname
@@ -253,6 +252,7 @@ async def add_employees(
     user.date_receipt = date_receipt
     user.date_dismissal = date_dismissal
     user.update_data = update_date
+    user.is_fired = True if date_dismissal else False
     # user.organization_id = organization_id
     # user.organization_name = organization_name
     # user.position_id = position_id
