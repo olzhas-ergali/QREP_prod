@@ -19,4 +19,4 @@ class ACLMiddleware(I18nMiddleware):
         if not user:
             user = await session.get(Client, obj.from_user.id)
         await session.close()
-        return user.local if user else 'rus'
+        return user.local or 'rus' if user else 'rus'
