@@ -10,7 +10,8 @@ from service.tgbot.models.comands.client_purchases import (get_all_purchases,
 async def show_purchases(
         session: AsyncSession,
         user_id: int,
-        date: datetime = None
+        _,
+        date: datetime = None,
 ) -> List[str]:
     all_text = []
     text = ""
@@ -40,18 +41,25 @@ async def show_purchases(
                     if len(text) > 3500:
                         all_text.append(text)
                         text = ""
-                    text += (f"Название товара: {product['name']}\n"
-                             f"Количество: {product['count']}\n")
+                    text += _("Название товара: {name}\nКоличество: {count}\n").format(name=product['name'],
+                                                                                       count=product['count'])
                     if product['discount']:
                         total = int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))
-                        text += (f"Цена: {product['price']}\n"
-                                 f"Скидка: {product['discountPercent']}%\n"
-                                 f"Итог скидки: {product['price'] - total}\n"
-                                 f"Итого с учетом скидки: {int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))}\n")
+                        text += _('''Цена: {price}
+Скидка: {discountPercent}%
+Итог скидки: {total}
+Итого с учетом скидки: {totalDiscount}''').format(
+                            price=product['price'],
+                            discountPercent=product['discountPercent'],
+                            total=product['price'] - total,
+                            totalDiscount=int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))
+                        )
                     else:
-                        text += f"Цена: {product['price']}\n"
-                    text += (f"Дата покупки: {str(purchase.created_date).split(' ')[0]}\n"
-                             f"Ссылка на чек: {purchase.ticket_print_url}\n\n")
+                        text += _("Цена: {price}\n").format(price=product['price'])
+                    text += _("Дата покупки: {created_date}\nСсылка на чек: {ticket_print_url}\n\n").format(
+                        created_date=str(purchase.created_date).split(' ')[0],
+                        ticket_print_url=purchase.ticket_print_url
+                    )
 
     if text != "":
         all_text.append(text)

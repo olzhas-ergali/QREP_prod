@@ -4,12 +4,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, InputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from service.tgbot.keyboards.staff.probation_period import get_answer_question_btn
+from service.tgbot.keyboards.staff.probation_period import get_answer_question_btn, get_evaluation_btn
 from service.tgbot.misc.probation import ProbationEvents, ProbationMessageEvent
 from service.tgbot.misc.states.staff import ProbationPeriodState
 from service.tgbot.models.database.probation_period import ProbationPeriodAnswer
 from service.tgbot.data.helpers import FILES_DIRECTORY
-
+from service.tgbot.models.database.users import User
 
 
 async def probation_period_five_day_handler_old(
@@ -78,62 +78,61 @@ async def probation_period_five_day_handler(
         c: CallbackQuery,
         state: FSMContext,
         session: AsyncSession,
-        callback_data: dict
+        callback_data: dict,
+        user: User
 ):
+    _ = c.bot.get('i18n')
     question_id = int(callback_data.get('value'))
-
+    current_day = callback_data.get('action')
     await c.message.edit_reply_markup()
 
     questions = {
         1: {
-            'question': "Как тебе будет удобнее пройти его?\nСаған оны қалай өткен ыңғайлырақ болады?",
-            'answer': {
-                'kaz': """Отлично! Welcome training проходит в первые дни каждого месяца. 
-Более подробную информацию тебе даст твой руководитель :) 
-Если у тебя остались какие- то вопросы - прошу написать HR менеджеру (контакты)""",
-                'rus': """"Керемет!  
-Welcome training әр айдың алғашқы күндерінде өтеді. Толығырақ ақпаратты сенің жетекшің береді :)  
-Егер сұрақтарың болса, HR менеджеріне (контактілер) жаза аласың."
-"""
-            },
+            'answer': _('Отлично!Записала тебя онлайн на наш welcome training. Welcome training проходит в первые дни каждого месяца. Более подробную информацию тебе даст твой руководитель :)\n\nЕсли у тебя остались какие- то вопросы - прошу написать HR менеджеру.'),
             'files': {
-                'kaz': FILES_DIRECTORY / "контакты HR каз.pdf",
-                'rus': FILES_DIRECTORY / "Контакты HR русс.pdf"
+                'kaz': FILES_DIRECTORY / "HR Байланыс нөмірі.pdf",
+                'rus': FILES_DIRECTORY / "контакты HR.pdf"
             }
+        },
+        2: {
+            'answer': _('Отлично! Передала информацию руководителю, Welcome training проходит в первые дни каждого месяца. Ждем тебя обязательно в офисе.')
+        }
+    }
+    current_days = {
+        True: {
+            'answer': _('Рад, что онбординг помог тебе! Если появятся вопросы — всегда можешь обратиться ко мне или HR-команде. Добро пожаловать в QR Family!')
+        },
+        False: {
+            'answer': _('Спасибо за твой отзыв! Нам важно, чтобы процесс адаптации был максимально комфортным. HR-менеджер свяжется с тобой, чтобы узнать, что можно улучшить.')
         }
     }
 
+    if current_day == 'five_day':
+        current_question = current_days[False if question_id > 3 else True]
+        await state.finish()
+        return await c.message.answer(
+            text=current_question.get('answer')
+        )
     current_question = questions[question_id]
-    next_question_id = question_id + 1
-
     if current_question.get('files'):
         await c.message.answer_document(
-            caption=current_question.get('answer').get('kaz'),
-            document=InputFile(current_question.get('files').get('kaz'),
-                               current_question.get('files').get('kaz').name)
+            caption=current_question.get('answer'),
+            document=InputFile(current_question.get('files').get(user.local),
+                               current_question.get('files').get(user.local).name)
         )
-        await c.message.answer_document(
-            caption=current_question.get('answer').get('rus'),
-            document=InputFile(current_question.get('files').get('rus'),
-                               current_question.get('files').get('rus').name)
+
+        return await c.message.answer(
+            text=_('Поздравляю! Ты успешно завершил онбординг. Надеюсь, это было полезно и помогло тебе лучше адаптироваться в компании.'
+                   '\nПеред тем как мы закончим, оцени, насколько онбординг был полезным для тебя:'),
+            reply_markup=get_evaluation_btn(
+                current_day=5,
+                action="five_day"
+            )
         )
     else:
         await c.message.answer(
-            text=f"{current_question.get('answer').get('kaz')}\n\n{current_question.get('answer').get('rus')}"
+            text=current_question.get('answer')
         )
-    next_question_obj = questions.get(next_question_id)
 
-    if next_question_obj is None:
-        await c.message.answer(
-            text="""
-На этом все! 
-Желаю тебе успехов на работе! 
-Если у тебя будут вопросы - можешь обращаться к своему руководителю или к Жанель HR (@wasrdhivlogu)\n  
-Жұмысыңда табыс тілеймін!  
-Егер сұрақтарың болса, жетекшіңе немесе HR менеджеріне хабарласуға болады.
-"""
-        )
-        await state.finish()
-        return
-
+    await state.finish()
 

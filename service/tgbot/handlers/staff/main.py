@@ -14,13 +14,14 @@ async def start_handler(
         user: User,
         state: FSMContext
 ):
+    _ = message.bot.get("i18n")
     await state.finish()
     await remove(message, 1)
     await remove(message, 0)
     #text = "Добро пожаловать в дружную команду Qazaq Republic, " + staff.name + "🤗"
-    text = f"{user.name} вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗"
+    text = _("{name} вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗").format(name=user.name)
     await message.answer(
         text=text,
-        reply_markup=await main_btns(user)
+        reply_markup=await main_btns(user, _)
     )
 

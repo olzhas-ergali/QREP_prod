@@ -20,15 +20,13 @@ async def operator_handler(
         state: FSMContext,
         user: Client,
 ):
+    _ = message.bot.get('i18n')
     await message.delete()
     await remove(message, 1)
+    # Сіз операторменн байланысу опциясын белгіледіңіз. Біз операторды қандай уақыт аралығында қосуымыз қажет? Төменде көрсетілген уақытты белгілеуіңізді сұраймыз:
     await message.answer(
-        text='''
-Вы выбрали опцию подключить оператора. Хотите, чтобы я подключил оператора сейчас или позже? Пожалуйста, выберите подходящий вариант:
-
-Сіз операторменн байланысу опциясын белгіледіңіз. Біз операторды қандай уақыт аралығында қосуымыз қажет? Төменде көрсетілген уақытты белгілеуіңізді сұраймыз: 
-''',
-        reply_markup=await get_times()
+        text=_("Вы выбрали опцию подключить оператора. Хотите, чтобы я подключил оператора сейчас или позже? Пожалуйста, выберите подходящий вариант:"),
+        reply_markup=await get_times(_)
     )
     await FaqState.waiting_time.set()
 
@@ -40,26 +38,21 @@ async def send_operator_handler(
         user: Client,
         callback_data: dict
 ):
+    _ = callback.bot.get('i18n')
     waiting_time = callback_data.get('lvl')
     now_date = datetime.datetime.now()
     date = now_date + datetime.timedelta(minutes=int(waiting_time))
     data = await state.get_data()
     if not data.get('tag'):
         data['tag'] = '[LIST][619][VALUE]'
-    text = '''
-Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос
-
-Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз
-'''
+    # Сіз өтініш жібердіңіз, оператор сұрауыңызға жауап бергенше күтіңіз
+    text = _("Вы уже подавали заявку, подождите пока оператор ответит на ваш запрос")
     if not (c := await ClientsApp.get_last_app(
         session=session,
         telegram_id=user.id
     )):
-        text = '''
-Спасибо за выбор! Оператор свяжется с вами в указанное время.
-
-Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.
-        '''
+        # Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.
+        text = _("Спасибо за выбор! Оператор свяжется с вами в указанное время.")
         resp = await Leads(
             user_id=callback.bot.get('config').bitrix.user_id,
             basic_token=callback.bot.get('config').bitrix.token
@@ -86,11 +79,8 @@ async def send_operator_handler(
         )
         session.add(c)
         await session.commit()
-    text += '''
-Вы вернулись к основному меню. Чем еще можем помочь?
-
-Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
-'''
+    # Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
+    text += _("Вы вернулись к основному меню. Чем еще можем помочь?")
     callback_data['lvl'] = 'main'
     await faq_lvl_handler(
         callback=callback,
@@ -130,8 +120,9 @@ async def user_grade_handler(
         state: FSMContext,
         user: Client
 ):
+    _ = callback.bot.get('i18n')
     await callback.message.edit_text(
-        text='Оцените работу оператора от 1 до 5',
+        text=_('Оцените работу оператора от 1 до 5'),
         reply_markup=get_grade_btns()
     )
 
@@ -143,6 +134,7 @@ async def user_graded_handler(
         user: Client,
         callback_data: dict
 ):
+    _ = callback.bot.get('i18n')
     data = await state.get_data()
     await Leads(
         user_id=callback.bot.get('config').bitrix.user_id,
@@ -155,11 +147,8 @@ async def user_graded_handler(
     )
 
     text = grade_text.get(callback_data.get('ans') in ['1', '2', '3'])
-    text += '''
-Вы вернулись к основному меню. Чем еще можем помочь?
-
-Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
-'''
+    # Сіз басты бетке оралдыңыз. Тағы қандай көмек көрсете аламыз?
+    text += _("Вы вернулись к основному меню. Чем еще можем помочь?")
     callback_data['lvl'] = 'main'
     await faq_lvl_handler(
         callback=callback,

@@ -24,7 +24,9 @@ from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPur
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.utils.check_client import check_user_exists
 from service.tgbot.lib.bitrixAPI.leads import Leads
-from service.tgbot.data.faq import grade_text
+from service.tgbot.data.faq import grade_text, grade_text_kaz
+from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
+from service.tgbot.lib.SendPlusAPI.templates import templates
 
 router = APIRouter()
 
@@ -245,9 +247,19 @@ async def add_client_operator_grade(
     app = await ClientsApp.get_last_app_by_phone(session=session, phone=c.phone_number)
     if app:
         if c.activity == 'telegram':
-            await push_client_answer_operator(session=session, client=app, bot=bot)
+            await push_client_answer_operator(session=session, client_app=app, bot=bot, client=c)
         if c.activity == 'wb':
-            resp = requests.get(url=f"https://chatter.salebot.pro/api/a003aeed95f1655c1fe8b8b447570e19/whatsapp_callback?name=Test&message=grade&phone={phone}&bot_id=124652&txt={app.id}")
+            # resp = requests.get(url=f"https://chatter.salebot.pro/api/a003aeed95f1655c1fe8b8b447570e19/whatsapp_callback?name=Test&message=grade&phone={phone}&bot_id=124652&txt={app.id}")
+            wb = SendPlus(
+                client_id=settings.wb_cred.client_id,
+                client_secret=settings.wb_cred.client_secret,
+                waba_bot_id=settings.wb_cred.wb_bot_id
+            )
+            await wb.send_template_by_phone(
+                phone=phone,
+                bot_id=settings.wb_cred.wb_bot_id,
+                json=templates.get('operator')
+            )
             app.is_push = True
             session.add(app)
             await session.commit()
@@ -268,7 +280,7 @@ async def client_mailing(
         phone: str
 ):
     session: AsyncSession = db_session.get()
-    c = await Client.get_client_by_phone(session=session, phone=phone)
+    c = await Client.get_client_by_phone(session=session, phone=parse_phone(phone))
     if c:
         if not ClientMailing.get_by_phone_number(
             phone=c.phone_number,
@@ -300,6 +312,8 @@ async def client_create_lead(
     session: AsyncSession = db_session.get()
     c = await Client.get_client_by_phone(session=session, phone=parse_phone(operator.phone))
     now_date = datetime.datetime.now()
+    if operator.waiting_time == '':
+        operator.waiting_time = 0
     date = now_date + datetime.timedelta(minutes=int(operator.waiting_time))
     texts = {
         'kaz': 'Таңдағаныңыз үшін рақмет! Оператор сізбен көрсетілген уақытта хабарласады.',
@@ -312,7 +326,7 @@ async def client_create_lead(
     if c:
         if not (client_app := await ClientsApp.get_last_app_by_phone(
                 session=session,
-                phone=operator.phone
+                phone=parse_phone(operator.phone)
         )):
             resp = await Leads(
                 user_id=settings.bitrix.user_id,
@@ -339,6 +353,7 @@ async def client_create_lead(
             )
             session.add(client_app)
             await session.commit()
+
             return {
                 "status_code": status.HTTP_200_OK,
                 "find": True,
@@ -364,19 +379,28 @@ async def client_create_lead(
 @router.patch("/client/bitrix/lead")
 async def client_create_lead(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        operator: ModelLead,
-        lead_id: str
+        operator: ModelLead
 ):
     session: AsyncSession = db_session.get()
-    c = await Client.get_client_by_phone(session=session, phone=operator.phone)
-
+    c = await Client.get_client_by_phone(session=session, phone=parse_phone(operator.phone))
+    text = {
+        'kaz': grade_text_kaz,
+        'rus': grade_text
+    }
     if c:
+        client_app = await ClientsApp.get_last_app_by_phone(
+            session=session,
+            phone=parse_phone(operator.phone)
+        )
+        client_app.is_push = True
+        session.add(client_app)
+        await session.commit()
         await Leads(
             user_id=settings.bitrix.user_id,
             basic_token=settings.bitrix.token
         ).update(
             fields={
-                "ID": lead_id,
+                "ID": client_app.id,
                 "FIELDS[UF_CRM_1731932281238]": operator.grade
             }
         )
@@ -384,7 +408,7 @@ async def client_create_lead(
             "status_code": status.HTTP_200_OK,
             "find": True,
             "update": True,
-            "message": grade_text.get(operator.grade in ['1', '2', '3'])
+            "message": text.get(operator.loc).get(operator.grade in ['1', '2', '3'])
         }
 
     return {
@@ -392,4 +416,107 @@ async def client_create_lead(
         "find": False,
         "update": False,
         "message": f"Пользователь с {operator.phone} не найден в базе"
+    }
+
+
+@router.post('/client/verification')
+async def client_send_verification_code(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str,
+        code: str
+):
+    verification_temp = {
+        'kaz': {
+            "name": "auth_code_kz",
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": code
+                        }
+                    ]
+                },
+                {
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": 0,
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": code
+                        }
+                    ]
+                }
+            ],
+            "language": {
+                "policy": "deterministic",
+                "code": "kk"
+            }
+        },
+        'rus': {
+            "name": "auth_code_ru",
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": code
+                        }
+                    ]
+                },
+                {
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": 0,
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": code
+                        }
+                    ]
+                }
+            ],
+            "language": {
+                "policy": "deterministic",
+                "code": "ru"
+            }
+        }
+    }
+    wb = SendPlus(
+        client_id=settings.wb_cred.client_id,
+        client_secret=settings.wb_cred.client_secret,
+        waba_bot_id=settings.wb_cred.wb_bot_id
+    )
+    await wb.send_template_by_phone(
+        phone=phone,
+        bot_id=settings.wb_cred.wb_bot_id,
+        json=verification_temp
+    )
+    return {
+        'status_code': status.HTTP_200_OK,
+        'message': 'Сообщение отправлено'
+    }
+
+
+@router.post('/client/quality_grade')
+async def client_send_quality_grade(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    wb = SendPlus(
+        client_id=settings.wb_cred.client_id,
+        client_secret=settings.wb_cred.client_secret,
+        waba_bot_id=settings.wb_cred.wb_bot_id
+    )
+    await wb.send_template_by_phone(
+        phone=phone,
+        bot_id=settings.wb_cred.wb_bot_id,
+        json=templates.get('grade')
+    )
+    return {
+        'status_code': status.HTTP_200_OK,
+        'message': 'Сообщение отправлено'
     }

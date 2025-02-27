@@ -2,20 +2,21 @@ from aiogram.dispatcher.dispatcher import Dispatcher
 
 from service.tgbot.handlers import staff
 from service.tgbot.handlers.staff.probation_period import register_probation_period
-from service.tgbot.keyboards.query_cb import ChoiceCallback
+from service.tgbot.keyboards.query_cb import ChoiceCallback, LocalCallback
 
 
 def register_staff_function(dp: Dispatcher):
+    _ = dp.bot.get("i18n")
     dp.register_message_handler(
         staff.show_purchases.purchases_handler,
-        text='Мои покупки',
+        i18n_text='Мои покупки',
         is_auth=True,
         state="*"
     )
 
     dp.register_message_handler(
         staff.show_purchases.qr_handler,
-        text='Мой QR',
+        i18n_text='Мой QR',
         is_auth=True,
         state="*"
     )
@@ -36,7 +37,21 @@ def register_staff_function(dp: Dispatcher):
 
     dp.register_message_handler(
         staff.show_purchases.choice_instruction_handler,
-        text='Инструкция',
+        i18n_text='Инструкция',
+        is_auth=True,
+        state="*"
+    )
+
+    dp.register_message_handler(
+        staff.show_purchases.choose_locale_handler,
+        i18n_text='Сменить язык',
+        is_auth=True,
+        state="*"
+    )
+
+    dp.register_callback_query_handler(
+        staff.show_purchases.change_locale_handler,
+        LocalCallback.filter(action='change_local'),
         is_auth=True,
         state="*"
     )
@@ -49,5 +64,5 @@ def register_staff_function(dp: Dispatcher):
     )
 
     # Регистрация обработчиков испытательного срока
-    #staff.probation_period.register_probation_period(dp)
+    staff.probation_period.register_probation_period(dp)
 

@@ -14,7 +14,7 @@ from service.tgbot.handlers.staff.main import start_handler
 from service.tgbot.misc.states.staff import AuthState
 from service.tgbot.misc.parse import parse_phone
 from service.tgbot.misc.delete import remove
-from service.tgbot.keyboards.auth import staff_auth_btns, markup
+from service.tgbot.keyboards.auth import staff_auth_btns, get_auth_btns
 
 
 async def auth_phone_handler(
@@ -31,6 +31,7 @@ async def auth_iin_handler(
         user: Client,
         state: FSMContext
 ):
+    _ = message.bot.get("i18n")
     data = await state.get_data()
     phone_number = data.get('phone')
     if not phone_number and isinstance(message, Message):
@@ -53,11 +54,11 @@ async def auth_iin_handler(
         )
     if isinstance(message, Message):
         await message.answer(
-            text="Введите ваш ИИН:",
+            text=_("Введите ваш ИИН:"),
         )
     else:
         await message.message.edit_text(
-            text="Введите ваш ИИН:",
+            text=_("Введите ваш ИИН:"),
         )
     await AuthState.waiting_iin.set()
 
@@ -69,6 +70,7 @@ async def auth_staff(
         state: FSMContext,
         reg: RegTemp
 ):
+    _ = message.bot.get("i18n")
     data = await state.get_data()
     phone_number = data.get('phone')
     iin = message.text
@@ -76,17 +78,17 @@ async def auth_staff(
     await remove(message, 1)
     if not (user_t := await UserTemp.get_user_temp(session, iin)):
         return await message.answer(
-            text='''
+            text=_('''
 Упс, Вы у нас не работаете
 Если вы еще не являетесь сотрудником, но хотели бы присоединиться к нашей команде, свяжитесь с нашим отделом кадров.
 Контакты HR отдела:
 Телефон: +7 (777) 777-77-77
 Email: hr@qrepublic.com
-''',
-            reply_markup=staff_auth_btns()
+'''),
+            reply_markup=staff_auth_btns(_)
         )
     elif staff := await User.get_by_iin(session, iin):
-        await message.answer("Такой ИИН уже зарегистрирован")
+        await message.answer(_("Такой ИИН уже зарегистрирован"))
     else:
         if not (user_staff := await session.get(User, user.id)):
             user_staff = User()
@@ -122,9 +124,11 @@ async def back_handler(
         user: Client,
         state: FSMContext
 ):
+    _ = callback.bot.get("i18n")
     await state.finish()
     await callback.message.delete()
+    btns = get_auth_btns(_, local=user.local)
     await callback.message.answer(
-        text="Выберите способ авторизация",
-        reply_markup=markup
+        text=_("Выберите способ авторизация"),
+        reply_markup=btns
     )

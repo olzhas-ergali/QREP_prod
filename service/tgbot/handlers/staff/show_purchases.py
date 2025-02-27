@@ -18,11 +18,12 @@ async def purchases_handler(
         message: Message,
         state: FSMContext
 ):
+    _ = message.bot.get("i18n")
     await state.finish()
     await remove(message, 0)
     await message.answer(
-        text="Выберите:",
-        reply_markup=await user_key.choice_staff_btns()
+        text=_("Выберите:"),
+        reply_markup=await user_key.choice_staff_btns(_)
     )
 
 
@@ -32,13 +33,15 @@ async def all_purchases_handler(
         callback_data: dict,
         state: FSMContext
 ):
+    _ = callback.bot.get('i18n')
     try:
         await callback.message.delete()
     except:
         pass
     texts = await show_purchases(
         session=session,
-        user_id=callback.from_user.id
+        user_id=callback.from_user.id,
+        _=_
     )
     if texts:
         for text in texts:
@@ -48,7 +51,7 @@ async def all_purchases_handler(
             )
     else:
         await callback.message.answer(
-            text="Вы пока не совершали покупки"
+            text=_("Вы пока не совершали покупки")
         )
 
 
@@ -58,6 +61,7 @@ async def purchases_by_date_handler(
         callback_data: dict,
         state: FSMContext
 ):
+    _ = callback.bot.get('i18n')
     try:
         await callback.message.delete()
     except:
@@ -65,7 +69,8 @@ async def purchases_by_date_handler(
     texts = await show_purchases(
         session=session,
         date=datetime.datetime.now(),
-        user_id=callback.from_user.id
+        user_id=callback.from_user.id,
+        _=_
     )
     if texts:
         for text in texts:
@@ -75,7 +80,7 @@ async def purchases_by_date_handler(
             )
     else:
         await callback.message.answer(
-            text="Вы пока не совершали покупки за этот месяц"
+            text=_("Вы пока не совершали покупки за этот месяц")
         )
 
 
@@ -84,7 +89,8 @@ async def qr_handler(
         user: User,
         state: FSMContext
 ):
-    text = "Ваш QR"
+    _ = message.bot.get('i18n')
+    text = _("Ваш QR")
 
     qrcode = segno.make(user.phone_number, micro=False)
 
@@ -106,12 +112,46 @@ async def choice_instruction_handler(
         user: User,
         state: FSMContext
 ):
-    text = "Выберите на каком языке хотите получить инструкцию"
+    _ = message.bot.get('i18n')
+    text = _("Выберите на каком языке хотите получить инструкцию")
 
     await remove(message, 0)
     await message.answer(
         text=text,
         reply_markup=await user_key.instruction_staff_btns()
+    )
+
+
+async def choose_locale_handler(
+        message: Message,
+        user: User,
+        state: FSMContext
+):
+    _ = message.bot.get('i18n')
+    text = _("Выберите язык")
+
+    await remove(message, 0)
+    await message.answer(
+        text=text,
+        reply_markup=await user_key.change_locale()
+    )
+
+
+async def change_locale_handler(
+        query: CallbackQuery,
+        user: User,
+        session: AsyncSession,
+        callback_data: dict
+):
+    _ = query.bot.get('i18n')
+    local = callback_data.get('lang')
+    user.local = local
+    await user.save(session)
+    text = _('Вы сменили язык')
+    await query.message.delete()
+    await query.message.answer(
+        text=text,
+        reply_markup=await user_key.main_btns(user, _)
     )
 
 
@@ -133,3 +173,4 @@ async def get_instruction_handler(
     )
 
     await callback.message.delete()
+

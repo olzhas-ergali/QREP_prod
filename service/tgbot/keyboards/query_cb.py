@@ -54,4 +54,8 @@ ProbationPeriodActionCallback = CallbackData(
     "value"
 )
 
-#'state',
+LocalCallback = CallbackData(
+    "local",
+    "lang",
+    'action'
+)
