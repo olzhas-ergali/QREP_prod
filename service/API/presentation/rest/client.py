@@ -350,7 +350,7 @@ async def client_create_lead(
             "status_code": status.HTTP_200_OK,
             "find": True,
             "create": False,
-            "id": client_app.id,
+            'id': client_app.id,
             "message": texts_cancel.get(operator.loc)
         }
     return {
