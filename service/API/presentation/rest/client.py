@@ -344,13 +344,13 @@ async def client_create_lead(
                 "find": True,
                 "create": True,
                 "id": resp.get('result'),
-                "message": texts.get(ModelLead.loc)
+                "message": texts.get(operator.loc)
             }
         return {
             "status_code": status.HTTP_200_OK,
             "find": True,
             "create": False,
-            "message": texts_cancel.get(ModelLead.loc)
+            "message": texts_cancel.get(operator.loc)
         }
     return {
         "status_code": status.HTTP_200_OK,
