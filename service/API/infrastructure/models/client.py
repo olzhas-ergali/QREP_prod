@@ -15,7 +15,7 @@ class ModelAuth(BaseModel):
     qr: typing.Optional[bool] = True
     birthDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     gender: typing.Optional[str] = 'M'
-    local: typing.Optional[str] = 'rus'
+    # local: typing.Optional[str] = 'rus'
 
 
 class ModelReview(BaseModel):

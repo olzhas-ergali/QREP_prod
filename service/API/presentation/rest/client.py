@@ -115,7 +115,7 @@ async def is_authorization_client(
             "gender": client.gender,
             "message": "Клиент найден",
             "activity": client.activity,
-            "local": client.local
+            # "local": client.local
         }
     return {
         "status_code": 204,
@@ -136,7 +136,7 @@ async def authorization_client(
         client.name = authorization.clientFullName
         client.birthday_date = authorization.birthDate
         client.activity = "wb"
-        client.local = authorization.local
+        # client.local = authorization.local
         session.add(client)
         await session.commit()
 
