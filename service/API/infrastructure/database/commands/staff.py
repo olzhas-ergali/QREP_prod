@@ -252,10 +252,8 @@ async def add_employees(
     user.author = author
     user.date_receipt = date_receipt
     user.date_dismissal = date_dismissal
-    user.update_data = update_date
-    logging.info(update_date)
-    logging.info(date_dismissal)
-    user.is_fired = True if date_dismissal else False
+    user.update_data = datetime.today()
+    user.is_fired = True if date_dismissal is not None else False
     # user.organization_id = organization_id
     # user.organization_name = organization_name
     # user.position_id = position_id

@@ -118,6 +118,7 @@ async def employees_process(
             # organization_name=user.organizationName
         )
     except Exception as ex:
+        logging.error(ex)
         return {
             'status_code': status.HTTP_400_BAD_REQUEST,
             "error": "Некорректные данные. Проверьте переданные параметры."
