@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: QR_staff_bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-02-22 00:27+0600\n"
+"POT-Creation-Date: 2025-03-01 11:30+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -610,10 +610,10 @@ msgid "Вы сменили язык"
 msgstr ""
 
 #: handlers/staff/probation_period/first.py:38
-#: handlers/staff/probation_period/second.py:64
-#: handlers/staff/probation_period/second.py:101
+#: handlers/staff/probation_period/second.py:67
+#: handlers/staff/probation_period/second.py:104
 #: handlers/staff/probation_period/third.py:24
-#: handlers/staff/probation_period/third.py:67
+#: handlers/staff/probation_period/third.py:68
 #: misc/job/probation_period/blocks.py:35
 #: misc/job/probation_period/blocks.py:172
 msgid "Да"
@@ -624,8 +624,8 @@ msgid "Отлично! Давай я дополню твои знания бол
 msgstr ""
 
 #: handlers/staff/probation_period/first.py:39
-#: handlers/staff/probation_period/second.py:64
-#: handlers/staff/probation_period/second.py:93
+#: handlers/staff/probation_period/second.py:67
+#: handlers/staff/probation_period/second.py:96
 #: handlers/staff/probation_period/third.py:25
 #: misc/job/probation_period/blocks.py:35
 #: misc/job/probation_period/blocks.py:172
@@ -703,40 +703,40 @@ msgid ""
 "знакомство с нашей компанией!"
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:57
+#: handlers/staff/probation_period/second.py:60
 msgid ""
 "Сегодня я расскажу тебе вкратце о правилах трудового распорядка в нашей "
 "компании, чтобы ты знал(а), как лучше организовать свой рабочий процесс. "
 "Это поможет тебе адаптироваться быстрее и комфортнее."
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:61
+#: handlers/staff/probation_period/second.py:64
 msgid ""
 "А теперь - кое-что интересное! Ты уже знаешь, что у нас есть статус "
 "сотрудника, а значит, ты можешь пользоваться стафф скидкой на наши "
 "продукты. Знаешь, как её активировать?"
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:94
+#: handlers/staff/probation_period/second.py:97
 msgid ""
 "Не переживай, я с радостью помогу! Сейчас расскажу, как активировать твою"
 " стафф скидку."
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:102
+#: handlers/staff/probation_period/second.py:105
 msgid ""
 "Отлично! Ты уже в курсе, как активировать скидку! Если у тебя возникнут "
 "вопросы по этому процессу, не стесняйся обращаться, я всегда рядом, чтобы"
 " помочь."
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:110
+#: handlers/staff/probation_period/second.py:113
 msgid ""
 "Какие вопросы у тебя остались? Не стесняйся, напиши их сюда — и я "
 "обязательно вернусь с ответами!"
 msgstr ""
 
-#: handlers/staff/probation_period/second.py:113
+#: handlers/staff/probation_period/second.py:116
 msgid ""
 "Я вернусь к тебе с ответом в ближайшее время. А пока на этом все! Желаю "
 "удачного дня, и до завтра!"
@@ -752,11 +752,11 @@ msgid ""
 "добавила тебя в группы"
 msgstr ""
 
-#: handlers/staff/probation_period/third.py:70
+#: handlers/staff/probation_period/third.py:71
 msgid "А это на случай, если у тебя есть вопросы по работе с Bitrix24:"
 msgstr ""
 
-#: handlers/staff/probation_period/third.py:76
+#: handlers/staff/probation_period/third.py:77
 msgid ""
 "Если у тебя остались ещё вопросы по Bitrix, прошу обратиться к Жулдыз (+7"
 " 778 166 05 65) Спасибо за внимание! До завтра :)"
@@ -888,18 +888,18 @@ msgid ""
 "коллегами!"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:204
+#: misc/job/probation_period/blocks.py:206
 msgid "Надеюсь информация была полезной! До скорой встречи!!"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:220
+#: misc/job/probation_period/blocks.py:222
 msgid ""
 "Привет! Поздравляю, ты успешно прошел адаптационную неделю! Я рада была "
 "поделиться с тобой всей информацией, которой владею :)  И хочу пригласить"
 " тебя на Welcome Training!"
 msgstr ""
 
-#: misc/job/probation_period/blocks.py:232
+#: misc/job/probation_period/blocks.py:234
 msgid "Как тебе будет удобнее пройти его?"
 msgstr ""
 
@@ -908,7 +908,7 @@ msgid ""
 "Цена: {price}\n"
 "Скидка: {discount_procent}%\n"
 "Итог скидки: {total_discount}\n"
-"Итого с учетом скидки: {total_with_discount}"
+"Итого с учетом скидки: {total_with_discount}\n"
 msgstr ""
 
 #: misc/staff/show_purchases.py:61

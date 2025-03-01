@@ -32,7 +32,7 @@ async def show_purchases(
     discount_text = _('''Цена: {price}
 Скидка: {discount_procent}%
 Итог скидки: {total_discount}
-Итого с учетом скидки: {total_with_discount}''')
+Итого с учетом скидки: {total_with_discount}\n''')
     if purchases:
         for purchase in purchases:
             products = purchase.products
