@@ -250,13 +250,13 @@ async def add_employees(
     user.author = author
     user.date_receipt = date_receipt
     user.date_dismissal = date_dismissal
-    user.update_data = update_date
+    user.update_data = datetime.today()
     user.organization_id = organization_id
     user.organization_name = organization_name
     user.position_id = position_id
     user.position_name = position_name
     user.organization_bin = organization_bin
-    user.is_fired = True if date_dismissal else False
+    user.is_fired = True if date_dismissal is not None else False
 
     if not (discount := await get_user_discount(session=session, position_id=user.position_id)):
         discount = PositionDiscounts(
