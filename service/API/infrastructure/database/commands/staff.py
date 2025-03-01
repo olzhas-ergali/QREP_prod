@@ -252,6 +252,8 @@ async def add_employees(
     user.date_receipt = date_receipt
     user.date_dismissal = date_dismissal
     user.update_data = update_date
+    print(update_date)
+    print(date_dismissal)
     user.is_fired = True if date_dismissal else False
     # user.organization_id = organization_id
     # user.organization_name = organization_name
