@@ -112,7 +112,7 @@ async def employees_process(
             date_dismissal=user.dateOfDismissal,
             iin=user.iin,
             organization_id=user.organizationId,
-            organization_bin=user.organizationBIN,
+            organization_bin=user.organizationBin,
             position_id=user.positionId,
             position_name=user.positionName,
             organization_name=user.organizationName
