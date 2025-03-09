@@ -322,7 +322,7 @@ class ClientReview(Base):
 
 class Revenue(Base):
     __tablename__ = 'revenue_data'
-    row_id = mapped_column(UUID(as_uuid=True), primary_key=True)
+    id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     document_id = mapped_column(UUID(as_uuid=True))
     period = mapped_column(DateTime, server_default=func.now())
     product_name = mapped_column(String)
