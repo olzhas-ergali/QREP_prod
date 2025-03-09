@@ -1,3 +1,4 @@
+import datetime
 import logging
 import typing
 from service.API.config import settings
@@ -34,6 +35,11 @@ async def add_user_process(
     if user:
         #print(user.iin)
         discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+        if discount.end_date < datetime.datetime.today():
+            discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
+            discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+            session.add(discount)
+            await session.commit()
         return {
             "message": "Сотрудник найден",
             "userFullName": user.name,
