@@ -96,11 +96,12 @@ async def get_item_count(
             if product.get('price') in products_purchases:
                 # count = count - product['count'] if purchase.is_return else count + product['count']
                 count = count - product['count']
-    count = discount.monthly_limit - count
-    if count < 0:
-        count = 0
+    available_count = discount.monthly_limit - count
+    if available_count < 0:
+        available_count = 0
     return {
         "itemCount": count,
+        "available_count": available_count,
         "discountPercentage": discount.discount_percentage
     }
 

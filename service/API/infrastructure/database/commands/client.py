@@ -10,13 +10,13 @@ from service.API.infrastructure.database.models import ClientPurchase, ClientPur
 async def add_purchases(
         session: AsyncSession,
         purchase_id: str,
-        user_id: int,
-        phone: str,
-        products: list,
-        order_number: int,
-        number: str,
-        shift_number: int,
-        ticket_print_url: str
+        user_id: int | None,
+        phone: str | None,
+        products: list | None,
+        order_number: int | None,
+        number: str | None,
+        shift_number: int | None,
+        ticket_print_url: str | None
 ):
     if not user_id:
         client = await Client.get_client_by_phone(
@@ -45,15 +45,15 @@ async def add_purchases(
 
 async def add_return_purchases(
         session: AsyncSession,
-        purchase_id: str,
-        user_id: int,
-        phone: str,
-        products: list,
-        return_id: str,
-        order_number: int,
-        number: str,
-        shift_number: int,
-        ticket_print_url: str
+        purchase_id: str | None,
+        user_id: int | None,
+        phone: str | None,
+        products: list | None,
+        return_id: str | None,
+        order_number: int | None,
+        number: str | None,
+        shift_number: int | None,
+        ticket_print_url: str | None
 ):
     if not user_id:
         client = await Client.get_client_by_phone(
