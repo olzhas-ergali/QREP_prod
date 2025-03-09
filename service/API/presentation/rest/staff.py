@@ -70,6 +70,11 @@ async def get_user_info_process(
     )
     if user:
         discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+        if discount.end_date < datetime.datetime.today():
+            discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
+            discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+            session.add(discount)
+            await session.commit()
         return {
             "status_code": 200,
             "message": "Сотрудник найден",
