@@ -101,7 +101,7 @@ async def get_item_count(
         available_count = 0
     return {
         "itemCount": count,
-        "available_count": available_count,
+        "availableCount": available_count,
         "discountPercentage": discount.discount_percentage
     }
 
