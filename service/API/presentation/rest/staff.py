@@ -38,6 +38,7 @@ async def add_user_process(
         if discount.end_date < datetime.datetime.today():
             discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
             discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+            discount.discount_percentage = 30.0
             session.add(discount)
             await session.commit()
         return {
@@ -73,6 +74,7 @@ async def get_user_info_process(
         if discount.end_date < datetime.datetime.today():
             discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
             discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+            discount.discount_percentage = 30.0
             session.add(discount)
             await session.commit()
         return {
