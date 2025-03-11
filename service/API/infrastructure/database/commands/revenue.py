@@ -20,7 +20,6 @@ async def add_revenue_date(
         documents = await Revenue.get_revenue_by_doc_id(session=session, document_id=revenue.documentId)
         if documents:
             for i in documents:
-                print(i)
                 msg = "Данные успешно обновлены"
                 await session.delete(i)
                 await session.commit()
