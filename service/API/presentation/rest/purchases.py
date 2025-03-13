@@ -22,8 +22,8 @@ async def get_count(
         user_id: int
 ):
     session = db_session.get()
-    #user = await session.get(User, user_id)
-    return await staff.get_purchases_count(session, user_id)
+    user = await session.get(User, user_id)
+    return await staff.get_item_count(session, user)
 
 
 @router.post('/purchases', summary="Добавляет данные о покупках", tags=['purchase'])
