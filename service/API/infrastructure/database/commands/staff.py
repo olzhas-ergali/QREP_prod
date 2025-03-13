@@ -67,6 +67,9 @@ async def get_item_count(
         user: User | None
 ):
     discount = await get_user_discount(session, user.position_id)
+    monthly_limit = 3
+    if discount:
+        monthly_limit = discount.monthly_limit
     stmt = select(Purchase).where(
         ((datetime.now().month == extract('month', Purchase.created_date)) &
          (Purchase.user_id == user.id))
@@ -96,7 +99,7 @@ async def get_item_count(
             if product.get('price') in products_purchases:
                 # count = count - product['count'] if purchase.is_return else count + product['count']
                 count = count - product['count']
-    available_count = discount.monthly_limit - count
+    available_count = monthly_limit - count
     if available_count < 0:
         available_count = 0
     return {

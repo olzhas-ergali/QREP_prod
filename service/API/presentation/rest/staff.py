@@ -35,18 +35,19 @@ async def add_user_process(
     if user:
         #print(user.iin)
         discount = await staff.get_user_discount(session=session, position_id=user.position_id)
-        if discount.end_date < datetime.datetime.today():
-            discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
-            discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
-            discount.discount_percentage = 30.0
-            session.add(discount)
-            await session.commit()
+        if discount:
+            if discount.end_date < datetime.datetime.today():
+                discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
+                discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+                discount.discount_percentage = 30.0
+                session.add(discount)
+                await session.commit()
         return {
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
             "isActive": user.is_active,
-            "discountPercentage": discount.discount_percentage if discount else None
+            "discountPercentage": discount.discount_percentage if discount else 30.0
         }
     return {
         "message": "Сотрудник не найден",
@@ -71,12 +72,13 @@ async def get_user_info_process(
     )
     if user:
         discount = await staff.get_user_discount(session=session, position_id=user.position_id)
-        if discount.end_date < datetime.datetime.today():
-            discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
-            discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
-            discount.discount_percentage = 30.0
-            session.add(discount)
-            await session.commit()
+        if discount:
+            if discount.end_date < datetime.datetime.today():
+                discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
+                discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+                discount.discount_percentage = 30.0
+                session.add(discount)
+                await session.commit()
         return {
             "status_code": 200,
             "message": "Сотрудник найден",
@@ -84,7 +86,7 @@ async def get_user_info_process(
             "telegramId": user.id,
             "isActive": user.is_active,
             "isStaff": True,
-            "discountPercentage": discount.discount_percentage if discount else None
+            "discountPercentage": discount.discount_percentage if discount else 30.0
         }
 
     elif client:
