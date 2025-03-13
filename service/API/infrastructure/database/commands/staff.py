@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.API.infrastructure.database.models import (User, Purchase, UserTemp, PurchaseReturn, Client,
                                                         PositionDiscounts)
+from service.API.infrastructure.database.vacation import StaffVacation, VacationDays
 
 
 async def get_staff(
@@ -228,6 +229,28 @@ async def add_employees(
         user = UserTemp(
             id_staff=id_staff
         )
+        if not (staff := await StaffVacation.get_by_iin(iin, session)):
+            staff = StaffVacation(
+                iin=iin,
+                fullname=fullname,
+                date_receipt=date_receipt,
+                guid=id_staff
+            )
+            session.add(staff)
+            await session.commit()
+        if not await VacationDays.get_staff_vac_days_by_year(
+                year=datetime.now().year + 1,
+                staff_id=staff.id,
+                session=session
+        ):
+            vacation = VacationDays(
+                year=datetime.now().year + 1,
+                staff_vac_id=staff.id,
+                days=0,
+                dbl_days=0
+            )
+            session.add(vacation)
+            await session.commit()
     if (user_tg := await User.get_by_iin(session, user.iin)) is not None:
         if date_dismissal:
             user_tg.date_dismissal = date_dismissal
