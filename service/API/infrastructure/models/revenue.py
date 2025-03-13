@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class RevenueDateModel(BaseModel):
     documentId: typing.Optional[str] = None
     period: typing.Optional[datetime.datetime] = None
+    deleteStatus: typing.Optional[bool] = False
     data: typing.List[dict] = None
     #productName: typing.Optional[str] = None
     #productId: typing.Optional[str] = None

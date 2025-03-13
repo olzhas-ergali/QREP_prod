@@ -1,3 +1,4 @@
+import datetime
 import logging
 import typing
 from service.API.config import settings
@@ -33,13 +34,20 @@ async def add_user_process(
     )
     if user:
         #print(user.iin)
-        # discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+        if discount:
+            if discount.end_date < datetime.datetime.today():
+                discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
+                discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+                discount.discount_percentage = 30.0
+                session.add(discount)
+                await session.commit()
         return {
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
             "isActive": user.is_active,
-            # "discountPercentage": discount.discount_percentage if discount else None
+            "discountPercentage": discount.discount_percentage if discount else 30.0
         }
     return {
         "message": "Сотрудник не найден",
@@ -60,18 +68,25 @@ async def get_user_info_process(
 
     user = await staff.get_user(
         session=session,
-        phone=parse_phone(phone_number)
+        phone=phone_number
     )
     if user and user.is_active:
-#        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+        discount = await staff.get_user_discount(session=session, position_id=user.position_id)
+        if discount:
+            if discount.end_date < datetime.datetime.today():
+                discount.start_date = datetime.datetime.strptime("01.01.0001", "%d.%m.%Y")
+                discount.end_date = datetime.datetime.strptime("31.12.9999", "%d.%m.%Y")
+                discount.discount_percentage = 30.0
+                session.add(discount)
+                await session.commit()
         return {
             "status_code": 200,
             "message": "Сотрудник найден",
             "userFullName": user.name,
             "telegramId": user.id,
             "isActive": user.is_active,
-            "isStaff": True
-            #"discountPercentage": discount.discount_percentage if discount else None
+            "isStaff": True,
+            "discountPercentage": discount.discount_percentage if discount else 30.0
         }
 
     elif client:
@@ -110,12 +125,12 @@ async def employees_process(
             update_date=user.updateDate,
             date_receipt=user.dateOfReceipt,
             date_dismissal=user.dateOfDismissal,
-            iin=user.iin
-            # organization_id=user.organizationId,
-            # organization_bin=user.organizationBIN,
-            # position_id=user.positionId,
-            # position_name=user.positionName,
-            # organization_name=user.organizationName
+            iin=user.iin,
+            organization_id=user.organizationId,
+            organization_bin=user.organizationBin,
+            position_id=user.positionId,
+            position_name=user.positionName,
+            organization_name=user.organizationName
         )
     except Exception as ex:
         logging.error(ex)

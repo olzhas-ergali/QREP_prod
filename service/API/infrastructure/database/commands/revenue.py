@@ -22,9 +22,12 @@ async def add_revenue_date(
             for i in documents:
                 msg = "Данные успешно обновлены"
                 await session.delete(i)
+                await session.commit()
+        if revenue.deleteStatus:
+            msg = "Данные успешно удалены"
         for r_item in revenue.data:
-            # if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), revenue.documentId)):
-            # if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), document_id)):
+            #if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), revenue.documentId)):
+            #if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), document_id)):
             # r.row_id = r_item.get('row_id')
             r = Revenue()
             r.document_id = revenue.documentId
@@ -54,7 +57,7 @@ async def add_revenue_date(
         raise HTTPException(status_code=402, detail="Недостаточно данных")
     return {
         'status_code': '200',
-        'id': r.document_id,
+        'id': revenue.documentId,
         "message": msg
     }
 

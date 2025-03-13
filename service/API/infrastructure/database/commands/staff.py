@@ -70,9 +70,12 @@ async def get_item_count(
         user: User | None
 ):
     discount = await get_user_discount(session, user.position_id)
+    monthly_limit = 3
+    if discount:
+        monthly_limit = discount.monthly_limit
     stmt = select(Purchase).where(
         ((datetime.now().month == extract('month', Purchase.created_date)) &
-         (Purchase.user_id == user.id))
+         (Purchase.user_id == user.id) & (datetime.now().year == extract('year', Purchase.created_date)))
     )
     response = await session.execute(stmt)
     purchases = response.scalars().all()
@@ -88,6 +91,7 @@ async def get_item_count(
                 count = count + product['count']
     stmt = select(PurchaseReturn).where(
         ((datetime.now().month == extract('month', PurchaseReturn.created_date)) &
+         (datetime.now().year == extract('year', PurchaseReturn.created_date)) &
          (PurchaseReturn.user_id == user.id) &
          (PurchaseReturn.purchase_id.in_(purchases_id)))
     )
@@ -99,11 +103,12 @@ async def get_item_count(
             if product.get('price') in products_purchases:
                 # count = count - product['count'] if purchase.is_return else count + product['count']
                 count = count - product['count']
-    count = discount.monthly_limit - count
-    if count < 0:
-        count = 0
+    available_count = monthly_limit - count
+    if available_count < 0:
+        available_count = 0
     return {
         "itemCount": count,
+        "availableCount": available_count,
         "discountPercentage": discount.discount_percentage
     }
 
@@ -219,11 +224,11 @@ async def add_employees(
         date_dismissal: typing.Optional[datetime] = None,
         phone: typing.Optional[str] = None,
         iin: typing.Optional[str] = None,
-        # organization_id: typing.Optional[str] = None,
-        # organization_name: typing.Optional[str] = None,
-        # organization_bin: typing.Optional[str] = None,
-        # position_id: typing.Optional[str] = None,
-        # position_name: typing.Optional[str] = None
+        organization_id: typing.Optional[str] = None,
+        organization_name: typing.Optional[str] = None,
+        organization_bin: typing.Optional[str] = None,
+        position_id: typing.Optional[str] = None,
+        position_name: typing.Optional[str] = None
 ):
     if not (user := await session.get(UserTemp, id_staff)):
         user = UserTemp(
@@ -259,11 +264,11 @@ async def add_employees(
         else:
             #user_tg.phone_number = phone
             user.name = fullname
-            # user_tg.organization_id = organization_id
-            # user_tg.organization_name = organization_name
-            # user_tg.position_id = position_id
-            # user_tg.position_name = position_name
-            # user_tg.organization_bin = organization_bin
+            user_tg.organization_id = organization_id
+            user_tg.organization_name = organization_name
+            user_tg.position_id = position_id
+            user_tg.position_name = position_name
+            user_tg.organization_bin = organization_bin
         session.add(user_tg)
     if (c := await Client.get_client_by_phone(session=session, phone=phone)) is not None:
         c.is_active = False
@@ -276,23 +281,23 @@ async def add_employees(
     user.date_receipt = date_receipt
     user.date_dismissal = date_dismissal
     user.update_data = datetime.today()
+    user.organization_id = organization_id
+    user.organization_name = organization_name
+    user.position_id = position_id
+    user.position_name = position_name
+    user.organization_bin = organization_bin
     user.is_fired = True if date_dismissal is not None else False
-    # user.organization_id = organization_id
-    # user.organization_name = organization_name
-    # user.position_id = position_id
-    # user.position_name = position_name
-    # user.organization_bin = organization_bin
 
-    # if not (discount := await get_user_discount(session=session, position_id=user.position_id)):
-    #     discount = PositionDiscounts(
-    #         position_id=position_id,
-    #         position_name=position_name,
-    #         discount_percentage=30.0,
-    #         start_date=datetime.strptime("01.01.0001", "%d.%m.%Y"),
-    #         end_date=datetime.strptime("31.12.9999", "%d.%m.%Y"),
-    #         monthly_limit=3
-    #     )
-    #     session.add(discount)
+    if not (discount := await get_user_discount(session=session, position_id=user.position_id)):
+        discount = PositionDiscounts(
+            position_id=position_id,
+            position_name=position_name,
+            discount_percentage=30.0,
+            start_date=datetime.strptime("01.01.0001", "%d.%m.%Y"),
+            end_date=datetime.strptime("31.12.9999", "%d.%m.%Y"),
+            monthly_limit=3
+        )
+        session.add(discount)
 
     session.add(user)
 

@@ -117,7 +117,7 @@ async def is_authorization_client(
             "gender": client.gender,
             "message": "Клиент найден",
             "activity": client.activity,
-#            "local": client.local
+            # "local": client.local
         }
     return {
         "status_code": 204,
