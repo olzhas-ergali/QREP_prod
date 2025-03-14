@@ -48,7 +48,7 @@ async def notification_about_lessons(
 
     response = await session.execute(stmt)
     users: typing.List[User] = response.scalars().all()
-    print(users)
+    logging.info(users)
     notification_functions = {
         1: notification_about_first_day,
         2: notification_about_second_day,
