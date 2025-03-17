@@ -214,6 +214,50 @@ async def add_user_temp(
     }
 
 
+async def add_staff_vacation(
+        session: AsyncSession,
+        iin: str,
+        fullname: str,
+        date_receipt: datetime,
+        id_staff: str,
+        is_fired: bool = False
+):
+    if not (staff := await StaffVacation.get_by_iin(iin, session)):
+        staff = StaffVacation(
+            iin=iin,
+            fullname=fullname,
+            date_receipt=date_receipt,
+            guid=id_staff
+        )
+        session.add(staff)
+        await session.commit()
+    if not (vacation := await VacationDays.get_staff_vac_days_by_year(
+            year=datetime.now().year + 1,
+            staff_id=staff.id,
+            session=session
+    )):
+        vacation = VacationDays(
+            year=datetime.now().year + 1,
+            staff_vac_id=staff.id,
+            days=0,
+            dbl_days=0
+        )
+        session.add(vacation)
+        await session.commit()
+    if is_fired:
+        vacations = await VacationDays.get_staff_vac_by_id(
+            session=session,
+            staff_id=id_staff
+        )
+        for v in vacations:
+            await session.delete(v)
+        await session.delete(staff)
+        await session.commit()
+        return
+
+    return staff, vacation
+
+
 async def add_employees(
         session: AsyncSession,
         id_staff: typing.Optional[str],
@@ -230,32 +274,18 @@ async def add_employees(
         position_id: typing.Optional[str] = None,
         position_name: typing.Optional[str] = None
 ):
+    await add_staff_vacation(
+        session,
+        iin,
+        fullname,
+        date_receipt,
+        id_staff,
+        date_dismissal is not None
+    )
     if not (user := await session.get(UserTemp, id_staff)):
         user = UserTemp(
             id_staff=id_staff
         )
-        if not (staff := await StaffVacation.get_by_iin(iin, session)):
-            staff = StaffVacation(
-                iin=iin,
-                fullname=fullname,
-                date_receipt=date_receipt,
-                guid=id_staff
-            )
-            session.add(staff)
-            await session.commit()
-        if not await VacationDays.get_staff_vac_days_by_year(
-                year=datetime.now().year + 1,
-                staff_id=staff.id,
-                session=session
-        ):
-            vacation = VacationDays(
-                year=datetime.now().year + 1,
-                staff_vac_id=staff.id,
-                days=0,
-                dbl_days=0
-            )
-            session.add(vacation)
-            await session.commit()
     if (user_tg := await User.get_by_iin(session, user.iin)) is not None:
         if date_dismissal:
             user_tg.date_dismissal = date_dismissal
