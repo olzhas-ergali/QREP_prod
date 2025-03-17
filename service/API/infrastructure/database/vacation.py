@@ -58,8 +58,9 @@ class VacationDays(Base):
     year = Column(Integer)
     days = Column(Integer)
     dbl_days = Column(FLOAT, default=None)
-    vacation_date: Column[datetime.datetime] = Column(DateTime, default=None)
-    is_vacation = Column(Boolean, default=False)
+    vacation_start: Column[datetime.datetime] = Column(DateTime, default=None)
+    vacation_end: Column[datetime.datetime] = Column(DateTime, default=None)
+    vacation_code = Column(String, default=None)
 
     @classmethod
     async def get_staff_vac_days_by_year(
