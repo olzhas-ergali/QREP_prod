@@ -247,7 +247,7 @@ async def add_staff_vacation(
     if is_fired:
         vacations = await VacationDays.get_staff_vac_by_id(
             session=session,
-            staff_id=id_staff
+            staff_id=staff.id
         )
         for v in vacations:
             await session.delete(v)
