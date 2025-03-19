@@ -22,8 +22,8 @@ router = APIRouter()
 async def get_count(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         user_id: typing.Optional[int] = Query(
-            default=None,
-            alias="123456",
+            title="user_id",
+            alias="user_id",
             description="Телеграм id пользователя",
             strict=True
         )
