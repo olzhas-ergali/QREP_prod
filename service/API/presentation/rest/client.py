@@ -36,11 +36,7 @@ router = APIRouter()
              description="Отправка уведомление клиенту по телеграм id")
 async def client_notification(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        telegramId: typing.Optional[int] = Query(
-            alias="telegramId",
-            description="Телеграм id пользователя",
-            example="123456"
-        )
+        telegramId: typing.Optional[int]
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
