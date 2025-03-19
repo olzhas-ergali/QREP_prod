@@ -17,7 +17,9 @@ from service.API.infrastructure.database.session import db_session
 router = APIRouter()
 
 
-@router.post("/v1/revenue-data")
+@router.post("/v1/revenue-data",
+             summary="Для Дэшборда",
+             tags=['revenue'])
 async def post_revenue_date_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         revenue: RevenueDateModel
@@ -30,7 +32,10 @@ async def post_revenue_date_process(
     )
 
 
-@router.put("/v1/revenue-data")
+@router.put("/v1/revenue-data",
+            summary="Для Дэшборда",
+            tags=['revenue'],
+            deprecated=True)
 async def put_revenue_date_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         documentId: str,

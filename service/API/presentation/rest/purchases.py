@@ -1,6 +1,6 @@
 import typing
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -16,10 +16,17 @@ from service.API.infrastructure.database.models import User
 router = APIRouter()
 
 
-@router.get('/purchases/count', summary="Дает оставшиеся количество продуктов для скидок", tags=['purchase'])
+@router.get('/purchases/count',
+            summary="Дает оставшиеся количество продуктов для скидок",
+            tags=['purchase'])
 async def get_count(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        user_id: int
+        user_id: typing.Optional[int] = Query(
+            default=None,
+            alias="123456",
+            description="Телеграм id пользователя",
+            strict=True
+        )
 ):
     session = db_session.get()
     user = await session.get(User, user_id)
@@ -41,7 +48,9 @@ async def add_purchases_process(
     )
 
 
-@router.post('/purchases/return', summary="Добавляет данные о возвратных покупках", tags=['purchase'])
+@router.post('/purchases/return',
+             summary="Добавляет данные о возвратных покупках",
+             tags=['purchase'])
 async def add_purchases_return_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         purchase: ModelPurchaseReturn
