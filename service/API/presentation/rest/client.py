@@ -60,11 +60,7 @@ async def client_notification(
             description="Получение активности пользовтаеля")
 async def get_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: typing.Optional[str] = Query(
-            alias="phone",
-            description="Телефонный номер пользователя",
-            example="77077777777"
-        )
+        phone: typing.Optional[str]
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
@@ -263,8 +259,17 @@ async def add_client_review(
              summary="Отправка уведомлению по оценке работы оператора")
 async def add_client_operator_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str,
-        telegram_id: str = None
+        phone: typing.Optional[str] = Query(
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        telegram_id: typing.Optional[int] = Query(
+            default=None,
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
@@ -305,7 +310,11 @@ async def add_client_operator_grade(
              summary="Добавление клиента в рассылки")
 async def client_mailing(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
+        phone: typing.Optional[str] = Query(
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     c = await Client.get_client_by_phone(session=session, phone=parse_phone(phone))
