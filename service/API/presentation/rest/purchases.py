@@ -18,7 +18,8 @@ router = APIRouter()
 
 @router.get('/purchases/count',
             summary="Дает оставшиеся количество продуктов для скидок",
-            tags=['purchase'])
+            tags=['purchase'],
+            response_model=typing.List[typing.Dict])
 async def get_count(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         user_id: typing.Optional[int] = Query(
