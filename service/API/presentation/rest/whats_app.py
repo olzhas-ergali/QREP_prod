@@ -17,7 +17,7 @@ from service.API.infrastructure.utils.show_purchases import show_purchases, show
 router = APIRouter()
 
 
-@router.post("/staff/authorization")
+@router.post("/staff/authorization", tags=["WhatsApp"], deprecated=True)
 async def register_staff(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         staffs: ModelStaff
@@ -48,7 +48,7 @@ async def register_staff(
     }
 
 
-@router.get("/staff/get_purchases")
+@router.get("/staff/get_purchases", tags=["WhatsApp"], deprecated=True)
 async def get_purchases_staff(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         identityNumber: str,
@@ -76,7 +76,7 @@ async def get_purchases_staff(
     }
 
 
-@router.get("/client/get_purchases")
+@router.get("/client/get_purchases", tags=["WhatsApp"], deprecated=True)
 async def get_client_purchases(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,

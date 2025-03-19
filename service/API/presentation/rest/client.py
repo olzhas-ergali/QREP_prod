@@ -6,7 +6,7 @@ import requests
 from service.API.config import settings
 
 from aiogram import Bot
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -31,10 +31,16 @@ from service.tgbot.lib.SendPlusAPI.templates import templates
 router = APIRouter()
 
 
-@router.post('/client/{telegramId}/notifications')
+@router.post('/client/{telegramId}/notifications',
+             tags=['client'],
+             description="Отправка уведомление клиенту по телеграм id")
 async def client_notification(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        telegramId: int
+        telegramId: typing.Optional[int] = Query(
+            alias="telegramId",
+            description="Телеграм id пользователя",
+            example="123456"
+        )
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
@@ -53,10 +59,16 @@ async def client_notification(
     }
 
 
-@router.get('/client/{phone}/activity')
+@router.get('/client/{phone}/activity',
+            tags=['client'],
+            description="Получение активности пользовтаеля")
 async def get_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
+        phone: typing.Optional[str] = Query(
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
@@ -75,7 +87,9 @@ async def get_client_activity(
         }
 
 
-@router.post("/client/set_activity")
+@router.post("/client/set_activity",
+             tags=['client'],
+             description="Изменение активности клиента")
 async def set_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         authorization: ModelAuth
@@ -98,10 +112,16 @@ async def set_client_activity(
     }
 
 
-@router.get('/client/authorization')
+@router.get('/client/authorization',
+            tags=['client'],
+            description="Проверка есть ли такой клиента")
 async def is_authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
+        phone: typing.Optional[str] = Query(
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
@@ -125,7 +145,9 @@ async def is_authorization_client(
     }
 
 
-@router.post('/client/authorization')
+@router.post('/client/authorization',
+             tags=['client'],
+             description="Авторизация клиента")
 async def authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         authorization: ModelAuth
@@ -155,7 +177,9 @@ async def authorization_client(
         }
 
 
-@router.post('/client/purchases')
+@router.post('/client/purchases',
+             tags=['client'],
+             description="Добавляет данные о покупках")
 async def add_purchases_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         purchase: ModelPurchaseClient
@@ -178,7 +202,9 @@ async def add_purchases_process(
         print(ex)
 
 
-@router.post('/client/purchases/return')
+@router.post('/client/purchases/return',
+             tags=['client'],
+             summary="Добавляет данные о возвратных покупках")
 async def add_purchases_return_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         purchase: ModelClientPurchaseReturn
@@ -204,7 +230,9 @@ async def add_purchases_return_process(
         }
 
 
-@router.post("/client/reviews")
+@router.post("/client/reviews",
+             tags=['client'],
+             summary="Добавление отзыва клиента")
 async def add_client_review(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         review: ModelReview
@@ -234,7 +262,9 @@ async def add_client_review(
     }
 
 
-@router.post("/client/operator/notification")
+@router.post("/client/operator/notification",
+             tags=['client'],
+             summary="Отправка уведомлению по оценке работы оператора")
 async def add_client_operator_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
@@ -274,7 +304,9 @@ async def add_client_operator_grade(
         }
 
 
-@router.post("/client/mailing")
+@router.post("/client/mailing",
+             tags=['client'],
+             summary="Добавление клиента в рассылки")
 async def client_mailing(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str
@@ -304,7 +336,9 @@ async def client_mailing(
     }
 
 
-@router.post("/client/bitrix/lead")
+@router.post("/client/bitrix/lead",
+             tags=['client'],
+             summary="Создание лида в битрексе")
 async def client_create_lead(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         operator: ModelLead
@@ -376,7 +410,9 @@ async def client_create_lead(
     }
 
 
-@router.patch("/client/bitrix/lead")
+@router.patch("/client/bitrix/lead",
+              tags=['client'],
+              summary="Добавление оценки оператора в лиде битрекса")
 async def client_create_lead(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         operator: ModelLead
@@ -419,7 +455,7 @@ async def client_create_lead(
     }
 
 
-@router.post('/client/verification')
+@router.post('/client/verification', deprecated=True)
 async def client_send_verification_code(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
@@ -501,7 +537,7 @@ async def client_send_verification_code(
     }
 
 
-@router.post('/client/quality_grade')
+@router.post('/client/quality_grade', deprecated=True)
 async def client_send_quality_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str

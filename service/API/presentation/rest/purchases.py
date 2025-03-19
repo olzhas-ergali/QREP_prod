@@ -73,7 +73,7 @@ async def add_purchases_return_process(
         }
 
 
-@router.post('/add_user')
+@router.post('/add_user', deprecated=True)
 async def add_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         user: ModelUser
@@ -87,7 +87,7 @@ async def add_user_process(
     )
 
 
-@router.get('/get_user')
+@router.get('/get_user', deprecated=True)
 async def get_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone_number: str
