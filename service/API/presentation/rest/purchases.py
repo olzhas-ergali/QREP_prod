@@ -23,7 +23,7 @@ async def get_count(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         user_id: typing.Optional[int] = Query(
             title="user_id",
-            alias="user_id",
+            alias="123456",
             description="Телеграм id пользователя",
             strict=True
         )
