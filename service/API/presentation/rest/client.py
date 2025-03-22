@@ -460,7 +460,9 @@ async def client_create_lead(
     }
 
 
-@router.post('/client/verification', deprecated=True)
+@router.post('/client/verification',
+             tags=['client'],
+             deprecated=True)
 async def client_send_verification_code(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
@@ -542,7 +544,9 @@ async def client_send_verification_code(
     }
 
 
-@router.post('/client/quality_grade', deprecated=True)
+@router.post('/client/quality_grade',
+             tags=['client'],
+             deprecated=True)
 async def client_send_quality_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str

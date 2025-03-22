@@ -3,7 +3,7 @@ import logging
 import typing
 from service.API.config import settings
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -25,7 +25,11 @@ router = APIRouter()
 @router.get('/authorization', tags=['staff'], summary="Дает информацию про сотрудника(Старая)")
 async def add_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone_number: str
+        phone_number: typing.Optional[str] = Query(
+            alias="phone_number",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     user = await staff.get_user(
@@ -57,10 +61,27 @@ async def add_user_process(
 @router.get('/v2/authorization', tags=['staff'], summary="Дает информацию про сотрудника или клиента")
 async def get_user_info_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone_number: str
+        phone_number: typing.Optional[str] = Query(
+            alias="phone_number",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        qr_code: typing.Optional[str] = Query(
+            default=None,
+            alias="qrCode"
+        )
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
+    if qr_code:
+        phone_number = qr_code.split("|")[0]
+        qr_str_date = qr_code.split("|")[1]
+        qr_date: typing.Optional[datetime.datetime] = datetime.datetime.strptime(qr_str_date, "%d.%m.%Y %H:%S:%M")
+        if datetime.datetime.now() > qr_date:
+            return {
+                "status_code": 410,
+                "message": "QR-код истек. Запросите новый код."
+            }
     client = await Client.get_client_by_phone(
         session=session,
         phone=parse_phone(phone_number)
@@ -113,7 +134,7 @@ async def employees_process(
         user: ModelUserTemp
 ):
     session: AsyncSession = db_session.get()
-
+    bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
     try:
         #logging.info(user.dict())
         return await staff.add_employees(

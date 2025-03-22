@@ -56,8 +56,8 @@ async def get_my_qr_handler(
     await state.finish()
     text = _("Ваш QR")
 
-    qrcode = segno.make(user.phone_number, micro=False)
-
+    date_now = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime("%d.%m.%Y %H:%S:%M")
+    qrcode = segno.make(user.phone_number + "|" + date_now, micro=False)
     qrcode.save(user.phone_number + ".png", border=4, scale=7)
 
     await message.delete()

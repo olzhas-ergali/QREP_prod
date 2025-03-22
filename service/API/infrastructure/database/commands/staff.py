@@ -4,6 +4,7 @@ from datetime import datetime
 
 from typing import Sequence, Optional
 
+from aiogram import Bot
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -272,7 +273,8 @@ async def add_employees(
         organization_name: typing.Optional[str] = None,
         organization_bin: typing.Optional[str] = None,
         position_id: typing.Optional[str] = None,
-        position_name: typing.Optional[str] = None
+        position_name: typing.Optional[str] = None,
+        bot: typing.Optional[Bot] = None
 ):
     await add_staff_vacation(
         session,
@@ -287,6 +289,31 @@ async def add_employees(
             id_staff=id_staff
         )
     if (user_tg := await User.get_by_iin(session, user.iin)) is not None:
+        texts = {
+            'rus': '''
+🔄 *Изменение вашего статуса* 🔄
+
+Мы заметили, что ваш статус в компании изменился.
+
+💙 Если вы завершили работу в компании, *благодарим вас за ваш вклад и желаем успехов в новых начинаниях!* 🌟
+
+🔄 Если у вас был перевод в другое юридическое лицо, необходимо перезапустить бота, чтобы обновить доступ:\
+1️⃣ Остановите и заблокируйте бот (перейдите в настройки и нажмите нужную кнопку)\
+2️⃣ Далее перезапустите бот\
+3️⃣ Бот запросит ввести ИИН, пройдите авторизацию''',
+            'kaz': '''
+🔄 *Сіздің мәртебеңіздің өзгеруі* 🔄  
+
+Біз сіздің компаниядағы мәртебеңіздің өзгергенін байқадық.  
+
+💙 Егер сіз компаниядағы жұмысыңызды аяқтасаңыз, *сіздің үлесіңіз үшін алғысымызды білдіреміз және жаңа бастамаларыңызда сәттілік тілейміз!* 🌟  
+
+🔄 Егер сіз басқа заңды тұлғаға ауыстырылған болсаңыз, қолжетімділікті жаңарту үшін ботты қайта іске қосу қажет:  
+1️⃣ Ботты тоқтатыңыз және бұғаттаңыз (параметрлерге өтіп, тиісті батырманы басыңыз)  
+2️⃣ Содан кейін ботты қайта іске қосыңыз  
+3️⃣ Бот сізден ЖСН енгізуді сұрайды, авторизациядан өтіңіз
+'''
+        }
         if date_dismissal:
             user_tg.date_dismissal = date_dismissal
             user_tg.iin = None
@@ -299,6 +326,12 @@ async def add_employees(
             user_tg.position_id = position_id
             user_tg.position_name = position_name
             user_tg.organization_bin = organization_bin
+        await bot.send_message(
+            chat_id=user_tg.id,
+            text=texts.get(user_tg.local)
+        )
+        bot_session = await bot.get_session()
+        await bot_session.close()
         session.add(user_tg)
     if (c := await Client.get_client_by_phone(session=session, phone=phone)) is not None:
         c.is_active = False
