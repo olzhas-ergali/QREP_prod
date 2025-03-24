@@ -5,6 +5,9 @@ from aiogram.dispatcher.storage import FSMContext
 from service.tgbot.keyboards.client.faq import get_faq_btns
 from service.tgbot.data.faq import faq_texts_update, tags
 from service.tgbot.misc.states.client import FaqState
+from service.tgbot.models.database.users import Client
+from service.tgbot.keyboards.staff import staff
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_faq_main_handler(
@@ -41,3 +44,35 @@ async def faq_lvl_handler(
         reply_markup=await get_faq_btns(callback_data.get('lvl'), _)
     )
 
+
+async def choose_locale_handler(
+        callback: CallbackQuery,
+        user: Client,
+        state: FSMContext
+):
+    _ = callback.bot.get('i18n')
+    text = _("Выберите язык")
+
+    await callback.message.edit_text(
+        text=text,
+        reply_markup=await staff.change_locale('client_locale')
+    )
+
+
+async def change_locale_handler(
+        query: CallbackQuery,
+        user: Client,
+        session: AsyncSession,
+        callback_data: dict
+):
+    _ = query.bot.get('i18n')
+    local = callback_data.get('lang')
+    user.local = local
+    await user.save(session)
+    text = _('Вы сменили язык', locale=user.local)
+    await query.message.delete()
+    btns = await get_faq_btns('main', _, user.local)
+    await query.message.answer(
+        text=text,
+        reply_markup=btns
+    )

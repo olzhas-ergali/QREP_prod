@@ -126,7 +126,7 @@ class PositionDiscounts(Base):
 class Client(Base):
     __tablename__ = "clients"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    whatsapp_id = Column(VARCHAR(36))
+    # whatsapp_id = Column(VARCHAR(36))
     name = Column(String)
     fullname = Column(String)
     phone_number = Column(String, unique=True, default=None)
@@ -134,8 +134,9 @@ class Client(Base):
     birthday_date = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now())
     update_data = Column(DateTime, default=None)
-    is_active = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     source = Column(String)
+    email = Column(String)
     activity = Column(String, default="telegram")
     local = Column(String, default="rus")
 

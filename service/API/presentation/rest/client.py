@@ -19,7 +19,7 @@ from service.API.infrastructure.database.models import Client, ClientReview, Cli
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
 from service.API.infrastructure.utils.parse import parse_phone
-from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead
+from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.utils.check_client import check_user_exists
@@ -458,6 +458,41 @@ async def client_create_lead(
         "update": False,
         "message": f"Пользователь с {operator.phone} не найден в базе"
     }
+
+
+@router.post("/client",
+             tags=['client'])
+async def client_create(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        model_client: ModelAuthSite
+):
+    session: AsyncSession = db_session.get()
+    answer = {
+        "statusСode": 200,
+        "message": "Клиент успешно обновлен"
+    }
+    try:
+        bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
+        if not (client := await Client.get_client_by_phone(
+            session=session,
+            phone=parse_phone(model_client.phone_number))
+        ):
+            client = Client()
+            client.phone_number = parse_phone(model_client.phone_number)
+            answer["statusСode"] = 201
+            answer["message"] = "Клиент успешно создан"
+        answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
+        client.name = model_client.clientFullName
+        client.birthday_date = model_client.birthDate
+        session.add(client)
+        await session.commit()
+        return answer
+    except HTTPException as ex:
+        print(ex)
+        return {
+            "statusСode": 400,
+            "message": "Некорректный формат данных"
+        }
 
 
 @router.post('/client/verification',

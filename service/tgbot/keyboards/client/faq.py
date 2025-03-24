@@ -12,7 +12,8 @@ from service.tgbot.data.faq import faq_lvls
 
 async def get_faq_btns(
         current_lvl: str,
-        i18n_func: typing.Callable[[str], str]
+        i18n_func: typing.Callable[[str], str],
+        locale: str = None
 ):
     markup = InlineKeyboardMarkup()
     n = len(faq_lvls.get(current_lvl))
@@ -20,7 +21,7 @@ async def get_faq_btns(
         faq_lvls.get(current_lvl)[i].get('callback')
         markup.add(
             InlineKeyboardButton(
-                text=i18n_func(faq_lvls.get(current_lvl)[i].get('text')),
+                text=i18n_func(faq_lvls.get(current_lvl)[i].get('text'), locale=locale),
                 callback_data=FaqCallback.new(
                     chapter=i + 1,
                     lvl=faq_lvls.get(current_lvl)[i].get('callback'),
@@ -30,7 +31,7 @@ async def get_faq_btns(
         )
     markup.add(
         InlineKeyboardButton(
-            text=i18n_func("Сменить язык"),
+            text=i18n_func("Сменить язык", locale=locale),
             callback_data=LocalCallback.new(
                 lang="-",
                 action="change_local"

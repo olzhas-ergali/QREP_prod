@@ -15,6 +15,22 @@ from service.tgbot.misc.delete import remove
 from service.tgbot.keyboards.client.faq import get_faq_btns
 
 
+async def main_handler(
+        m: Message | CallbackQuery
+):
+    _ = m.bot.get("i18n")
+    btns = await get_faq_btns('main', _)
+    if isinstance(m, Message):
+        return await m.answer(
+            text=_("Чем могу помочь? Выберите одну из опций:"),
+            reply_markup=btns
+        )
+    return await m.message.answer(
+        text=_("Чем могу помочь? Выберите одну из опций:"),
+        reply_markup=btns
+    )
+
+
 async def start_handler(
         message: Message,
         user: Client,
@@ -27,32 +43,26 @@ async def start_handler(
     await remove(message, 0)
     logging.info(f"Клиент с id: {user.id} авторизовался/зарегался в боте")
     gender = 'Дорогой'
-    if user.gender == b'M':
+    if user.gender == b'M' or user.gender == 'M':
         gender = 'Дорогой'
-    elif user.gender == b'F':
+    elif user.gender == b'F' or user.gender == 'F':
         gender = 'Дорогая'
     if user.local == 'kaz':
         gender = 'Құрметті'
     text = _("{gender} {name}, вас приветствует команда Qazaq Republic!🤗\n").format(gender=gender, name=user.name)
-    #f"Құрметті {user.name}, Сізбен бірге Qazaq Republic командасы!"
-    btns = await get_faq_btns('main', _)
     await message.answer(
         text=text
         #reply_markup=await main_btns(_)
     )
-    #Сізге қандай көмек көрсете аламыз? Опциялардың бірін таңдаңыз:
-    await message.answer(
-        text=_("Чем могу помочь? Выберите одну из опций:"),
-        reply_markup=btns
-    )
+    await main_handler(message)
 
 
 async def get_my_qr_handler(
-        message: Message,
+        callback: CallbackQuery,
         user: Client,
         state: FSMContext
 ):
-    _ = message.bot.get('i18n')
+    _ = callback.bot.get('i18n')
     await state.finish()
     text = _("Ваш QR")
 
@@ -60,10 +70,16 @@ async def get_my_qr_handler(
     qrcode = segno.make(user.phone_number + "|" + date_now, micro=False)
     qrcode.save(user.phone_number + ".png", border=4, scale=7)
 
-    await message.delete()
-    await message.answer_photo(
+    await callback.message.delete()
+    await callback.message.answer_photo(
         photo=open(user.phone_number + ".png", "rb"),
         caption=text,
+    )
+
+    btns = await get_faq_btns('main', _)
+    await callback.message.answer(
+        text=_("Чем могу помочь? Выберите одну из опций:"),
+        reply_markup=btns
     )
     try:
         os.remove(user.phone_number + ".png")

@@ -92,16 +92,18 @@ async def instruction_staff_btns():
     ).get()
 
 
-async def change_locale():
+async def change_locale(
+        action: str = "change_local"
+):
     markup = InlineKeyboardMarkup()
     btns = {
         "Qazaqsha 🇰🇿": LocalCallback.new(
             lang="kaz",
-            action="change_local"
+            action=action
         ),
         "Руский 🇷🇺": LocalCallback.new(
             lang="rus",
-            action="change_local"
+            action=action
         )
     }
 

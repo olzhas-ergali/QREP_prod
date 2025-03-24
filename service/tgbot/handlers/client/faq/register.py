@@ -1,6 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher.dispatcher import Dispatcher
-from service.tgbot.handlers.client import faq
+from service.tgbot.handlers.client import faq, show_purchases, main
 from service.tgbot.keyboards import query_cb
 from service.tgbot.misc.states.client import FaqState
 
@@ -40,4 +40,34 @@ def register_faq_function(dp: Dispatcher):
         faq.operator.user_graded_handler,
         query_cb.AnswerCallback.filter(action='user_grade'),
         state="*"
+    )
+
+    dp.register_callback_query_handler(
+        main.get_my_bonus_handler,
+        query_cb.FaqCallback.filter(action='client', lvl='bonus'),
+        state='*'
+    )
+
+    dp.register_callback_query_handler(
+        main.get_my_qr_handler,
+        query_cb.FaqCallback.filter(action='client', lvl='qr'),
+        state='*'
+    )
+
+    dp.register_callback_query_handler(
+        show_purchases.purchases_handler,
+        query_cb.FaqCallback.filter(action='client', lvl='purchase'),
+        state='*'
+    )
+
+    dp.register_callback_query_handler(
+        faq.main.choose_locale_handler,
+        query_cb.LocalCallback.filter(action='change_local'),
+        state='*'
+    )
+
+    dp.register_callback_query_handler(
+        faq.main.change_locale_handler,
+        query_cb.LocalCallback.filter(action='client_locale'),
+        state='*'
     )
