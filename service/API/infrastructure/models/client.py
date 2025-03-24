@@ -20,17 +20,12 @@ class ModelAuth(BaseModel):
 
 
 class ModelAuthSite(BaseModel):
-    phone_number: typing.Optional[str] = Body(
-        default=None,
-        alias="phone",
-        description="Телефонный номер пользователя",
-        example="77018192236"
-    )
+    phone_number: typing.Optional[str] = None
     clientFullName: typing.Optional[str] | None = None
     birthDate: typing.Optional[datetime.datetime] | None = None
-    gender: typing.Optional[str] | None = "M"
-    email: typing.Optional[str] | None = "nika@example.com"
-    source: typing.Optional[str] | None = "Site"
+    gender: typing.Optional[str] | None = None
+    email: typing.Optional[str] | None = None
+    source: typing.Optional[str] | None = None
 
 
 class ModelReview(BaseModel):
