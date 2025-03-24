@@ -479,6 +479,7 @@ async def client_create(
         ):
             client = Client()
             client.phone_number = parse_phone(model_client.phone_number)
+            client.is_active = True
             answer["statusСode"] = 201
             answer["message"] = "Клиент успешно создан"
         answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
