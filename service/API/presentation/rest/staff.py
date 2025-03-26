@@ -78,7 +78,7 @@ async def get_user_info_process(
     if qr_code is not None:
         code = await Cods.get_code(qr_code, session)
         logging.info(f"Code -> {qr_code}\nTime -> {(datetime.datetime.now() - code.created_at).total_seconds()/60}")
-        if code.is_active and (datetime.datetime.now() - code.created_at).total_seconds()/60 > 15:
+        if code.is_active or (datetime.datetime.now() - code.created_at).total_seconds()/60 > 15:
             return {
                 "status_code": 410,
                 "message": "QR-код истек. Запросите новый код."
