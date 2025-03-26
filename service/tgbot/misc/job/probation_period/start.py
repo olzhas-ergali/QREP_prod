@@ -81,6 +81,6 @@ async def notification_about_lessons(
             )
 
         except Exception as e:
-            logging.exception(e)
+            logging.info(e)
         finally:
             await asyncio.sleep(0.2)
