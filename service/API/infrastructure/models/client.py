@@ -22,7 +22,7 @@ class ModelAuth(BaseModel):
 class ModelAuthSite(BaseModel):
     phone_number: typing.Optional[str] = None
     clientFullName: typing.Optional[str] | None = None
-    birthDate: typing.Optional[datetime.datetime] | None = None
+    birthDate: typing.Optional[str] | None = None
     gender: typing.Optional[str] | None = None
     email: typing.Optional[str] | None = None
     source: typing.Optional[str] | None = None

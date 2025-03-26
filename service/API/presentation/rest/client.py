@@ -484,7 +484,7 @@ async def client_create(
             answer["message"] = "Клиент успешно создан"
         answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
         client.name = model_client.clientFullName
-        client.birthday_date = model_client.birthDate
+        client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
         session.add(client)
         await session.commit()
         return answer
