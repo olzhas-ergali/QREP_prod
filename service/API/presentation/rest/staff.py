@@ -18,7 +18,7 @@ from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.models.purchases import ModelUserTemp
 from service.API.infrastructure.models.discount import PositionDiscountsModel
 from service.API.infrastructure.database.models import Client, User, PositionDiscounts
-
+from service.API.infrastructure.database.cods import Cods
 router = APIRouter()
 
 
@@ -68,20 +68,23 @@ async def get_user_info_process(
         ),
         qr_code: typing.Optional[str] = Query(
             default=None,
-            alias="qrCode"
+            alias="qrCode",
+            example="123456"
         )
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
     if qr_code:
-        phone_number = qr_code.split("|")[0]
-        qr_str_date = qr_code.split("|")[1]
-        qr_date: typing.Optional[datetime.datetime] = datetime.datetime.strptime(qr_str_date, "%d.%m.%Y %H:%S:%M")
-        if datetime.datetime.now() > qr_date:
+        code = await Cods.get_code(qr_code, session)
+
+        if not code.is_active and (datetime.datetime.now() - code.created_at).minute > 15:
             return {
                 "status_code": 410,
                 "message": "QR-код истек. Запросите новый код."
             }
+        code.is_active = True
+        session.add(code)
+        await session.commit()
     client = await Client.get_client_by_phone(
         session=session,
         phone=parse_phone(phone_number)

@@ -13,6 +13,7 @@ from service.tgbot.keyboards.client.client import main_btns
 from service.tgbot.modules.OneС.Function_1C import get_balance
 from service.tgbot.misc.delete import remove
 from service.tgbot.keyboards.client.faq import get_faq_btns
+from service.tgbot.misc.generate import generate_code
 
 
 async def main_handler(
@@ -60,14 +61,14 @@ async def start_handler(
 async def get_my_qr_handler(
         callback: CallbackQuery,
         user: Client,
+        session: AsyncSession,
         state: FSMContext
 ):
     _ = callback.bot.get('i18n')
     await state.finish()
     text = _("Ваш QR")
-
-    date_now = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime("%d.%m.%Y %H:%S:%M")
-    qrcode = segno.make(user.phone_number + "|" + date_now, micro=False)
+    code = await generate_code(session)
+    qrcode = segno.make(code.code, micro=False)
     qrcode.save(user.phone_number + ".png", border=4, scale=7)
 
     await callback.message.delete()
