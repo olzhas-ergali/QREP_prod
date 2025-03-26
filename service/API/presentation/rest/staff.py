@@ -62,6 +62,7 @@ async def add_user_process(
 async def get_user_info_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone_number: typing.Optional[str] = Query(
+            default=None,
             alias="phone_number",
             description="Телефонный номер пользователя",
             example="77077777777"
@@ -76,12 +77,13 @@ async def get_user_info_process(
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
     if qr_code:
         code = await Cods.get_code(qr_code, session)
-
+        logging.info(f"Code -> {qr_code}\nTime -> {(datetime.datetime.now() - code.created_at).minute}")
         if not code.is_active and (datetime.datetime.now() - code.created_at).minute > 15:
             return {
                 "status_code": 410,
                 "message": "QR-код истек. Запросите новый код."
             }
+        phone_number = code.phone_number
         code.is_active = True
         session.add(code)
         await session.commit()

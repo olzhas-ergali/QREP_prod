@@ -14,7 +14,8 @@ class ExceptionGenerateCode(ValueError):
 
 
 async def generate_code(
-        session: AsyncSession
+        session: AsyncSession,
+        phone_number: str
 ):
     end_time = time.time() + 30
 
@@ -23,7 +24,8 @@ async def generate_code(
         try:
             unique_code = "".join(random.choices(string.digits, k=6))
             code_model = Cods(
-                code=unique_code
+                code=unique_code,
+                phone_number=phone_number
             )
             session.add(code_model)
             await session.commit()

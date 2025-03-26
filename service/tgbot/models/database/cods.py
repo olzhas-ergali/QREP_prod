@@ -17,6 +17,10 @@ class Cods(Base):
         String, unique=True
     )
 
+    phone_number = Column(
+        String
+    )
+
     created_at = Column(
         DateTime,
         server_default=func.now()
