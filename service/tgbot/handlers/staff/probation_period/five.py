@@ -108,6 +108,12 @@ async def probation_period_five_day_handler(
     }
 
     if current_day == 'five_day':
+        await ProbationPeriodAnswer(
+            user_id=c.from_user.id,
+            day=current_day,
+            question="Перед тем как мы закончим, оцени, насколько онбординг был полезным для тебя:",
+            answer=question_id
+        ).save(session)
         current_question = current_days[False if question_id > 3 else True]
         await state.finish()
         return await c.message.answer(
@@ -115,6 +121,12 @@ async def probation_period_five_day_handler(
         )
     current_question = questions[question_id]
     if current_question.get('files'):
+        await ProbationPeriodAnswer(
+            user_id=c.from_user.id,
+            day=current_day,
+            question="Как тебе будет удобнее пройти его?",
+            answer="Онлайн" if question_id == 1 else "Оффлайн"
+        ).save(session)
         await c.message.answer_document(
             caption=current_question.get('answer'),
             document=InputFile(current_question.get('files').get(user.local),
