@@ -77,8 +77,8 @@ async def get_user_info_process(
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
     if qr_code is not None:
         code = await Cods.get_code(qr_code, session)
-        logging.info(f"Code -> {qr_code}\nTime -> {(datetime.datetime.now() - code.created_at).minute}")
-        if not code.is_active and (datetime.datetime.now() - code.created_at).minute > 15:
+        logging.info(f"Code -> {qr_code}\nTime -> {(datetime.datetime.now() - code.created_at).minutes}")
+        if not code.is_active and (datetime.datetime.now() - code.created_at).minutes > 15:
             return {
                 "status_code": 410,
                 "message": "QR-код истек. Запросите новый код."
