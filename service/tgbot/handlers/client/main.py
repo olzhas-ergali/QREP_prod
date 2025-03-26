@@ -67,7 +67,7 @@ async def get_my_qr_handler(
     _ = callback.bot.get('i18n')
     await state.finish()
     text = _("Ваш QR")
-    code = await generate_code(session)
+    code = await generate_code(session, phone_number=user.phone_number)
     qrcode = segno.make(code.code, micro=False)
     qrcode.save(user.phone_number + ".png", border=4, scale=7)
 
