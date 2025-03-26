@@ -66,6 +66,7 @@ async def notification_about_lessons(
         print(end_date_probation_period)
         current_day_probation_period = probation_period_days_next - (end_date_probation_period - date_now.date()).days
         print(current_day_probation_period)
+        logging.info(f"IIN -> {user.iin}\n DAY -> {current_day_probation_period}")
         notification_function = notification_functions.get(current_day_probation_period)
         #print(current_day_probation_period)
         if notification_function is None:
