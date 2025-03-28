@@ -224,6 +224,8 @@ async def add_staff_vacation(
         id_staff: str,
         is_fired: bool = False
 ):
+    days = 0
+    dbl_days = 0
     if not (staff := await StaffVacation.get_by_iin(iin, session)):
         staff = StaffVacation(
             iin=iin,
@@ -231,6 +233,8 @@ async def add_staff_vacation(
             date_receipt=date_receipt,
             guid=id_staff
         )
+        days = round(0.066 * date_receipt.day)
+        dbl_days = round(0.066 * date_receipt.day, 3)
         session.add(staff)
         await session.commit()
     if not (vacation := await VacationDays.get_staff_vac_days_by_year(
@@ -241,8 +245,8 @@ async def add_staff_vacation(
         vacation = VacationDays(
             year=datetime.now().year + 1,
             staff_vac_id=staff.id,
-            days=0,
-            dbl_days=0
+            days=days,
+            dbl_days=dbl_days
         )
         session.add(vacation)
         await session.commit()
