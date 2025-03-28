@@ -233,8 +233,8 @@ async def add_staff_vacation(
             date_receipt=date_receipt,
             guid=id_staff
         )
-        days = round(0.066 * date_receipt.day)
-        dbl_days = round(0.066 * date_receipt.day, 3)
+        days = round(0.066 * (datetime.now() - date_receipt).days)
+        dbl_days = round(0.066 * (datetime.now() - date_receipt).days, 3)
         session.add(staff)
         await session.commit()
     if not (vacation := await VacationDays.get_staff_vac_days_by_year(
