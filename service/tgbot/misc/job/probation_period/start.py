@@ -84,3 +84,4 @@ async def notification_about_lessons(
             logging.info(e)
         finally:
             await asyncio.sleep(0.2)
+    await session.close()
