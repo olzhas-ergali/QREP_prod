@@ -22,12 +22,7 @@ router = APIRouter()
             response_model=typing.List[typing.Dict])
 async def get_count(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        user_id: int = Query(
-            alias="user_id",
-            description="Телеграм id пользователя",
-            strict=True,
-            example=123456
-        )
+        user_id: int
 ):
     session = db_session.get()
     user = await session.get(User, user_id)
