@@ -18,11 +18,15 @@ router = APIRouter()
 
 @router.get('/purchases/count',
             summary="Дает оставшиеся количество продуктов для скидок",
-            tags=['purchase'],
-            response_model=typing.List[typing.Dict])
+            tags=['purchase'])
 async def get_count(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        user_id: int
+        user_id: int = Query(
+            alias="user_id",
+            description="Телеграм id пользователя",
+            strict=True,
+            example=123456
+        )
 ):
     session = db_session.get()
     user = await session.get(User, user_id)
