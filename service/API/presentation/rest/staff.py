@@ -25,7 +25,7 @@ router = APIRouter()
 @router.get('/authorization', tags=['staff'], summary="Дает информацию про сотрудника(Старая)")
 async def add_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone_number: typing.Optional[str] = Query(
+        phone_number: str = Query(
             alias="phone_number",
             description="Телефонный номер пользователя",
             example="77077777777"
@@ -61,13 +61,13 @@ async def add_user_process(
 @router.get('/v2/authorization', tags=['staff'], summary="Дает информацию про сотрудника или клиента")
 async def get_user_info_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone_number: typing.Optional[str] = Query(
+        phone_number: str = Query(
             default=None,
             alias="phone_number",
             description="Телефонный номер пользователя",
             example="77077777777"
         ),
-        qr_code: typing.Optional[str] = Query(
+        qr_code: str = Query(
             default=None,
             alias="qrCode",
             example="123456"

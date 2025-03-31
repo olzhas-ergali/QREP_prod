@@ -36,7 +36,7 @@ router = APIRouter()
              description="Отправка уведомление клиенту по телеграм id")
 async def client_notification(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        telegramId: typing.Optional[int]
+        telegramId: int
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
@@ -60,7 +60,7 @@ async def client_notification(
             description="Получение активности пользовтаеля")
 async def get_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: typing.Optional[str]
+        phone: str
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
@@ -109,7 +109,7 @@ async def set_client_activity(
             description="Проверка есть ли такой клиента")
 async def is_authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: typing.Optional[str] = Query(
+        phone: str = Query(
             alias="phone",
             description="Телефонный номер пользователя",
             example="77077777777"
@@ -259,7 +259,7 @@ async def add_client_review(
              summary="Отправка уведомлению по оценке работы оператора")
 async def add_client_operator_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: typing.Optional[str] = Query(
+        phone: str = Query(
             alias="phone",
             description="Телефонный номер пользователя",
             example="77077777777"
@@ -310,7 +310,7 @@ async def add_client_operator_grade(
              summary="Добавление клиента в рассылки")
 async def client_mailing(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: typing.Optional[str] = Query(
+        phone: str = Query(
             alias="phone",
             description="Телефонный номер пользователя",
             example="77077777777"
