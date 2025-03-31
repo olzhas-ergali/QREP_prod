@@ -24,7 +24,6 @@ async def get_count(
         user_id: int = Query(
             alias="user_id",
             description="Телеграм id пользователя",
-            strict=True,
             example=123456
         )
 ):
