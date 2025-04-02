@@ -9,7 +9,7 @@ from aiogram.dispatcher.storage import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.tgbot.models.database.users import Client
-from service.tgbot.keyboards.client.client import main_btns
+from service.tgbot.models.database.cods import Cods
 from service.tgbot.modules.OneС.Function_1C import get_balance
 from service.tgbot.misc.delete import remove
 from service.tgbot.keyboards.client.faq import get_faq_btns
@@ -66,26 +66,34 @@ async def get_my_qr_handler(
 ):
     _ = callback.bot.get('i18n')
     await state.finish()
-    text = _("Ваш QR")
-    code = await generate_code(session, phone_number=user.phone_number)
-    qrcode = segno.make(code.code, micro=False)
-    qrcode.save(user.phone_number + ".png", border=4, scale=7)
+    text = _("Вы уже сгенерировали QR, дождитесь 15 минут, чтобы сгенерировать QR")
+    qrcode = None
+    code = await Cods.get_cody_by_phone(user.phone_number, session)
+    if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds()/60 < 15:
+        text = _("Ваш QR")
+        code = await generate_code(session, phone_number=user.phone_number)
+        qrcode = segno.make(code.code, micro=False)
+        qrcode.save(user.phone_number + ".png", border=4, scale=7)
 
     await callback.message.delete()
-    await callback.message.answer_photo(
-        photo=open(user.phone_number + ".png", "rb"),
-        caption=text,
-    )
-
+    if qrcode:
+        await callback.message.answer_photo(
+            photo=open(user.phone_number + ".png", "rb"),
+            caption=text,
+        )
+        try:
+            os.remove(user.phone_number + ".png")
+        except:
+            pass
+    else:
+        await callback.message.answer(
+            text=text
+        )
     btns = await get_faq_btns('main', _)
     await callback.message.answer(
         text=_("Чем могу помочь? Выберите одну из опций:"),
         reply_markup=btns
     )
-    try:
-        os.remove(user.phone_number + ".png")
-    except:
-        pass
 
 
 async def get_my_bonus_handler(
