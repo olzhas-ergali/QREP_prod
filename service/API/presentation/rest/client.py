@@ -1,6 +1,6 @@
 import typing
 import datetime
-
+import re
 import requests
 
 from service.API.config import settings
@@ -18,7 +18,7 @@ from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.database.models import Client, ClientReview, ClientsApp, ClientMailing
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
-from service.API.infrastructure.utils.parse import parse_phone
+from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
 from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
@@ -478,6 +478,12 @@ async def client_create(
             phone=parse_phone(model_client.phone_number))
         ):
             client = Client()
+            print(re.match(r"^\+(\d{1,4})\d{7,15}$", "+" + parse_phone(model_client.phone_number)))
+            if not re.match(r"^\+(\d{1,4})\d{7,15}$", "+" + parse_phone(model_client.phone_number)):
+                return {
+                    "statusСode": 500,
+                    "message": "Не правильный формат номера"
+                }
             client.phone_number = parse_phone(model_client.phone_number)
             client.source = model_client.source
             client.is_active = True
@@ -486,6 +492,11 @@ async def client_create(
         answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
         client.name = model_client.clientFullName
         if model_client.birthDate:
+            if not is_valid_date(model_client.birthDate):
+                return {
+                    "statusСode": 500,
+                    "message": "Не правильный формат даты"
+                }
             client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
 
         session.add(client)
