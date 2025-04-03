@@ -478,10 +478,9 @@ async def client_create(
             phone=parse_phone(model_client.phone_number))
         ):
             client = Client()
-            print(re.match(r"^\+(\d{1,4})\d{7,15}$", "+" + parse_phone(model_client.phone_number)))
-            if not re.match(r"^\+(\d{1,4})\d{7,15}$", "+" + parse_phone(model_client.phone_number)):
+            if not re.match(r"^\+(\d{1,4})\d{8,16}$", "+" + parse_phone(model_client.phone_number)):
                 return {
-                    "statusСode": 500,
+                    "statusСode": 400,
                     "message": "Не правильный формат номера"
                 }
             client.phone_number = parse_phone(model_client.phone_number)
@@ -494,7 +493,7 @@ async def client_create(
         if model_client.birthDate:
             if not is_valid_date(model_client.birthDate):
                 return {
-                    "statusСode": 500,
+                    "statusСode": 400,
                     "message": "Не правильный формат даты"
                 }
             client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")

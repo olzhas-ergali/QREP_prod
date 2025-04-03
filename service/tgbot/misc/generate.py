@@ -1,3 +1,4 @@
+import datetime
 import logging
 import random
 import string
@@ -25,7 +26,8 @@ async def generate_code(
             unique_code = "".join(random.choices(string.digits, k=6))
             code_model = Cods(
                 code=unique_code,
-                phone_number=phone_number
+                phone_number=phone_number,
+                created_at=datetime.datetime.now()
             )
             session.add(code_model)
             await session.commit()

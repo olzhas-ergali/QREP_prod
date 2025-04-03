@@ -69,7 +69,7 @@ async def get_my_qr_handler(
     text = _("Вы уже сгенерировали QR, дождитесь 15 минут, чтобы сгенерировать QR")
     qrcode = None
     code = await Cods.get_cody_by_phone(user.phone_number, session)
-    if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds()/60 < 15:
+    if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds()/60 > 15:
         text = _("Ваш QR")
         code = await generate_code(session, phone_number=user.phone_number)
         qrcode = segno.make(code.code, micro=False)
