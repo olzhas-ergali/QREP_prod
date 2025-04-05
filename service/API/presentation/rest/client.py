@@ -499,8 +499,8 @@ async def client_create(
             client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
         if model_client.gender:
             client.gender = model_client.gender
-        if model_client.birthDate:
-            client.birthday_date = model_client.birthDate
+        if model_client.email:
+            client.email = model_client.email
         session.add(client)
         await session.commit()
         return answer
