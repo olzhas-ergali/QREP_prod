@@ -478,7 +478,7 @@ async def client_create(
             phone=parse_phone(model_client.phone_number))
         ):
             client = Client()
-            if not re.match(r"^\+(\d{1,4})\d{8,16}$", "+" + parse_phone(model_client.phone_number)):
+            if not re.match(r"^\+(\d{1,4})\d{8,10}$", "+" + parse_phone(model_client.phone_number)):
                 return {
                     "statusСode": 400,
                     "message": "Не правильный формат номера"
@@ -497,7 +497,10 @@ async def client_create(
                     "message": "Не правильный формат даты"
                 }
             client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
-
+        if model_client.gender:
+            client.gender = model_client.gender
+        if model_client.birthDate:
+            client.birthday_date = model_client.birthDate
         session.add(client)
         await session.commit()
         return answer
