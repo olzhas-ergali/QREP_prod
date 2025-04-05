@@ -478,7 +478,7 @@ async def client_create(
             phone=parse_phone(model_client.phone_number))
         ):
             client = Client()
-            if not re.match(r'\b\d{8,15}\b', parse_phone(model_client.phone_number)):
+            if not re.match(r'(?<!\d)\d{8,15}(?!\d)', parse_phone(model_client.phone_number)):
                 return {
                     "statusСode": 400,
                     "message": "Не правильный формат номера"
