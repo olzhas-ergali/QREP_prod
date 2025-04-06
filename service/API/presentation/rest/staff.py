@@ -63,7 +63,7 @@ async def get_user_info_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone_number: str = Query(
             default=None,
-            alias="phone_number",
+            alias="phoneNumber",
             description="Телефонный номер пользователя",
             example="77077777777"
         ),
