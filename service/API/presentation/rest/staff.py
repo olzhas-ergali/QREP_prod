@@ -158,7 +158,8 @@ async def employees_process(
             organization_bin=user.organizationBin,
             position_id=user.positionId,
             position_name=user.positionName,
-            organization_name=user.organizationName
+            organization_name=user.organizationName,
+            bot=bot
         )
     except Exception as ex:
         logging.error(ex)
