@@ -9,19 +9,19 @@ from service.tgbot.handlers.client.faq.register import register_faq_function
 def register_client_function(dp: Dispatcher):
     register_faq_function(dp)
 
-    dp.register_message_handler(
-        client.main.get_my_qr_handler,
-        text='Мой QR',
-        is_client_auth=True,
-        state="*"
-    )
-
-    dp.register_message_handler(
-        client.main.get_my_bonus_handler,
-        text='Мои бонусы',
-        is_client_auth=True,
-        state="*"
-    )
+    # dp.register_message_handler(
+    #     client.main.get_my_qr_handler,
+    #     text='Мой QR',
+    #     is_client_auth=True,
+    #     state="*"
+    # )
+    #
+    # dp.register_message_handler(
+    #     client.main.get_my_bonus_handler,
+    #     text='Мои бонусы',
+    #     is_client_auth=True,
+    #     state="*"
+    # )
 
     # dp.register_message_handler(
     #     client.faq.get_faq_handler,

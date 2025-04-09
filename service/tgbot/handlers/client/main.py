@@ -97,25 +97,25 @@ async def get_my_qr_handler(
 
 
 async def get_my_bonus_handler(
-        message: Message,
+        callback: CallbackQuery,
         user: Client,
         state: FSMContext
 ):
-    _ = message.bot.get('i18n')
+    _ = callback.bot.get('i18n')
     await state.finish()
     res = 0
     res, msg = await get_balance(
         user=user,
-        bot=message.bot
+        bot=callback.bot
     )
-    await message.delete()
+    await callback.message.delete()
     if res == 0:
-        await message.answer(
+        await callback.message.answer(
             text=_('''У вас пока нет накопленных бонусов.
 Совершайте покупки и участвуйте в наших акциях, 
 чтобы начать зарабатывать баллы!''')
         )
     else:
-        await message.answer(
+        await callback.message.answer(
             text=_("У вас: {res} бонусов {msg}").format(res=res, msg=msg),
         )

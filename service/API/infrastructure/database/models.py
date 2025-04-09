@@ -384,6 +384,15 @@ class Revenue(Base):
         return response.scalars().all()
 
 
+# class RevenueHeaders(Base):
+#     __tablename__ = 'revenue_headers'
+#     id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+#     document_id = mapped_column(UUID(as_uuid=True))
+#     document_type = mapped_column(UUID(as_uuid=True))
+#     period = mapped_column(DateTime, server_default=func.now())
+#     checks = mapped_column(String)
+
+
 class ClientsApp(Base):
     __tablename__ = "clients_app"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
