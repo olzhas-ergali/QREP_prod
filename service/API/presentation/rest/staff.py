@@ -117,7 +117,7 @@ async def employees_process(
         user: ModelUserTemp
 ):
     session: AsyncSession = db_session.get()
-
+    bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
     try:
         #logging.info(user.dict())
         return await staff.add_employees(
@@ -134,7 +134,8 @@ async def employees_process(
             organization_bin=user.organizationBin,
             position_id=user.positionId,
             position_name=user.positionName,
-            organization_name=user.organizationName
+            organization_name=user.organizationName,
+            bot=bot
         )
     except Exception as ex:
         logging.error(ex)

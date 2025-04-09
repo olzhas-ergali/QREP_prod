@@ -18,6 +18,7 @@ class StaffVacation(Base):
     iin = Column(String, unique=True)
     date_receipt: Column[datetime.datetime] = Column(DateTime)
     guid = Column(String, unique=True, nullable=True)
+    is_fired = Column(Boolean, default=False)
 
     @classmethod
     async def get_by_iin(
