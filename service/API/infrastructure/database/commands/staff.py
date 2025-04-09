@@ -232,6 +232,17 @@ async def add_staff_vacation(
         )
         session.add(staff)
         await session.commit()
+    if staff.guid != id_staff:
+        await session.delete(staff)
+        staff = StaffVacation(
+            iin=iin,
+            fullname=fullname,
+            date_receipt=date_receipt,
+            guid=id_staff
+        )
+        session.add(staff)
+        await session.commit()
+
     if not (vacation := await VacationDays.get_staff_vac_days_by_year(
             year=datetime.now().year + 1,
             staff_id=staff.id,
@@ -246,14 +257,14 @@ async def add_staff_vacation(
         session.add(vacation)
         await session.commit()
     if is_fired:
-        vacations = await VacationDays.get_staff_vac_by_id(
-            session=session,
-            staff_id=staff.id
-        )
-        for v in vacations:
-            await session.delete(v)
-        await session.delete(staff)
-        await session.commit()
+        # vacations = await VacationDays.get_staff_vac_by_id(
+        #     session=session,
+        #     staff_id=staff.id
+        # )
+        # for v in vacations:
+        #     await session.delete(v)
+        # await session.delete(staff)
+        # await session.commit()
         return
 
     return staff, vacation
