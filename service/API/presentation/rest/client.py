@@ -475,15 +475,15 @@ async def client_create(
         bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
         if not (client := await Client.get_client_by_phone(
             session=session,
-            phone=parse_phone(model_client.phone_number))
+            phone=parse_phone(model_client.phoneNumber))
         ):
             client = Client()
-            if not re.match(r'(?<!\d)\d{8,15}(?!\d)', parse_phone(model_client.phone_number)):
+            if not re.match(r'(?<!\d)\d{8,15}(?!\d)', parse_phone(model_client.phoneNumber)):
                 return {
                     "statusСode": 400,
                     "message": "Не правильный формат номера"
                 }
-            client.phone_number = parse_phone(model_client.phone_number)
+            client.phone_number = parse_phone(model_client.phoneNumber)
             client.source = model_client.source
             client.is_active = True
             answer["statusСode"] = 201
@@ -498,8 +498,18 @@ async def client_create(
                 }
             client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
         if model_client.gender:
+            if model_client.gender != 'F' and model_client.gender != 'M':
+                return {
+                    "statusСode": 400,
+                    "message": "Не правильно заполнен гендер"
+                }
             client.gender = model_client.gender
         if model_client.email:
+            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', model_client.email):
+                return {
+                    "statusСode": 400,
+                    "message": "Не правильный email"
+                }
             client.email = model_client.email
         session.add(client)
         await session.commit()
