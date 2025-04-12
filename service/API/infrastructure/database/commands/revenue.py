@@ -6,7 +6,7 @@ from typing import Sequence, Optional
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import ArgumentError
-from service.API.infrastructure.database.models import Revenue
+from service.API.infrastructure.database.models import Revenue, RevenueHeaders
 from service.API.infrastructure.models.revenue import RevenueDateModel
 
 
@@ -19,19 +19,27 @@ async def add_revenue_date(
     try:
         documents = await Revenue.get_revenue_by_doc_id(session=session, document_id=revenue.documentId)
         if documents:
+            rh = RevenueHeaders().get_revenue_headers_by_doc_id(session=session, document_id=revenue.documentId)
+            await session.delete(rh)
             for i in documents:
                 msg = "Данные успешно обновлены"
                 await session.delete(i)
                 await session.commit()
         if revenue.deleteStatus:
             msg = "Данные успешно удалены"
+        else:
+            rh = RevenueHeaders()
+            rh.document_id = revenue.documentId
+            rh.period = revenue.period
+            rh.document_type = revenue.documentType
+            rh.checks = revenue.checks
         for r_item in revenue.data:
             #if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), revenue.documentId)):
             #if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), document_id)):
             # r.row_id = r_item.get('row_id')
             r = Revenue()
             r.document_id = revenue.documentId
-            r.period = revenue.period
+            #r.period = revenue.period
             r.manager = r_item.get('manager')
             r.manager_id = r_item.get('managerId')
             r.revenue_with_vat = r_item.get('revenueWithVAT')

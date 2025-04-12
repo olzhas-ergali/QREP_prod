@@ -342,7 +342,7 @@ class Revenue(Base):
     __tablename__ = 'revenue_data'
     id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     document_id = mapped_column(UUID(as_uuid=True))
-    period = mapped_column(DateTime, server_default=func.now())
+    # period = mapped_column(DateTime, server_default=func.now())
     product_name = mapped_column(String)
     product_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
     param_name = mapped_column(String)
@@ -384,13 +384,22 @@ class Revenue(Base):
         return response.scalars().all()
 
 
-# class RevenueHeaders(Base):
-#     __tablename__ = 'revenue_headers'
-#     id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-#     document_id = mapped_column(UUID(as_uuid=True))
-#     document_type = mapped_column(UUID(as_uuid=True))
-#     period = mapped_column(DateTime, server_default=func.now())
-#     checks = mapped_column(String)
+class RevenueHeaders(Base):
+    __tablename__ = 'revenue_headers'
+    id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    document_id = mapped_column(UUID(as_uuid=True))
+    document_type = mapped_column(UUID(as_uuid=True))
+    period = mapped_column(DateTime, server_default=func.now())
+    checks = mapped_column(Integer)
+
+    @classmethod
+    async def get_revenue_headers_by_doc_id(
+            cls,
+            session: AsyncSession,
+            document_id: str
+    ) -> typing.Optional['RevenueHeaders']:
+        stmt = select(RevenueHeaders).where(document_id == RevenueHeaders.document_id)
+        return await session.scalar(stmt)
 
 
 class ClientsApp(Base):

@@ -9,6 +9,8 @@ class RevenueDateModel(BaseModel):
     documentId: typing.Optional[str] = None
     period: typing.Optional[datetime.datetime] = None
     deleteStatus: typing.Optional[bool] = False
+    documentType: typing.Optional[str] = None
+    checks: typing.Optional[int] = None
     data: typing.List[dict] = None
     #productName: typing.Optional[str] = None
     #productId: typing.Optional[str] = None
