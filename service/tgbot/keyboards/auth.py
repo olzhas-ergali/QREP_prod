@@ -56,7 +56,7 @@ def staff_auth_btns(
 
 def get_local_btns():
     btn_kaz = InlineKeyboardButton(
-        text="Казақша",
+        text="Қазақша",
         callback_data=LocalCallback.new(
             lang="kaz",
             action='local'
