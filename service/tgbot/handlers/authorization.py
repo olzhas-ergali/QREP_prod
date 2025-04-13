@@ -34,10 +34,10 @@ async def welcome_message_handler(
     await user.save(session)
     _ = query.bot.get('i18n')
     text = _('''Добро пожаловать в QazaqRepublicBot
-Если вы являетесь сотрудникм QR! 
+Если вы являетесь сотрудником QR! 
 Для прохождения авторизации, пожалуйста
 нажмите на кнопку "Авторизоваться как сотрудник".
-Если вы не являетесь сотрудникм QR, 
+Если вы не являетесь сотрудником QR, 
 то нажмите на кнопку "Авторизоваться как клиент"''', locale=user.local)
     btns = get_auth_btns(_, local=user.local)
     await query.message.edit_text(

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: QR_staff_bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-02 22:22+0600\n"
+"POT-Creation-Date: 2025-04-13 11:58+0600\n"
 "PO-Revision-Date: 2025-01-31 00:47+0600\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: kk_KZ\n"
@@ -642,10 +642,10 @@ msgstr "Авторизация үшін телефон нөміріңізді б
 #: handlers/authorization.py:36
 msgid ""
 "Добро пожаловать в QazaqRepublicBot\n"
-"Если вы являетесь сотрудникм QR! \n"
+"Если вы являетесь сотрудником QR! \n"
 "Для прохождения авторизации, пожалуйста\n"
 "нажмите на кнопку \"Авторизоваться как сотрудник\".\n"
-"Если вы не являетесь сотрудникм QR, \n"
+"Если вы не являетесь сотрудником QR, \n"
 "то нажмите на кнопку \"Авторизоваться как клиент\""
 msgstr ""
 "QazaqRepublicBot-қа қош келдіңіз\n"
@@ -684,11 +684,12 @@ msgstr "Қалай көмектесе аламын? Опциялардың бі�
 msgid "{gender} {name}, вас приветствует команда Qazaq Republic!🤗\n"
 msgstr "{gender} {name}, Qazaq Republic командасына қош келдіңіз!🤗\n"
 
-#: handlers/client/main.py:69
+#: handlers/client/main.py:69 handlers/staff/show_purchases.py:119
 msgid "Вы уже сгенерировали QR, дождитесь 15 минут, чтобы сгенерировать QR"
 msgstr "Сіз QR жасап қойғансыз, QR жасалғанша 15 минут күтіңіз"
 
-#: handlers/client/main.py:73 handlers/staff/show_purchases.py:93
+#: handlers/client/main.py:73 handlers/staff/show_purchases.py:95
+#: handlers/staff/show_purchases.py:123
 msgid "Ваш QR"
 msgstr "Сіздің QR"
 
@@ -747,11 +748,11 @@ msgstr ""
 "Егер сіздің пікіріңізге жауап қажет болса, біз сізбен мүмкіндігінше "
 "тезірек хабарласамызуақыт."
 
-#: handlers/client/show_purchases.py:52 handlers/staff/show_purchases.py:54
+#: handlers/client/show_purchases.py:52 handlers/staff/show_purchases.py:56
 msgid "Вы пока не совершали покупки"
 msgstr "Сіз әлі сатып алған жоқсыз"
 
-#: handlers/client/show_purchases.py:79 handlers/staff/show_purchases.py:83
+#: handlers/client/show_purchases.py:79 handlers/staff/show_purchases.py:85
 msgid "Вы пока не совершали покупки за этот месяц"
 msgstr "Осы айда әлі ешқандай сатып алулар жасаған жоқсыз"
 
@@ -775,11 +776,11 @@ msgstr ""
 msgid "Выберите раздел"
 msgstr "Бөлімді таңдаңыз"
 
-#: handlers/client/faq/main.py:54 handlers/staff/show_purchases.py:131
+#: handlers/client/faq/main.py:54 handlers/staff/show_purchases.py:165
 msgid "Выберите язык"
 msgstr "Тілді таңдаңыз"
 
-#: handlers/client/faq/main.py:72 handlers/staff/show_purchases.py:150
+#: handlers/client/faq/main.py:72 handlers/staff/show_purchases.py:184
 msgid "Вы сменили язык"
 msgstr "Сіз тіліңізді өзгерттіңіз"
 
@@ -838,11 +839,11 @@ msgstr "Авторизация әдісін таңдаңыз"
 msgid "{name} вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗"
 msgstr "{name}, Qazaq Republic командасына қош келдіңіз! 🤗"
 
-#: handlers/staff/show_purchases.py:25
+#: handlers/staff/show_purchases.py:27
 msgid "Выберите:"
 msgstr "Таңдаңыз:"
 
-#: handlers/staff/show_purchases.py:116
+#: handlers/staff/show_purchases.py:150
 msgid "Выберите на каком языке хотите получить инструкцию"
 msgstr "Нұсқауларды қай тілде алғыңыз келетінін таңдаңыз"
 
