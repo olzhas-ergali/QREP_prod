@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: QR_staff_bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-13 12:21+0600\n"
+"POT-Creation-Date: 2025-04-13 15:00+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -455,19 +455,21 @@ msgid ""
 "Напишите ваше ФИО:"
 msgstr ""
 
-#: handlers/client/auth.py:115
-msgid "ФИО не должно содержать цифры, напишите ваше ФИО без цифр"
+#: handlers/client/auth.py:114
+msgid ""
+"ФИО не должно содержать цифры и символы, напишите ваше ФИО без цифр и "
+"символов"
 msgstr ""
 
-#: handlers/client/auth.py:122
+#: handlers/client/auth.py:121
 msgid "Благодарим! Теперь укажите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:156
+#: handlers/client/auth.py:155
 msgid "Выберите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:195
+#: handlers/client/auth.py:194
 msgid "Отлично! Пожалуйста, выберите ваш пол"
 msgstr ""
 

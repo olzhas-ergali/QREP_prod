@@ -111,7 +111,7 @@ async def get_years_handler(
     await message.delete()
     if not regex.fullmatch(r'^[\p{L}\s]+$', message.text):
         return await message.answer(
-            text=_("ФИО не должно содержать цифры, напишите ваше ФИО без цифр")
+            text=_("ФИО не должно содержать цифры и символы, напишите ваше ФИО без цифр и символов")
         )
     if not reg.state_data.get('name'):
         await state.update_data(name=message.text)
