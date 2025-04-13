@@ -489,7 +489,14 @@ async def client_create(
             answer["statusСode"] = 201
             answer["message"] = "Клиент успешно создан"
         answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
-        client.name = model_client.clientFullName
+        pattern = r'^\p{L}+$'
+        if model_client.clientFullName:
+            if not re.match(pattern, model_client.clientFullName):
+                return {
+                    "statusСode": 400,
+                    "message": "ФИО не должно содержать цифры"
+                }
+            client.name = model_client.clientFullName
         if model_client.birthDate:
             if not is_valid_date(model_client.birthDate):
                 return {
