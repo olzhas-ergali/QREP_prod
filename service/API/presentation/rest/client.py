@@ -494,7 +494,7 @@ async def client_create(
             if not regex.fullmatch(r'^[\p{L}\s]+$', model_client.clientFullName):
                 return {
                     "statusСode": 400,
-                    "message": "ФИО не должно содержать цифры"
+                    "message": "ФИО не должно содержать символы"
                 }
             client.name = model_client.clientFullName
         if model_client.birthDate:
