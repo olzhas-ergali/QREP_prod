@@ -1,6 +1,7 @@
 import typing
 import datetime
 import re
+import regex
 import requests
 
 from service.API.config import settings
@@ -489,9 +490,8 @@ async def client_create(
             answer["statusСode"] = 201
             answer["message"] = "Клиент успешно создан"
         answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
-        pattern = r'^\p{L}+$'
         if model_client.clientFullName:
-            if not re.match(pattern, model_client.clientFullName):
+            if not regex.fullmatch(r'^[\p{L}\s]+$', model_client.clientFullName):
                 return {
                     "statusСode": 400,
                     "message": "ФИО не должно содержать цифры"
