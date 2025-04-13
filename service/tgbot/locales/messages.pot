@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: QR_staff_bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-04-13 11:58+0600\n"
+"POT-Creation-Date: 2025-04-13 12:21+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -449,21 +449,25 @@ msgid ""
 "то нажмите на кнопку \"Авторизоваться как клиент\""
 msgstr ""
 
-#: handlers/client/auth.py:96
+#: handlers/client/auth.py:97
 msgid ""
 "Дорогой покупатель, Вас приветствует команда Qazaq Republic!\n"
 "Напишите ваше ФИО:"
 msgstr ""
 
 #: handlers/client/auth.py:115
+msgid "ФИО не должно содержать цифры, напишите ваше ФИО без цифр"
+msgstr ""
+
+#: handlers/client/auth.py:122
 msgid "Благодарим! Теперь укажите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:149
+#: handlers/client/auth.py:156
 msgid "Выберите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:188
+#: handlers/client/auth.py:195
 msgid "Отлично! Пожалуйста, выберите ваш пол"
 msgstr ""
 
