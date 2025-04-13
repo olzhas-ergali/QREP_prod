@@ -109,7 +109,7 @@ async def get_years_handler(
     _ = message.bot.get("i18n")
     await remove(message, 1)
     await message.delete()
-    if regex.fullmatch(r'^[\p{L}\s]+$', message.text):
+    if not regex.fullmatch(r'^[\p{L}\s]+$', message.text):
         return await message.answer(
             text=_("ФИО не должно содержать цифры, напишите ваше ФИО без цифр")
         )
