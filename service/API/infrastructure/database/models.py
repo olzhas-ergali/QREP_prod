@@ -388,7 +388,7 @@ class RevenueHeaders(Base):
     __tablename__ = 'revenue_headers'
     id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     document_id = mapped_column(UUID(as_uuid=True))
-    document_type = mapped_column(UUID(as_uuid=True))
+    document_type = mapped_column(String)
     period = mapped_column(DateTime, server_default=func.now())
     checks = mapped_column(Integer)
 
