@@ -101,7 +101,7 @@ async def change_locale(
             lang="kaz",
             action=action
         ),
-        "Руский 🇷🇺": LocalCallback.new(
+        "Русский 🇷🇺": LocalCallback.new(
             lang="rus",
             action=action
         )
