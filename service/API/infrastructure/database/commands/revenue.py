@@ -35,6 +35,7 @@ async def add_revenue_date(
             rh.period = revenue.period
             rh.document_type = revenue.documentType
             rh.checks = revenue.checks
+            rh.returns = revenue.returns
             session.add(rh)
             await session.commit()
         for r_item in revenue.data:

@@ -391,6 +391,7 @@ class RevenueHeaders(Base):
     document_type = mapped_column(String)
     period = mapped_column(DateTime, server_default=func.now())
     checks = mapped_column(Integer)
+    returns = mapped_column(Integer)
 
     @classmethod
     async def get_revenue_headers_by_doc_id(
