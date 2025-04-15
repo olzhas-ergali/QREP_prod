@@ -47,7 +47,7 @@ async def add_revenue_date(
             r.manager = r_item.get('manager')
             r.manager_id = r_item.get('managerId')
             r.revenue_with_vat = r_item.get('revenueWithVAT')
-            r.revenue_with_vat = r_item.get('revenueWithoutVAT')
+            r.revenue_without_vat = r_item.get('revenueWithoutVAT')
             r.phone = r_item.get('phone')
             r.warehouse_name = r_item.get('warehouseName')
             r.warehouse_id = r_item.get('warehouseId')
