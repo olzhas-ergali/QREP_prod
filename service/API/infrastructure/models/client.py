@@ -1,6 +1,7 @@
 import datetime
 import typing
 
+from fastapi import Query, Body
 from pydantic import BaseModel
 
 
@@ -16,6 +17,15 @@ class ModelAuth(BaseModel):
     birthDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     gender: typing.Optional[str] = 'M'
 #    local: typing.Optional[str] = 'rus'
+
+
+class ModelAuthSite(BaseModel):
+    phoneNumber: typing.Optional[str] = None
+    clientFullName: typing.Optional[str] | None = None
+    birthDate: typing.Optional[str] | None = None
+    gender: typing.Optional[str] | None = None
+    email: typing.Optional[str] | None = None
+    source: typing.Optional[str] | None = None
 
 
 class ModelReview(BaseModel):

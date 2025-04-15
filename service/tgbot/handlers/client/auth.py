@@ -1,5 +1,6 @@
 import datetime
 import logging
+import regex
 
 from aiogram.types.message import Message, ContentType
 from aiogram.types.callback_query import CallbackQuery
@@ -108,8 +109,13 @@ async def get_years_handler(
     _ = message.bot.get("i18n")
     await remove(message, 1)
     await message.delete()
+    if not regex.fullmatch(r'^[\p{L}\s]+$', message.text):
+        return await message.answer(
+            text=_("ФИО не должно содержать цифры и символы, напишите ваше ФИО без цифр и символов")
+        )
     if not reg.state_data.get('name'):
         await state.update_data(name=message.text)
+
     year = datetime.datetime.now().year
     await message.answer(
         text=_("Благодарим! Теперь укажите вашу дату рождения"),

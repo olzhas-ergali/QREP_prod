@@ -1,12 +1,13 @@
 import typing
 import datetime
-
+import re
+import regex
 import requests
 
 from service.API.config import settings
 
 from aiogram import Bot
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -18,8 +19,8 @@ from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.database.models import Client, ClientReview, ClientsApp, ClientMailing
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
-from service.API.infrastructure.utils.parse import parse_phone
-from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead
+from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
+from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.utils.check_client import check_user_exists
@@ -31,7 +32,9 @@ from service.tgbot.lib.SendPlusAPI.templates import templates
 router = APIRouter()
 
 
-@router.post('/client/{telegramId}/notifications')
+@router.post('/client/{telegramId}/notifications',
+             tags=['client'],
+             description="Отправка уведомление клиенту по телеграм id")
 async def client_notification(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         telegramId: int
@@ -53,7 +56,9 @@ async def client_notification(
     }
 
 
-@router.get('/client/{phone}/activity')
+@router.get('/client/{phone}/activity',
+            tags=['client'],
+            description="Получение активности пользовтаеля")
 async def get_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str
@@ -75,7 +80,9 @@ async def get_client_activity(
         }
 
 
-@router.post("/client/set_activity")
+@router.post("/client/set_activity",
+             tags=['client'],
+             description="Изменение активности клиента")
 async def set_client_activity(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         authorization: ModelAuth
@@ -98,10 +105,16 @@ async def set_client_activity(
     }
 
 
-@router.get('/client/authorization')
+@router.get('/client/authorization',
+            tags=['client'],
+            description="Проверка есть ли такой клиента")
 async def is_authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
+        phone: str = Query(
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
@@ -125,7 +138,9 @@ async def is_authorization_client(
     }
 
 
-@router.post('/client/authorization')
+@router.post('/client/authorization',
+             tags=['client'],
+             description="Авторизация клиента")
 async def authorization_client(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         authorization: ModelAuth
@@ -155,7 +170,9 @@ async def authorization_client(
         }
 
 
-@router.post('/client/purchases')
+@router.post('/client/purchases',
+             tags=['client'],
+             description="Добавляет данные о покупках")
 async def add_purchases_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         purchase: ModelPurchaseClient
@@ -178,7 +195,9 @@ async def add_purchases_process(
         print(ex)
 
 
-@router.post('/client/purchases/return')
+@router.post('/client/purchases/return',
+             tags=['client'],
+             summary="Добавляет данные о возвратных покупках")
 async def add_purchases_return_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         purchase: ModelClientPurchaseReturn
@@ -204,7 +223,9 @@ async def add_purchases_return_process(
         }
 
 
-@router.post("/client/reviews")
+@router.post("/client/reviews",
+             tags=['client'],
+             summary="Добавление отзыва клиента")
 async def add_client_review(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         review: ModelReview
@@ -234,11 +255,22 @@ async def add_client_review(
     }
 
 
-@router.post("/client/operator/notification")
+@router.post("/client/operator/notification",
+             tags=['client'],
+             summary="Отправка уведомлению по оценке работы оператора")
 async def add_client_operator_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str,
-        telegram_id: str = None
+        phone: str = Query(
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        telegram_id: typing.Optional[int] = Query(
+            default=None,
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
@@ -274,10 +306,16 @@ async def add_client_operator_grade(
         }
 
 
-@router.post("/client/mailing")
+@router.post("/client/mailing",
+             tags=['client'],
+             summary="Добавление клиента в рассылки")
 async def client_mailing(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
+        phone: str = Query(
+            alias="phone",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     c = await Client.get_client_by_phone(session=session, phone=parse_phone(phone))
@@ -304,7 +342,9 @@ async def client_mailing(
     }
 
 
-@router.post("/client/bitrix/lead")
+@router.post("/client/bitrix/lead",
+             tags=['client'],
+             summary="Создание лида в битрексе")
 async def client_create_lead(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         operator: ModelLead
@@ -376,7 +416,9 @@ async def client_create_lead(
     }
 
 
-@router.patch("/client/bitrix/lead")
+@router.patch("/client/bitrix/lead",
+              tags=['client'],
+              summary="Добавление оценки оператора в лиде битрекса")
 async def client_create_lead(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         operator: ModelLead
@@ -419,7 +461,89 @@ async def client_create_lead(
     }
 
 
-@router.post('/client/verification')
+@router.post("/client",
+             tags=['client'])
+async def client_create(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        model_client: ModelAuthSite
+):
+    session: AsyncSession = db_session.get()
+    answer = {
+        "statusСode": 200,
+        "message": "Клиент успешно обновлен"
+    }
+    try:
+        bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
+        if not (client := await Client.get_client_by_phone(
+            session=session,
+            phone=parse_phone(model_client.phoneNumber))
+        ):
+            client = Client()
+            if not re.match(r'(?<!\d)\d{8,15}(?!\d)', parse_phone(model_client.phoneNumber)):
+                return {
+                    "statusСode": 400,
+                    "message": "Не правильный формат номера"
+                }
+            client.phone_number = parse_phone(model_client.phoneNumber)
+            client.source = model_client.source
+            client.is_active = True
+            answer["statusСode"] = 201
+            answer["message"] = "Клиент успешно создан"
+        answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
+        if model_client.clientFullName:
+            if not regex.fullmatch(r'^[\p{L}\s]+$', model_client.clientFullName):
+                return {
+                    "statusСode": 400,
+                    "message": "ФИО не должно содержать цифры и символы"
+                }
+            client.name = model_client.clientFullName
+        if model_client.birthDate:
+            if not is_valid_date(model_client.birthDate):
+                return {
+                    "statusСode": 400,
+                    "message": "Не правильный формат даты"
+                }
+            birth_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
+            downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
+            if birth_date.date() >= datetime.datetime.now().date():
+                return {
+                    "statusСode": 400,
+                    "message": "Дата рождения не может быть позже текущей даты"
+                }
+            if birth_date < downgrade_date:
+                return {
+                    "statusСode": 400,
+                    "message": "Дата рождения не может быть раньше 01.01.1900"
+                }
+            client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
+        if model_client.gender:
+            if model_client.gender != 'F' and model_client.gender != 'M':
+                return {
+                    "statusСode": 400,
+                    "message": "Не правильно заполнен гендер"
+                }
+            client.gender = model_client.gender
+        if model_client.email:
+            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', model_client.email):
+                return {
+                    "statusСode": 400,
+                    "message": "Не правильный email"
+                }
+            client.email = model_client.email
+        session.add(client)
+        await session.commit()
+        return answer
+    except HTTPException as ex:
+        print(ex)
+        return {
+            "statusСode": 400,
+            "message": "Некорректный формат данных"
+        }
+
+
+@router.post('/client/verification',
+             tags=['client'],
+             deprecated=True)
 async def client_send_verification_code(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
@@ -501,7 +625,9 @@ async def client_send_verification_code(
     }
 
 
-@router.post('/client/quality_grade')
+@router.post('/client/quality_grade',
+             tags=['client'],
+             deprecated=True)
 async def client_send_quality_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str

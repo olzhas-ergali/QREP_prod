@@ -6,7 +6,7 @@ from typing import Sequence, Optional
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import ArgumentError
-from service.API.infrastructure.database.models import Revenue
+from service.API.infrastructure.database.models import Revenue, RevenueHeaders
 from service.API.infrastructure.models.revenue import RevenueDateModel
 
 
@@ -18,6 +18,10 @@ async def add_revenue_date(
     msg = "Данные успешно добавлены в базу данных"
     try:
         documents = await Revenue.get_revenue_by_doc_id(session=session, document_id=revenue.documentId)
+        rh = await RevenueHeaders().get_revenue_headers_by_doc_id(session=session, document_id=revenue.documentId)
+        if rh:
+            await session.delete(rh)
+            await session.commit()
         if documents:
             for i in documents:
                 msg = "Данные успешно обновлены"
@@ -25,17 +29,26 @@ async def add_revenue_date(
                 await session.commit()
         if revenue.deleteStatus:
             msg = "Данные успешно удалены"
+        else:
+            rh = RevenueHeaders()
+            rh.document_id = revenue.documentId
+            rh.period = revenue.period
+            rh.document_type = revenue.documentType
+            rh.checks = revenue.checks
+            rh.returns = revenue.returns
+            session.add(rh)
+            await session.commit()
         for r_item in revenue.data:
             #if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), revenue.documentId)):
             #if not (r := await Revenue.get_revenue(session, r_item.get('row_id'), document_id)):
             # r.row_id = r_item.get('row_id')
             r = Revenue()
             r.document_id = revenue.documentId
-            r.period = revenue.period
+            #r.period = revenue.period
             r.manager = r_item.get('manager')
             r.manager_id = r_item.get('managerId')
             r.revenue_with_vat = r_item.get('revenueWithVAT')
-            r.revenue_with_vat = r_item.get('revenueWithoutVAT')
+            r.revenue_without_vat = r_item.get('revenueWithoutVAT')
             r.phone = r_item.get('phone')
             r.warehouse_name = r_item.get('warehouseName')
             r.warehouse_id = r_item.get('warehouseId')

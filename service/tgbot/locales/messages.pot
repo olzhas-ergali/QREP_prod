@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: QR_staff_bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-03-01 11:30+0600\n"
+"POT-Creation-Date: 2025-04-13 15:00+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -442,51 +442,63 @@ msgstr ""
 #: handlers/authorization.py:36
 msgid ""
 "Добро пожаловать в QazaqRepublicBot\n"
-"Если вы являетесь сотрудникм QR! \n"
+"Если вы являетесь сотрудником QR! \n"
 "Для прохождения авторизации, пожалуйста\n"
 "нажмите на кнопку \"Авторизоваться как сотрудник\".\n"
-"Если вы не являетесь сотрудникм QR, \n"
+"Если вы не являетесь сотрудником QR, \n"
 "то нажмите на кнопку \"Авторизоваться как клиент\""
 msgstr ""
 
-#: handlers/client/auth.py:96
+#: handlers/client/auth.py:97
 msgid ""
 "Дорогой покупатель, Вас приветствует команда Qazaq Republic!\n"
 "Напишите ваше ФИО:"
 msgstr ""
 
-#: handlers/client/auth.py:115
+#: handlers/client/auth.py:114
+msgid ""
+"ФИО не должно содержать цифры и символы, напишите ваше ФИО без цифр и "
+"символов"
+msgstr ""
+
+#: handlers/client/auth.py:121
 msgid "Благодарим! Теперь укажите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:149
+#: handlers/client/auth.py:155
 msgid "Выберите вашу дату рождения"
 msgstr ""
 
-#: handlers/client/auth.py:188
+#: handlers/client/auth.py:194
 msgid "Отлично! Пожалуйста, выберите ваш пол"
 msgstr ""
 
-#: handlers/client/main.py:36
-msgid "{gender} {name}, вас приветствует команда Qazaq Republic!🤗\n"
-msgstr ""
-
-#: handlers/client/main.py:45
+#: handlers/client/main.py:26 handlers/client/main.py:30
+#: handlers/client/main.py:94
 msgid "Чем могу помочь? Выберите одну из опций:"
 msgstr ""
 
-#: handlers/client/main.py:57 handlers/staff/show_purchases.py:93
+#: handlers/client/main.py:53
+msgid "{gender} {name}, вас приветствует команда Qazaq Republic!🤗\n"
+msgstr ""
+
+#: handlers/client/main.py:69 handlers/staff/show_purchases.py:119
+msgid "Вы уже сгенерировали QR, дождитесь 15 минут, чтобы сгенерировать QR"
+msgstr ""
+
+#: handlers/client/main.py:73 handlers/staff/show_purchases.py:95
+#: handlers/staff/show_purchases.py:123
 msgid "Ваш QR"
 msgstr ""
 
-#: handlers/client/main.py:89
+#: handlers/client/main.py:114
 msgid ""
 "У вас пока нет накопленных бонусов.\n"
 "Совершайте покупки и участвуйте в наших акциях, \n"
 "чтобы начать зарабатывать баллы!"
 msgstr ""
 
-#: handlers/client/main.py:95
+#: handlers/client/main.py:120
 msgid "У вас: {res} бонусов {msg}"
 msgstr ""
 
@@ -524,11 +536,11 @@ msgid ""
 "время."
 msgstr ""
 
-#: handlers/client/show_purchases.py:50 handlers/staff/show_purchases.py:54
+#: handlers/client/show_purchases.py:52 handlers/staff/show_purchases.py:56
 msgid "Вы пока не совершали покупки"
 msgstr ""
 
-#: handlers/client/show_purchases.py:76 handlers/staff/show_purchases.py:83
+#: handlers/client/show_purchases.py:79 handlers/staff/show_purchases.py:85
 msgid "Вы пока не совершали покупки за этот месяц"
 msgstr ""
 
@@ -544,8 +556,16 @@ msgid ""
 "Вы вернулись к основному меню. Чем еще можем помочь?"
 msgstr ""
 
-#: handlers/client/faq/main.py:18 handlers/client/faq/main.py:33
+#: handlers/client/faq/main.py:21 handlers/client/faq/main.py:36
 msgid "Выберите раздел"
+msgstr ""
+
+#: handlers/client/faq/main.py:54 handlers/staff/show_purchases.py:165
+msgid "Выберите язык"
+msgstr ""
+
+#: handlers/client/faq/main.py:72 handlers/staff/show_purchases.py:184
+msgid "Вы сменили язык"
 msgstr ""
 
 #: handlers/client/faq/operator.py:28
@@ -593,20 +613,12 @@ msgstr ""
 msgid "{name} вас приветствует команда Qazaq Republic! Желаем приятных покупок. 🤗"
 msgstr ""
 
-#: handlers/staff/show_purchases.py:25
+#: handlers/staff/show_purchases.py:27
 msgid "Выберите:"
 msgstr ""
 
-#: handlers/staff/show_purchases.py:116
-msgid "Выберите на каком языке хотите получить инструкцию"
-msgstr ""
-
-#: handlers/staff/show_purchases.py:131
-msgid "Выберите язык"
-msgstr ""
-
 #: handlers/staff/show_purchases.py:150
-msgid "Вы сменили язык"
+msgid "Выберите на каком языке хотите получить инструкцию"
 msgstr ""
 
 #: handlers/staff/probation_period/first.py:38

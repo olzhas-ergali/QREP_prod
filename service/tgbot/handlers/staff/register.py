@@ -15,7 +15,7 @@ def register_staff_function(dp: Dispatcher):
     )
 
     dp.register_message_handler(
-        staff.show_purchases.qr_handler,
+        staff.show_purchases.qr_v2_handler,
         i18n_text='Мой QR',
         is_auth=True,
         state="*"

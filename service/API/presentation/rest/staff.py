@@ -3,7 +3,7 @@ import logging
 import typing
 from service.API.config import settings
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -18,14 +18,18 @@ from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.models.purchases import ModelUserTemp
 from service.API.infrastructure.models.discount import PositionDiscountsModel
 from service.API.infrastructure.database.models import Client, User, PositionDiscounts
-
+from service.API.infrastructure.database.cods import Cods
 router = APIRouter()
 
 
 @router.get('/authorization', tags=['staff'], summary="Дает информацию про сотрудника(Старая)")
 async def add_user_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone_number: str
+        phone_number: str = Query(
+            alias="phone_number",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
 ):
     session: AsyncSession = db_session.get()
     user = await staff.get_user(
@@ -59,10 +63,32 @@ async def add_user_process(
 @router.get('/v2/authorization', tags=['staff'], summary="Дает информацию про сотрудника или клиента")
 async def get_user_info_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone_number: str
+        phone_number: str = Query(
+            default=None,
+            alias="phoneNumber",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        qr_code: str = Query(
+            default=None,
+            alias="qrCode",
+            example="123456"
+        )
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
+    if qr_code is not None:
+        code = await Cods.get_code(qr_code, session)
+        logging.info(f"Code -> {qr_code}\nTime -> {(datetime.datetime.now() - code.created_at).total_seconds()/60}")
+        if code.is_active or (datetime.datetime.now() - code.created_at).total_seconds()/60 > 15:
+            return {
+                "status_code": 410,
+                "message": "QR-код истек. Запросите новый код."
+            }
+        phone_number = code.phone_number
+        code.is_active = True
+        session.add(code)
+        await session.commit()
     client = await Client.get_client_by_phone(
         session=session,
         phone=parse_phone(phone_number)
@@ -87,6 +113,7 @@ async def get_user_info_process(
             "status_code": 200,
             "message": "Сотрудник найден",
             "userFullName": user.name,
+            "phone_number": phone_number,
             "telegramId": user.id,
             "isActive": user.is_active,
             "isStaff": True,
@@ -98,6 +125,7 @@ async def get_user_info_process(
             "status_code": 200,
             "clientFullName": client.name,
             "birthDate": client.birthday_date,
+            "phone_number": phone_number,
             "gender": client.gender,
             "message": "Клиент найден",
             "telegramId": client.id if await check_user_exists(client.id, bot) else None,

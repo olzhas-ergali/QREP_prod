@@ -56,14 +56,14 @@ def staff_auth_btns(
 
 def get_local_btns():
     btn_kaz = InlineKeyboardButton(
-        text="Казакша",
+        text="Qazaqsha 🇰🇿",
         callback_data=LocalCallback.new(
             lang="kaz",
             action='local'
         )
     )
     btn_rus = InlineKeyboardButton(
-        text="Русский",
+        text="Русский 🇷🇺",
         callback_data=LocalCallback.new(
             lang="rus",
             action='local'

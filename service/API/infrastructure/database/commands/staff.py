@@ -5,6 +5,7 @@ from aiogram import Bot
 
 from typing import Sequence, Optional
 
+from aiogram import Bot
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 

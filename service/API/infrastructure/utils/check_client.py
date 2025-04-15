@@ -1,5 +1,5 @@
 from aiogram import Bot
-from aiogram.utils.exceptions import ChatNotFound
+from aiogram.utils.exceptions import ChatNotFound, ChatIdIsEmpty
 
 
 async def check_user_exists(
@@ -12,4 +12,6 @@ async def check_user_exists(
         await session.close()
         return True
     except ChatNotFound:
+        return False
+    except ChatIdIsEmpty:
         return False

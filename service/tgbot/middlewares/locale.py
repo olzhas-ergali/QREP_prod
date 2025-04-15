@@ -16,7 +16,7 @@ class ACLMiddleware(I18nMiddleware):
         pool = obj.bot.get('pool')
         session: AsyncSession = pool()
         user = await session.get(User, obj.from_user.id)
-        if not user:
+        if not user or (user and not user.is_active):
             user = await session.get(Client, obj.from_user.id)
         await session.close()
         return user.local or 'rus' if user else 'rus'

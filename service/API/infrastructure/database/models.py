@@ -133,6 +133,23 @@ class UserTemp(Base):
         return await session.scalar(stmt)
 
 
+class RegTemp(Base):
+    __tablename__ = "reg_temp"
+    telegram_id = Column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True
+    )
+    state = Column(
+        String
+    )
+    state_time = Column(
+        DateTime, server_default=func.now()
+    )
+    state_data = Column(JSON)
+    created_at = Column(DateTime, server_default=func.now())
+
+
 class PositionDiscounts(Base):
     __tablename__ = "position_discounts"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -202,7 +219,7 @@ class PurchaseReturn(Base):
 class Client(Base):
     __tablename__ = "clients"
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    whatsapp_id = Column(VARCHAR(36))
+    #whatsapp_id = Column(VARCHAR(36))
     name = Column(String)
     fullname = Column(String)
     phone_number = Column(String, unique=True, default=None)
@@ -210,8 +227,9 @@ class Client(Base):
     birthday_date = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now())
     update_data = Column(DateTime, default=None)
-    is_active = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=False)
     source = Column(String)
+    email = Column(String)
     activity = Column(String, default="telegram")
     local = Column(String, default="rus")
 
@@ -324,7 +342,7 @@ class Revenue(Base):
     __tablename__ = 'revenue_data'
     id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     document_id = mapped_column(UUID(as_uuid=True))
-    period = mapped_column(DateTime, server_default=func.now())
+    # period = mapped_column(DateTime, server_default=func.now())
     product_name = mapped_column(String)
     product_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
     param_name = mapped_column(String)
@@ -364,6 +382,25 @@ class Revenue(Base):
         response = await session.execute(stmt)
 
         return response.scalars().all()
+
+
+class RevenueHeaders(Base):
+    __tablename__ = 'revenue_headers'
+    id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    document_id = mapped_column(UUID(as_uuid=True))
+    document_type = mapped_column(String)
+    period = mapped_column(DateTime, server_default=func.now())
+    checks = mapped_column(Integer)
+    returns = mapped_column(Integer)
+
+    @classmethod
+    async def get_revenue_headers_by_doc_id(
+            cls,
+            session: AsyncSession,
+            document_id: str
+    ) -> typing.Optional['RevenueHeaders']:
+        stmt = select(RevenueHeaders).where(document_id == RevenueHeaders.document_id)
+        return await session.scalar(stmt)
 
 
 class ClientsApp(Base):

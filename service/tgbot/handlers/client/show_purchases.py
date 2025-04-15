@@ -12,17 +12,19 @@ from service.tgbot.models.database.users import User
 from service.tgbot.keyboards.client.client import period_btns
 from service.tgbot.misc.delete import remove
 from service.tgbot.misc.client.show_purchases import show_purchases
+from service.tgbot.handlers.client.main import main_handler
 
 
 async def purchases_handler(
-        message: Message,
+        callback: CallbackQuery,
         state: FSMContext
 ):
     await state.finish()
-    await remove(message, 0)
-    await message.answer(
+    #await remove(message, 0)
+    _ = callback.bot.get('i18n')
+    await callback.message.edit_text(
         text="Выберите:",
-        reply_markup=await period_btns()
+        reply_markup=await period_btns(_)
     )
 
 
@@ -49,6 +51,7 @@ async def all_purchases_handler(
         await callback.message.answer(
             text=_("Вы пока не совершали покупки")
         )
+    await main_handler(callback)
 
 
 async def purchases_by_date_handler(
@@ -75,4 +78,5 @@ async def purchases_by_date_handler(
         await callback.message.answer(
             text=_("Вы пока не совершали покупки за этот месяц")
         )
+    await main_handler(callback)
 
