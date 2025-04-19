@@ -8,11 +8,15 @@ from starlette import status
 from starlette.responses import RedirectResponse
 from loguru import logger
 
+from service.tgbot.misc.generate import generate_code
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.database.models import UserTemp, User, Client
 from service.API.infrastructure.models.purchases import ModelStaff
 from service.API.infrastructure.utils.show_purchases import show_purchases, show_client_purchases
+from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
+from service.API.infrastructure.database.cods import Cods
+from service.API.infrastructure.utils.generate import generate_code
 
 router = APIRouter()
 
@@ -103,4 +107,26 @@ async def get_client_purchases(
     return {
         "status_code": 204,
         "answer": "Нет данных о пользователе"
+    }
+
+
+@router.get(
+    "/client/qr_code",
+    tags=["WhatsApp"]
+)
+async def register_staff(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=parse_phone(phone))
+    code = await Cods.get_cody_by_phone(client.phone_number, session)
+    if not code or (code and code.is_active) or (datetime.now() - code.created_at).total_seconds() / 60 > 15:
+        code = await generate_code(session, phone_number=client.phone_number)
+
+    return {
+        'url': f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={code.code}",
+        'status_code': 200
     }
