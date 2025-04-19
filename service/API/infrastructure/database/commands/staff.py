@@ -71,7 +71,9 @@ async def get_item_count(
         session: AsyncSession,
         user: User | None
 ):
-    discount = await get_user_discount(session, user.position_id)
+    discount = None
+    if user.position_id:
+        discount = await get_user_discount(session, user.position_id)
     monthly_limit = 3
     discount_percentage = 30.0
     if discount:
