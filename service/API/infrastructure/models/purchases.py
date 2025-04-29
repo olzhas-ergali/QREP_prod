@@ -1,6 +1,6 @@
 import datetime
 import typing
-
+import uuid
 from pydantic import BaseModel
 
 
@@ -11,6 +11,18 @@ class ModelPurchase(BaseModel):
     createDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     products: typing.Optional[typing.List[dict]] = None
     source: typing.Optional[str] = None
+
+
+class ModelClientBonus(BaseModel):
+    loyaltyProgram: typing.Optional[str] = None
+    accruedPoints: typing.Optional[float] = None
+    writeOffPoints: typing.Optional[float] = None
+    documentType: typing.Optional[str] = None
+    rowNumber: typing.Optional[int] = None
+    activationDate: typing.Optional[datetime.datetime] = None
+    expirationDate: typing.Optional[datetime.datetime] = None
+    ruleId: typing.Optional[uuid.UUID] = None
+    is_activate: typing.Optional[bool] = None
 
 
 class ModelPurchaseClient(BaseModel):
@@ -24,6 +36,7 @@ class ModelPurchaseClient(BaseModel):
     number: typing.Optional[str] = None
     shiftNumber: typing.Optional[int] = None
     ticketPrintUrl: typing.Optional[str] = None
+    bonus: typing.Optional[ModelClientBonus] = None
 
 
 class ModelPurchaseReturn(BaseModel):
@@ -48,6 +61,7 @@ class ModelClientPurchaseReturn(BaseModel):
     number: typing.Optional[str] = None
     shiftNumber: typing.Optional[int] = None
     ticketPrintUrl: typing.Optional[str] = None
+    bonus: typing.Optional[ModelClientBonus] = None
 
 
 class ModelUser(BaseModel):

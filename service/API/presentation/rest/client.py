@@ -23,6 +23,7 @@ from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
 from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
+from service.API.infrastructure.database.loyalty import ClientBonusPoints, BonusExpirationNotifications
 from service.API.infrastructure.utils.check_client import check_user_exists
 from service.tgbot.lib.bitrixAPI.leads import Leads
 from service.tgbot.data.faq import grade_text, grade_text_kaz
@@ -181,15 +182,9 @@ async def add_purchases_process(
     try:
         print(purchase.telegramId)
         return await client.add_purchases(
-            purchase_id=purchase.purchaseId,
             session=session,
-            user_id=purchase.telegramId if purchase.telegramId != -1 else None,
-            phone=purchase.phone,
-            products=purchase.products,
-            order_number=purchase.orderNumber,
-            number=purchase.number,
-            shift_number=purchase.shiftNumber,
-            ticket_print_url=purchase.ticketPrintUrl
+            bonus=purchase.bonus,
+            purchases_model=purchase
         )
     except Exception as ex:
         print(ex)
@@ -205,22 +200,60 @@ async def add_purchases_return_process(
     session: AsyncSession = db_session.get()
     if purchase.returnId != '-1':
         return await client.add_return_purchases(
-            purchase_id=purchase.purchaseId,
-            return_id=purchase.returnId,
-            user_id=purchase.telegramId if purchase.telegramId != -1 else None,
-            phone=purchase.phone,
             session=session,
-            products=purchase.products,
-            order_number=purchase.orderNumber,
-            number=purchase.number,
-            shift_number=purchase.shiftNumber,
-            ticket_print_url=purchase.ticketPrintUrl
+            purchase_return_model=purchase,
+            bonus=purchase.bonus
         )
     else:
         return {
             "statusCode": status.HTTP_403_FORBIDDEN,
             "message": "Return id не может быть пустым",
         }
+
+
+@router.get("/api/v1/clients/bonus-points")
+async def get_bonus_points(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone_number: str = Query(
+            default=None,
+            alias="phoneNumber",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        client_id: int = Query(
+            default=None,
+            alias="clientId",
+            description="Id клиента",
+            example=123456
+        )
+):
+    session: AsyncSession = db_session.get()
+    if not (client_b := await Client.get_client_by_phone(session=session, phone=phone_number)):
+        client_b = await session.get(Client, client_id)
+    client_bonus = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    answer = {
+        'clientId': client_b.id,
+        'phoneNumber': client_b.phone_number,
+        "availableBonus": 530.00,
+        "pendingBonus": 120.00,
+        "expiredBonus": 50.00,
+        "totalEarned": 1000.00,
+        "totalSpent": 320.00,
+        "soonExpiring": [
+            {
+                "amount": 80.00,
+                "expiresAt": "2025-05-15",
+                "daysLeft": 30
+            },
+            {
+                "amount": 50.00,
+                "expiresAt": "2025-05-22",
+                "daysLeft": 7
+            }
+        ],
+        "nextExpirationDate": "2025-05-15"
+    }
+    return answer
 
 
 @router.post("/client/reviews",

@@ -76,6 +76,15 @@ class SendPlus:
 
 
 @dataclass
+class Mail:
+    MAIL_HOST: str
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_PORT: int
+    MAIL_ENCRYPTION: str
+
+
+@dataclass
 class Settings:
     # Project file system
     root_dir: Path
@@ -88,11 +97,11 @@ class Settings:
     tg_bot: TgbotSettings
     bitrix: Bitrix
     wb_cred: SendPlus
+    mail: Mail
 
     # Application configuration
     logging: LoggingSettings = LoggingSettings()
     debug_status: bool = True
-
 
 
 ROOT_PATH = Path(__file__).parent.parent
@@ -126,6 +135,13 @@ settings = Settings(
         wb_bot_id=env.str('WB_ID'),
         client_id=env.str('CLIENT_ID'),
         client_secret=env.str('CLIENT_SECRET')
+    ),
+    mail=Mail(
+        MAIL_HOST=env.str('MAIL_HOST'),
+        MAIL_PORT=env.int('MAIL_PORT'),
+        MAIL_USERNAME=env.str('MAIL_USERNAME'),
+        MAIL_PASSWORD=env.str('MAIL_PASSWORD'),
+        MAIL_ENCRYPTION=env.str('MAIL_ENCRYPTION')
     )
 )
 
