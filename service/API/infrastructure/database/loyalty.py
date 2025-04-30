@@ -1,8 +1,9 @@
+import datetime
 import typing
 import uuid
 
 from sqlalchemy import (Column, Integer, BigInteger, ForeignKey, Text, DateTime,
-                        func, String, Boolean, select, UUID, DECIMAL)
+                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.API.infrastructure.database.models import Base
@@ -27,6 +28,10 @@ class ClientBonusPoints(Base):
     write_off_points = Column(DECIMAL)
     created_at = Column(DateTime, default=func.now())
     update_at = Column(DateTime, default=func.now())
+    activation_date: Column[datetime.datetime] = Column(DateTime,
+                                                        default=datetime.datetime.now() + datetime.timedelta(days=14))
+    expiration_date: Column[datetime.datetime] = Column(DateTime,
+                                                        default=datetime.datetime.now() + datetime.timedelta(days=365))
     client_purchases_id = Column(
         String,
         ForeignKey("client_purchases.id", ondelete='CASCADE', onupdate='CASCADE'),
@@ -44,9 +49,14 @@ class ClientBonusPoints(Base):
             cls,
             session: AsyncSession,
             client_id: int
-    ) -> typing.Optional['ClientBonusPoints']:
-        stmt = select(ClientBonusPoints).where(client_id == ClientBonusPoints.client_id)
-        return await session.scalar(stmt)
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            (client_id == ClientBonusPoints.client_id) &
+            (True_(ClientBonusPoints.is_active))
+        ).group_by(ClientBonusPoints.expiration_date).order_by(asc(ClientBonusPoints.expiration_date))
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
 
 
 class BonusExpirationNotifications(Base):

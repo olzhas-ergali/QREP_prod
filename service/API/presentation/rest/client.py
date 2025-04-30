@@ -230,28 +230,42 @@ async def get_bonus_points(
     session: AsyncSession = db_session.get()
     if not (client_b := await Client.get_client_by_phone(session=session, phone=phone_number)):
         client_b = await session.get(Client, client_id)
-    client_bonus = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    total_earned = 0
+    total_spent = 0
+    available_bonus = 0
+    soon_expiring = []
+    expired_bonus = 0
+    for bonus in client_bonuses:
+        if bonus.operation_date >= datetime.datetime.now():
+            accrued_points = bonus.accrued_points if bonus.accrued_points else 0
+            write_off_points = bonus.write_off_points if bonus.write_off_points else 0
+            total_earned += accrued_points
+            total_spent += write_off_points
+            available_bonus += (accrued_points - write_off_points)
+        if len(soon_expiring) < 5 and bonus.expiration_date > datetime.datetime.now():
+            #if isinstance(bonus.expiration_date, datetime.datetime):
+            exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
+            soon_expiring.append(
+                {
+                    "amount": bonus.accrued_points,
+                    "expiresAt": exp_date,
+                    "daysLeft": (bonus.expiration_date - datetime.datetime.now()).days
+                }
+            )
+        if bonus.expiration_date <= datetime.datetime.now():
+            expired_bonus += bonus.accrued_points
+
     answer = {
         'clientId': client_b.id,
         'phoneNumber': client_b.phone_number,
-        "availableBonus": 530.00,
-        "pendingBonus": 120.00,
-        "expiredBonus": 50.00,
-        "totalEarned": 1000.00,
-        "totalSpent": 320.00,
-        "soonExpiring": [
-            {
-                "amount": 80.00,
-                "expiresAt": "2025-05-15",
-                "daysLeft": 30
-            },
-            {
-                "amount": 50.00,
-                "expiresAt": "2025-05-22",
-                "daysLeft": 7
-            }
-        ],
-        "nextExpirationDate": "2025-05-15"
+        "availableBonus": available_bonus,
+        "pendingBonus": 0.0,
+        "expiredBonus": expired_bonus,
+        "totalEarned": total_earned,
+        "totalSpent": total_spent,
+        "soonExpiring": soon_expiring,
+        "nextExpirationDate": soon_expiring[0].get('expiresAt')
     }
     return answer
 

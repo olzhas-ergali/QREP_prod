@@ -44,7 +44,7 @@ async def add_purchases(
     client_bonus.client_id = user_id
     client_bonus.loyalty_program = bonus.loyaltyProgram
     client_bonus.loyalty_program_id = bonus.ruleId
-    client_bonus.operation_date = purchases.created_date
+    client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
     client_bonus.source = purchases_model.source
     client_bonus.document_id = purchases_model.purchaseId
     client_bonus.accrued_points = bonus.accruedPoints
@@ -53,6 +53,8 @@ async def add_purchases(
     client_bonus.is_active = bonus.is_activate
     client_bonus.row_number = bonus.rowNumber
     client_bonus.document_type = bonus.documentType
+    client_bonus.expiration_date = bonus.expirationDate
+    client_bonus.activation_date = bonus.activationDate
     return {
         "message": "Чек успешно записан",
         "purchaseId": purchases.id,
@@ -109,7 +111,7 @@ async def add_return_purchases(
     client_bonus.client_id = user_id
     client_bonus.loyalty_program = bonus.loyaltyProgram
     client_bonus.loyalty_program_id = bonus.ruleId
-    client_bonus.operation_date = purchases.created_date
+    client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
     client_bonus.source = purchase_return_model.source
     client_bonus.document_id = purchase_return_model.returnId
     client_bonus.accrued_points = bonus.accruedPoints
@@ -119,6 +121,8 @@ async def add_return_purchases(
     client_bonus.is_active = bonus.is_activate
     client_bonus.row_number = bonus.rowNumber
     client_bonus.document_type = bonus.documentType
+    client_bonus.expiration_date = bonus.expirationDate
+    client_bonus.activation_date = bonus.activationDate
     return {
         "statusCode": 200,
         "message": "Информация о возврате успешно записана",
