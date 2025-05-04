@@ -146,31 +146,31 @@ async def employees_process(
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
-    try:
+    #try:
         #logging.info(user.dict())
-        return await staff.add_employees(
-            session=session,
-            id_staff=user.idStaff,
-            fullname=user.userFullName,
-            phone=user.phone,
-            author=user.author,
-            update_date=user.updateDate,
-            date_receipt=user.dateOfReceipt,
-            date_dismissal=user.dateOfDismissal,
-            iin=user.iin,
-            organization_id=user.organizationId,
-            organization_bin=user.organizationBin,
-            position_id=user.positionId,
-            position_name=user.positionName,
-            organization_name=user.organizationName,
-            bot=bot
-        )
-    except Exception as ex:
-        logging.info(f"ОШИБКА: {ex}")
-        return {
-            'status_code': status.HTTP_400_BAD_REQUEST,
-            "error": "Некорректные данные. Проверьте переданные параметры."
-        }
+    return await staff.add_employees(
+        session=session,
+        id_staff=user.idStaff,
+        fullname=user.userFullName,
+        phone=user.phone,
+        author=user.author,
+        update_date=user.updateDate,
+        date_receipt=user.dateOfReceipt,
+        date_dismissal=user.dateOfDismissal,
+        iin=user.iin,
+        organization_id=user.organizationId,
+        organization_bin=user.organizationBin,
+        position_id=user.positionId,
+        position_name=user.positionName,
+        organization_name=user.organizationName,
+        bot=bot
+    )
+    # except Exception as ex:
+    #     logging.info(f"ОШИБКА: {ex}")
+    #     return {
+    #         'status_code': status.HTTP_400_BAD_REQUEST,
+    #         "error": "Некорректные данные. Проверьте переданные параметры."
+    #     }
 
 
 @router.get('/identityNumber', tags=['staff'], summary="Дает информацию про сотрудника по ИИН")
