@@ -342,12 +342,15 @@ async def add_employees(
             user_tg.position_id = position_id
             user_tg.position_name = position_name
             user_tg.organization_bin = organization_bin
-        await bot.send_message(
-            chat_id=user_tg.id,
-            text=texts.get(user_tg.local)
-        )
-        bot_session = await bot.get_session()
-        await bot_session.close()
+        try:
+            await bot.send_message(
+                chat_id=user_tg.id,
+                text=texts.get(user_tg.local)
+            )
+            bot_session = await bot.get_session()
+            await bot_session.close()
+        except:
+            pass
         session.add(user_tg)
     if (c := await Client.get_client_by_phone(session=session, phone=phone)) is not None:
         c.is_active = False
