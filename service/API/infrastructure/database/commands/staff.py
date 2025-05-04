@@ -304,7 +304,7 @@ async def add_employees(
         user = UserTemp(
             id_staff=id_staff
         )
-    if user_tg := await User.get_by_iin(session, user.iin) is not None:
+    if user_tg := await User.get_by_iin(session, user.iin):
         texts = {
             'rus': '''
 🔄 *Изменение вашего статуса* 🔄
@@ -352,7 +352,7 @@ async def add_employees(
         except Exception as ex:
             logging.info(f"Ошибка: {ex}")
         session.add(user_tg)
-    if c := await Client.get_client_by_phone(session=session, phone=phone) is not None:
+    if c := await Client.get_client_by_phone(session=session, phone=phone):
         c.is_active = False
         c.phone_number = None
         session.add(c)
