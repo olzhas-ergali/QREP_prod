@@ -100,6 +100,14 @@ async def main():
 
     )
 
+    scheduler.add_job(
+        tasks.push_client_about_bonus,
+        'cron',
+        hour=10,
+        minute=00,
+        args=(bot, db.pool),
+
+    )
     #scheduler.add_job(
     #    tasks.push_client_answer_operator,
     #    'interval',

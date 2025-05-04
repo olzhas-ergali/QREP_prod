@@ -13,7 +13,7 @@ from sqlalchemy.orm import sessionmaker, joinedload
 from service.tgbot.models.database.users import RegTemp, ClientsApp
 from service.tgbot.keyboards.auth import get_continue_btn
 from service.tgbot.keyboards.client.faq import get_answer
-
+from service.tgbot.models.database.loyalty import BonusExpirationNotifications, ClientBonusPoints
 
 async def push_client_authorization(
         pool: sessionmaker,
@@ -65,3 +65,26 @@ async def push_client_answer_operator(
             pass
     await session.commit()
     await session.close()
+
+
+async def push_client_about_bonus(
+        pool: sessionmaker,
+        bot: Bot,
+):
+    logging.info("Уведомление для клиентов по сгоранию бонусов")
+    session: AsyncSession = pool()
+    date_now = datetime.now()
+    bonuses = await ClientBonusPoints.get_bonuses(session)
+    if bonuses:
+        texts = {
+            30: "Через 30 дней сгорят ваши бонусы. Используйте их, пока не поздно.",
+            7: "Вы можете потратить бонусы до истечения срока действия. Осталось 7 дней.",
+            1: "Завтра ваши бонусы станут недоступны. Успейте их использовать сегодня!"
+        }
+        for bonus in bonuses:
+            await bot.send_message(
+                chat_id=bonus.client_id,
+                text=texts.get((date_now - bonus.expiration_date).days)
+            )
+    await session.close()
+
