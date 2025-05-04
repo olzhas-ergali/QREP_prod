@@ -166,7 +166,7 @@ async def employees_process(
             bot=bot
         )
     except Exception as ex:
-        logging.error(ex)
+        logging.info(ex)
         return {
             'status_code': status.HTTP_400_BAD_REQUEST,
             "error": "Некорректные данные. Проверьте переданные параметры."
