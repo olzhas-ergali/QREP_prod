@@ -74,6 +74,7 @@ async def auth_staff(
     data = await state.get_data()
     phone_number = data.get('phone')
     iin = message.text
+    logging.info(f"authorization_staff -> {iin}")
     await remove(message, 0)
     await remove(message, 1)
     if not (user_t := await UserTemp.get_user_temp(session, iin)):
