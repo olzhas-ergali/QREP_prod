@@ -223,6 +223,16 @@ async def add_staff_vacation(
         id_staff: str,
         is_fired: bool = False
 ):
+    if is_fired:
+        # vacations = await VacationDays.get_staff_vac_by_id(
+        #     session=session,
+        #     staff_id=staff.id
+        # )
+        # for v in vacations:
+        #     await session.delete(v)
+        # await session.delete(staff)
+        # await session.commit()
+        return
     if not (staff := await StaffVacation.get_by_guid(iin, session)):
         staff = StaffVacation(
             iin=iin,
@@ -254,16 +264,6 @@ async def add_staff_vacation(
         )
         session.add(vacation)
         await session.commit()
-    if is_fired:
-        # vacations = await VacationDays.get_staff_vac_by_id(
-        #     session=session,
-        #     staff_id=staff.id
-        # )
-        # for v in vacations:
-        #     await session.delete(v)
-        # await session.delete(staff)
-        # await session.commit()
-        return
 
     return staff, vacation
 
