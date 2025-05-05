@@ -15,6 +15,7 @@ from service.tgbot.keyboards.auth import get_continue_btn
 from service.tgbot.keyboards.client.faq import get_answer
 from service.tgbot.models.database.loyalty import BonusExpirationNotifications, ClientBonusPoints
 
+
 async def push_client_authorization(
         pool: sessionmaker,
         bot: Bot,

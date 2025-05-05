@@ -223,15 +223,13 @@ async def add_staff_vacation(
         id_staff: str,
         is_fired: bool = False
 ):
-    if not (staff := await StaffVacation.get_by_iin(iin, session)):
+    if not (staff := await StaffVacation.get_by_guid(iin, session)):
         staff = StaffVacation(
             iin=iin,
             fullname=fullname,
             date_receipt=date_receipt,
             guid=id_staff
         )
-        session.add(staff)
-        await session.commit()
     if staff.guid != id_staff:
         await session.delete(staff)
         staff = StaffVacation(
@@ -240,8 +238,8 @@ async def add_staff_vacation(
             date_receipt=date_receipt,
             guid=id_staff
         )
-        session.add(staff)
-        await session.commit()
+    session.add(staff)
+    await session.commit()
 
     if not (vacation := await VacationDays.get_staff_vac_days_by_year(
             year=datetime.now().year + 1,
@@ -287,6 +285,7 @@ async def add_employees(
         position_name: typing.Optional[str] = None,
         bot: typing.Optional[Bot] = None
 ):
+    now = datetime.now()
     await add_staff_vacation(
         session,
         iin,
@@ -327,8 +326,8 @@ async def add_employees(
         }
         if date_dismissal:
             user_tg.date_dismissal = date_dismissal
-            user_tg.iin = None
-            user_tg.is_active = False
+            user_tg.iin = None if date_dismissal.date() == now.date() else user_tg.iin
+            user_tg.is_active = False if date_dismissal.date() == now.date() else True
         else:
             #user_tg.phone_number = phone
             user.name = fullname
@@ -337,12 +336,13 @@ async def add_employees(
             user_tg.position_id = position_id
             user_tg.position_name = position_name
             user_tg.organization_bin = organization_bin
-        await bot.send_message(
-            chat_id=user_tg.id,
-            text=texts.get(user_tg.local)
-        )
-        bot_session = await bot.get_session()
-        await bot_session.close()
+        if date_dismissal.date() == now.date():
+            await bot.send_message(
+                chat_id=user_tg.id,
+                text=texts.get(user_tg.local)
+            )
+            bot_session = await bot.get_session()
+            await bot_session.close()
         session.add(user_tg)
     if (c := await Client.get_client_by_phone(session=session, phone=phone)) is not None:
         c.is_active = False

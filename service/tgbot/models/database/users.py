@@ -22,11 +22,11 @@ class User(Base):
     date_dismissal = Column(DateTime)
     is_active = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
-    position_name = Column(String, default=False)
-    position_id = Column(String, default=False)
-    organization_name = Column(String, default=False)
-    organization_bin = Column(String, default=False)
-    organization_id = Column(String, default=False)
+    position_name = Column(String, default=None)
+    position_id = Column(String, default=None)
+    organization_name = Column(String, default=None)
+    organization_bin = Column(String, default=None)
+    organization_id = Column(String, default=None)
     local = Column(String, default="rus")
 
     @classmethod
