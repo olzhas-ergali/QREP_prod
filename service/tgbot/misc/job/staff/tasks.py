@@ -21,7 +21,7 @@ async def push_staff_about_dismissal(
 ):
     logging.info("Уведомление для сотрудников, которые уволились")
     session: AsyncSession = pool()
-    now = datetime.now() + timedelta(days=3)
+    now = datetime.now() + timedelta(hours=5)
     response = await session.execute(select(User).where(
         (func.cast(User.date_dismissal, Date) == now.date()) &
         (User.is_active.is_(True))
