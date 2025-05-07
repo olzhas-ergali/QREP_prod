@@ -18,6 +18,7 @@ from service.tgbot.filters.i18n import I18nTextFilter
 from service.tgbot.middlewares.db import DbMiddleware
 from service.tgbot.middlewares.locale import ACLMiddleware
 from service.tgbot.misc.job import tasks, probation_period
+from service.tgbot.misc.job.staff import tasks as staff_task
 from service.tgbot import handlers
 
 logger = logging.getLogger(__name__)
@@ -98,6 +99,13 @@ async def main():
         minute=00,
         args=(bot, db.pool, storage),
 
+    )
+    scheduler.add_job(
+        staff_task.push_staff_about_dismissal,
+        'cron',
+        hour=10,
+        minute=00,
+        args=(bot, db.pool,),
     )
 
     #scheduler.add_job(
