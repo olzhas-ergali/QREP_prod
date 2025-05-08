@@ -53,7 +53,7 @@ class ClientBonusPoints(Base):
         stmt = select(ClientBonusPoints).where(
             (client_id == ClientBonusPoints.client_id) &
             (True_(ClientBonusPoints.is_active))
-        ).group_by(ClientBonusPoints.expiration_date).order_by(asc(ClientBonusPoints.expiration_date))
+        ).order_by(asc(ClientBonusPoints.expiration_date))
         response = await session.execute(stmt)
 
         return response.scalars().all()
