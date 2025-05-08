@@ -265,7 +265,7 @@ async def get_bonus_points(
         "totalEarned": total_earned,
         "totalSpent": total_spent,
         "soonExpiring": soon_expiring,
-        "nextExpirationDate": soon_expiring[0].get('expiresAt')
+        "nextExpirationDate": soon_expiring[0].get('expiresAt') if soon_expiring else None
     }
     return answer
 
