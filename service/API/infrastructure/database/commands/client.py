@@ -1,3 +1,4 @@
+import typing
 from typing import Optional, Sequence
 from datetime import datetime
 
@@ -20,7 +21,7 @@ async def add_purchases(
         # shift_number: int | None,
         # ticket_print_url: str | None,
         purchases_model: ModelPurchaseClient | None,
-        bonus: ModelClientBonus | None
+        bonuses: typing.List[ModelClientBonus] | None
 ):
     user_id = None
     if not await session.get(Client, purchases_model.telegramId):
@@ -31,6 +32,7 @@ async def add_purchases(
         user_id = client.id
     purchases = ClientPurchase(
         id=purchases_model.purchaseId,
+        source_system=purchases_model.sourceSystem,
         user_id=user_id,
         products=purchases_model.products,
         order_number=purchases_model.orderNumber,
@@ -40,21 +42,24 @@ async def add_purchases(
     )
     session.add(purchases)
     await session.commit()
-    client_bonus = ClientBonusPoints()
-    client_bonus.client_id = user_id
-    client_bonus.loyalty_program = bonus.loyaltyProgram
-    client_bonus.loyalty_program_id = bonus.ruleId
-    client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
-    client_bonus.source = purchases_model.source
-    client_bonus.document_id = purchases_model.purchaseId
-    client_bonus.accrued_points = bonus.accruedPoints
-    client_bonus.write_off_points = bonus.writeOffPoints
-    client_bonus.client_purchases_id = purchases_model.purchaseId
-    client_bonus.is_active = bonus.is_activate
-    client_bonus.row_number = bonus.rowNumber
-    client_bonus.document_type = bonus.documentType
-    client_bonus.expiration_date = bonus.expirationDate
-    client_bonus.activation_date = bonus.activationDate
+    for bonus in bonuses:
+        client_bonus = ClientBonusPoints()
+        client_bonus.client_id = user_id
+        client_bonus.loyalty_program = bonus.loyaltyProgram
+        client_bonus.loyalty_program_id = bonus.ruleId
+        client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
+        client_bonus.source = purchases_model.source
+        client_bonus.document_id = purchases_model.purchaseId
+        client_bonus.accrued_points = bonus.accruedPoints
+        client_bonus.write_off_points = bonus.writeOffPoints
+        client_bonus.client_purchases_id = purchases_model.purchaseId
+        client_bonus.is_active = bonus.is_activate
+        client_bonus.row_number = bonus.rowNumber
+        client_bonus.document_type = purchases_model.documentType
+        client_bonus.expiration_date = bonus.expirationDate
+        client_bonus.activation_date = bonus.activationDate
+        session.add(client_bonus)
+        await session.commit()
     return {
         "message": "Чек успешно записан",
         "purchaseId": purchases.id,
@@ -74,7 +79,7 @@ async def add_return_purchases(
         # shift_number: int | None,
         # ticket_print_url: str | None
         purchase_return_model: ModelClientPurchaseReturn | None,
-        bonus: ModelClientBonus | None
+        bonuses: typing.List[ModelClientBonus] | None
 ):
     user_id = None
     if not await session.get(Client, purchase_return_model.telegramId):
@@ -97,6 +102,7 @@ async def add_return_purchases(
 
     purchases = ClientPurchaseReturn(
         purchase_id=purchase_return_model.purchaseId,
+        source_system=purchase_return_model.sourceSystem,
         user_id=user_id,
         products=purchase_return_model.products,
         return_id=purchase_return_model.returnId,
@@ -107,22 +113,25 @@ async def add_return_purchases(
     )
     session.add(purchases)
     await session.commit()
-    client_bonus = ClientBonusPoints()
-    client_bonus.client_id = user_id
-    client_bonus.loyalty_program = bonus.loyaltyProgram
-    client_bonus.loyalty_program_id = bonus.ruleId
-    client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
-    client_bonus.source = purchase_return_model.source
-    client_bonus.document_id = purchase_return_model.returnId
-    client_bonus.accrued_points = bonus.accruedPoints
-    client_bonus.write_off_points = bonus.writeOffPoints
-    client_bonus.client_purchases_id = purchase_return_model.purchaseId
-    client_bonus.client_purchases_return_id = purchase_return_model.returnId
-    client_bonus.is_active = bonus.is_activate
-    client_bonus.row_number = bonus.rowNumber
-    client_bonus.document_type = bonus.documentType
-    client_bonus.expiration_date = bonus.expirationDate
-    client_bonus.activation_date = bonus.activationDate
+    for bonus in bonuses:
+        client_bonus = ClientBonusPoints()
+        client_bonus.client_id = user_id
+        client_bonus.loyalty_program = bonus.loyaltyProgram
+        client_bonus.loyalty_program_id = bonus.ruleId
+        client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
+        client_bonus.source = purchase_return_model.source
+        client_bonus.document_id = purchase_return_model.returnId
+        client_bonus.accrued_points = bonus.accruedPoints
+        client_bonus.write_off_points = bonus.writeOffPoints
+        client_bonus.client_purchases_id = purchase_return_model.purchaseId
+        client_bonus.client_purchases_return_id = purchase_return_model.returnId
+        client_bonus.is_active = bonus.is_activate
+        client_bonus.row_number = bonus.rowNumber
+        client_bonus.document_type = purchase_return_model.documentType
+        client_bonus.expiration_date = bonus.expirationDate
+        client_bonus.activation_date = bonus.activationDate
+        session.add(client_bonus)
+        await session.commit()
     return {
         "statusCode": 200,
         "message": "Информация о возврате успешно записана",

@@ -183,7 +183,7 @@ async def add_purchases_process(
         print(purchase.telegramId)
         return await client.add_purchases(
             session=session,
-            bonus=purchase.bonus,
+            bonuses=purchase.bonus,
             purchases_model=purchase
         )
     except Exception as ex:
@@ -202,7 +202,7 @@ async def add_purchases_return_process(
         return await client.add_return_purchases(
             session=session,
             purchase_return_model=purchase,
-            bonus=purchase.bonus
+            bonuses=purchase.bonus
         )
     else:
         return {

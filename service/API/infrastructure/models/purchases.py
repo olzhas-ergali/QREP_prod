@@ -13,32 +13,6 @@ class ModelPurchase(BaseModel):
     source: typing.Optional[str] = None
 
 
-class ModelClientBonus(BaseModel):
-    loyaltyProgram: typing.Optional[str] = None
-    accruedPoints: typing.Optional[float] = None
-    writeOffPoints: typing.Optional[float] = None
-    documentType: typing.Optional[str] = None
-    rowNumber: typing.Optional[int] = None
-    activationDate: typing.Optional[datetime.datetime] = None
-    expirationDate: typing.Optional[datetime.datetime] = None
-    ruleId: typing.Optional[uuid.UUID] = None
-    is_activate: typing.Optional[bool] = None
-
-
-class ModelPurchaseClient(BaseModel):
-    purchaseId: typing.Optional[str] = None
-    phone: typing.Optional[str] = None
-    telegramId: typing.Optional[int] = None
-    createDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
-    products: typing.Optional[typing.List[dict]] = None
-    source: typing.Optional[str] = None
-    orderNumber: typing.Optional[int] = None
-    number: typing.Optional[str] = None
-    shiftNumber: typing.Optional[int] = None
-    ticketPrintUrl: typing.Optional[str] = None
-    bonus: typing.Optional[ModelClientBonus] = None
-
-
 class ModelPurchaseReturn(BaseModel):
     purchaseId: typing.Optional[str] = None
     phone: typing.Optional[str] = None
@@ -49,8 +23,37 @@ class ModelPurchaseReturn(BaseModel):
     source: typing.Optional[str] = None
 
 
+class ModelClientBonus(BaseModel):
+    loyaltyProgram: typing.Optional[str] = None
+    accruedPoints: typing.Optional[float] = None
+    writeOffPoints: typing.Optional[float] = None
+    rowNumber: typing.Optional[int] = None
+    activationDate: typing.Optional[datetime.datetime] = None
+    expirationDate: typing.Optional[datetime.datetime] = None
+    ruleId: typing.Optional[uuid.UUID] = None
+    is_activate: typing.Optional[bool] = None
+
+
+class ModelPurchaseClient(BaseModel):
+    purchaseId: typing.Optional[str] = None
+    documentType: typing.Optional[str] = None
+    sourceSystem: typing.Optional[str] = None
+    phone: typing.Optional[str] = None
+    telegramId: typing.Optional[int] = None
+    createDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
+    products: typing.Optional[typing.List[dict]] = None
+    source: typing.Optional[str] = None
+    orderNumber: typing.Optional[int] = None
+    number: typing.Optional[str] = None
+    shiftNumber: typing.Optional[int] = None
+    ticketPrintUrl: typing.Optional[str] = None
+    bonus: typing.List[ModelClientBonus] = None
+
+
 class ModelClientPurchaseReturn(BaseModel):
     purchaseId: typing.Optional[str] = None
+    documentType: typing.Optional[str] = None
+    sourceSystem: typing.Optional[str] = None
     phone: typing.Optional[str] = None
     telegramId: typing.Optional[int] = None
     createDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
@@ -61,7 +64,7 @@ class ModelClientPurchaseReturn(BaseModel):
     number: typing.Optional[str] = None
     shiftNumber: typing.Optional[int] = None
     ticketPrintUrl: typing.Optional[str] = None
-    bonus: typing.Optional[ModelClientBonus] = None
+    bonus: typing.List[ModelClientBonus] = None
 
 
 class ModelUser(BaseModel):
