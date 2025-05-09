@@ -17,9 +17,16 @@ from service.tgbot.keyboards.auth import get_auth_btns, get_local_btns
 async def first_message_handler(
         message: Message,
 ):
-
     await message.answer(
-        text="Выберите язык",
+'''Сәлем! Сізді Qazaq Republic және QR+ адалдық бағдарламасы бойынша жеке көмекшіңіз қарсы алады.
+Мен сізге кэшбэк пен басқа да мүмкіндіктер туралы ақпаратты жылдам әрі оңай алуға көмектесемін.
+
+Сәлем! Вас приветствует Qazaq Republic и ваш персональный помощник по программе лояльности QR+.
+Я помогу вам быстро получить информацию о кэшбеке и многом другом.'''
+    )
+    await message.answer(
+        text="Тілді таңдаңыз:\n"
+             "Выберите язык:",
         reply_markup=get_local_btns()
     )
 
@@ -95,7 +102,8 @@ async def continue_auth_handler(
             message=callback.message,
             state=state,
             reg=reg,
-            session=session
+            session=session,
+            user=user
         )
     elif reg.state == "AuthClientState:waiting_name":
         await client_auth.auth_fio_handler(
@@ -115,6 +123,15 @@ async def continue_auth_handler(
         )
     elif reg.state == "AuthClientState:waiting_gender":
         await client_auth.auth_gender_handler(
+            query=callback,
+            user=user,
+            session=session,
+            state=state,
+            callback_data=callback_data,
+            reg=reg
+        )
+    elif reg.state == "AuthClientState:waiting_email":
+        await client_auth.auth_email_handler(
             query=callback,
             user=user,
             session=session,

@@ -34,6 +34,19 @@ class ModelClientBonus(BaseModel):
     is_activate: typing.Optional[bool] = None
 
 
+class ModelProducts(BaseModel):
+    paramId: typing.Optional[str] = None
+    id: typing.Optional[str] = None
+    name: typing.Optional[str] = None
+    count: typing.Optional[int] = None
+    price: typing.Optional[int] = None
+    discountPrice: typing.Optional[int] = None
+    discount: typing.Optional[bool] = False,
+    discountPercent: typing.Optional[int] = None
+    bonusesUsed: typing.Optional[int] = None
+    bonusesAccrued: typing.Optional[str] = None
+
+
 class ModelPurchaseClient(BaseModel):
     purchaseId: typing.Optional[str] = None
     documentType: typing.Optional[str] = None

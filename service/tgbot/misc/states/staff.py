@@ -12,6 +12,7 @@ class AuthClientState(StatesGroup):
     waiting_name = State()
     waiting_birthday_date = State()
     waiting_gender = State()
+    waiting_email = State()
 
 
 class ProbationPeriodState(StatesGroup):

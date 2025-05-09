@@ -114,7 +114,12 @@ def register_client(dp):
     )
 
     dp.register_callback_query_handler(
-        client.auth.auth_client_handler,
+        client.auth.auth_email_handler,
         query_cb.GenderCallback.filter(action='gender'),
         state=AuthClientState.waiting_gender
+    )
+
+    dp.register_message_handler(
+        client.auth.auth_client_handler,
+        state=AuthClientState.waiting_email
     )

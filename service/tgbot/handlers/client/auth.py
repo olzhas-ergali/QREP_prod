@@ -11,7 +11,7 @@ from service.tgbot.models.database.users import Client, RegTemp, User
 from service.tgbot.handlers.auth import phone_handler
 from service.tgbot.handlers.client.main import start_handler
 from service.tgbot.misc.states.staff import AuthClientState
-from service.tgbot.misc.parse import parse_phone
+from service.tgbot.misc.parse import parse_phone, is_mail_valid
 from service.tgbot.misc.delete import remove
 from service.tgbot.modules.OneС.Function_1C import authorization
 from service.tgbot.keyboards.client.calendar import make_ikb_calendar, make_year_ikb
@@ -78,7 +78,7 @@ async def auth_fio_handler(
                 user.update_data = datetime.datetime.now()
                 await user.save(session=session)
 
-            await authorization(user=user, bot=message.bot)
+            #await authorization(user=user, bot=message.bot)
             await start_handler(
                 message=message,
                 user=user,
@@ -94,7 +94,11 @@ async def auth_fio_handler(
         await session.commit()
         await remove(message, 1)
         await message.answer(
-            _("Дорогой покупатель, Вас приветствует команда Qazaq Republic!\nНапишите ваше ФИО:")
+            _("Чтобы зарегистрироваться в программе лояльности QR+, пожалуйста, "
+              "ответьте на несколько вопросов. Это займёт не более минуты 😊")
+        )
+        await message.answer(
+            _("Пожалуйста, укажите ваше ФИО:")
         )
         await AuthClientState.waiting_name.set()
 
@@ -202,7 +206,7 @@ async def auth_gender_handler(
     await session.commit()
 
 
-async def auth_client_handler(
+async def auth_email_handler(
         query: CallbackQuery,
         user: Client,
         state: FSMContext,
@@ -210,20 +214,47 @@ async def auth_client_handler(
         callback_data: dict,
         reg: RegTemp
 ):
-    data = reg.state_data
+    _ = query.bot.get("i18n")
+    await state.update_data(gender=callback_data.get('gender'))
     await query.message.delete()
+    await query.message.answer(
+        _("Остался последний шаг — укажите e-mail, чтобы получать напоминания о кэшбеке.")
+    )
+    await AuthClientState.waiting_email.set()
+    reg.state = "AuthClientState.waiting_email"
+    reg.state_time = datetime.datetime.now()
+    reg.state_data = await state.get_data()
+    session.add(reg)
+    await session.commit()
+
+
+async def auth_client_handler(
+        message: Message,
+        user: Client,
+        state: FSMContext,
+        session: AsyncSession,
+        reg: RegTemp
+):
+    _ = message.bot.get("i18n")
+    await message.delete()
+    if not is_mail_valid(message.text):
+        await message.answer(
+            _("📧 Похоже, email указан с ошибкой. Пример корректного адреса: test@example.com")
+        )
+    data = reg.state_data
+    user.email = data.get("email")
     user.phone_number = data.get('phone')
     user.name = data.get('name')
-    user.gender = callback_data.get('gender')
+    user.gender = data.get('gender')
     user.birthday_date = datetime.datetime.strptime(data.get('birthday'), "%d.%m.%Y")
     user.is_active = True
     user.activity = "telegram"
     await user.save(session=session)
     await session.delete(reg)
     await session.commit()
-    await authorization(user=user, bot=query.bot)
+    await authorization(user=user, bot=message.bot)
     await start_handler(
-        message=query.message,
+        message=message,
         user=user,
         state=state,
         session=session
