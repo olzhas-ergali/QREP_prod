@@ -238,11 +238,11 @@ async def get_bonus_points(
     expired_bonus = 0
     for bonus in client_bonuses:
         if bonus.operation_date >= datetime.datetime.now():
-            accrued_points = bonus.accrued_points if bonus.accrued_points else 0
-            write_off_points = bonus.write_off_points if bonus.write_off_points else 0
-            total_earned += accrued_points
-            total_spent += write_off_points
-            available_bonus += (accrued_points - write_off_points)
+            accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
+            write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
+            total_earned += bonus.accrued_points
+            total_spent += bonus.write_off_points
+            available_bonus += accrued_points if accrued_points else -write_off_points
         if len(soon_expiring) < 5 and bonus.expiration_date > datetime.datetime.now():
             #if isinstance(bonus.expiration_date, datetime.datetime):
             exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
