@@ -240,7 +240,7 @@ async def get_bonus_points(
     logging.info(f"ClinetID -> {client_b.phone_number}")
     for bonus in client_bonuses:
         logging.info(f"BonusActivationDate -> {bonus.activation_date}")
-        if bonus.activation_date.date() >= datetime.datetime.now().date():
+        if bonus.activation_date.date() <= datetime.datetime.now().date():
             accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
             write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
             logging.info(f"accrued_points: {accrued_points}")
