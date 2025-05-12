@@ -242,7 +242,7 @@ async def auth_client_handler(
             _("📧 Похоже, email указан с ошибкой. Пример корректного адреса: test@example.com")
         )
     data = reg.state_data
-    user.email = data.get("email")
+    user.email = message.text
     user.phone_number = data.get('phone')
     user.name = data.get('name')
     user.gender = data.get('gender')
