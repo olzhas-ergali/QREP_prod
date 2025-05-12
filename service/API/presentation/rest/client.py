@@ -188,7 +188,8 @@ async def add_purchases_process(
             purchases_model=purchase
         )
     except Exception as ex:
-        print(ex)
+        logging.info(ex)
+        return HTTPException(detail=ex, status_code=500)
 
 
 @router.post('/client/purchases/return',
