@@ -1,4 +1,5 @@
 import typing
+import uuid
 from typing import Optional, Sequence
 from datetime import datetime
 
@@ -44,6 +45,7 @@ async def add_purchases(
     await session.commit()
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
+        client_bonus.id = uuid.uuid4()
         client_bonus.client_id = user_id
         client_bonus.loyalty_program = bonus.loyaltyProgram
         client_bonus.loyalty_program_id = bonus.ruleId

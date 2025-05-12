@@ -29,9 +29,9 @@ class ClientBonusPoints(Base):
     created_at = Column(DateTime, default=func.now())
     update_at = Column(DateTime, default=func.now())
     activation_date: Column[datetime.datetime] = Column(DateTime,
-                                                        default=datetime.datetime.now() + datetime.timedelta(days=14))
+                                                        default=None)
     expiration_date: Column[datetime.datetime] = Column(DateTime,
-                                                        default=datetime.datetime.now() + datetime.timedelta(days=365))
+                                                        default=None)
     client_purchases_id = Column(
         String,
         ForeignKey("client_purchases.id", ondelete='CASCADE', onupdate='CASCADE'),
