@@ -252,7 +252,7 @@ async def auth_client_handler(
     await user.save(session=session)
     await session.delete(reg)
     await session.commit()
-    await authorization(user=user, bot=message.bot)
+    #await authorization(user=user, bot=message.bot)
     await start_handler(
         message=message,
         user=user,
