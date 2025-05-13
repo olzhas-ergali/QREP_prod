@@ -93,6 +93,10 @@ async def get_client_purchases(
         session=session,
         phone=phone)
     if client:
+        answer = {
+            "kaz": "Сіз біздің дүкенде әлі ешқандай сатып алған жоқсыз.",
+            "rus": "Вы пока не совершали покупки в нашем магазине"
+        }
         if arr := await show_client_purchases(
                 session=session,
                 user_id=client.id,
@@ -105,7 +109,7 @@ async def get_client_purchases(
             }
         return {
             "status_code": 204,
-            "answer": "Нет данных"
+            "answer": answer.get(local)
         }
     return {
         "status_code": 204,
