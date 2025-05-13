@@ -2,8 +2,7 @@ import typing
 import datetime
 import re
 import regex
-import requests
-import  logging
+import logging
 
 from service.API.config import settings
 

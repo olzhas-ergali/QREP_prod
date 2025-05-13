@@ -1,12 +1,12 @@
 from datetime import datetime
 import typing
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,  Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.responses import RedirectResponse
-from loguru import logger
+import logging
 
 from service.tgbot.misc.generate import generate_code
 from service.API.domain.authentication import security, validate_security
@@ -16,6 +16,7 @@ from service.API.infrastructure.models.purchases import ModelStaff
 from service.API.infrastructure.utils.show_purchases import show_purchases, show_client_purchases
 from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
 from service.API.infrastructure.database.cods import Cods
+from service.API.infrastructure.database.loyalty import ClientBonusPoints
 from service.API.infrastructure.utils.generate import generate_code
 
 router = APIRouter()
@@ -80,7 +81,7 @@ async def get_purchases_staff(
     }
 
 
-@router.get("/client/get_purchases", tags=["WhatsApp"], deprecated=True)
+@router.get("/client/get_purchases", tags=["WhatsApp"])
 async def get_client_purchases(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
@@ -98,7 +99,7 @@ async def get_client_purchases(
         ):
             return {
                 "status_code": 200,
-                "answer": arr
+                "answer": "\n".join(arr)
             }
         return {
             "status_code": 204,
@@ -129,4 +130,43 @@ async def register_staff(
     return {
         'url': f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={code.code}",
         'status_code': 200
+    }
+
+
+@router.get("/client/bonuses", tags=["WhatsApp"])
+async def get_client_purchases(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone_number: str = Query(
+            default=None,
+            alias="phoneNumber",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        )
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=phone_number)
+    available_bonus = 0
+    if client:
+        client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client.id)
+        if client_bonuses:
+            for bonus in client_bonuses:
+                if bonus.activation_date.date() <= datetime.now().date():
+                    accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
+                    write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
+                    logging.info(f"accrued_points: {accrued_points}")
+                    logging.info(f"write_off_points: {write_off_points}")
+                    available_bonus += accrued_points if accrued_points else -write_off_points
+            return {
+                "status_code": 200,
+                "answer": available_bonus
+            }
+        return {
+            "status_code": 204,
+            "answer": 0
+        }
+    return {
+        "status_code": 204,
+        "answer": "Нет данных о пользователе"
     }
