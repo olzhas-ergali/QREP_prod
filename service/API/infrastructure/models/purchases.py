@@ -24,7 +24,7 @@ class ModelPurchaseReturn(BaseModel):
 
 
 class ModelClientBonus(BaseModel):
-    loyaltyProgram: typing.Optional[str] = None
+    rule: typing.Optional[str] = None
     accruedPoints: typing.Optional[float] = None
     writeOffPoints: typing.Optional[float] = None
     rowNumber: typing.Optional[int] = None

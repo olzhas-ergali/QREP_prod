@@ -48,7 +48,7 @@ async def add_purchases(
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()
         client_bonus.client_id = user_id
-        client_bonus.loyalty_program = bonus.loyaltyProgram
+        client_bonus.loyalty_program = bonus.rule
         client_bonus.loyalty_program_id = bonus.ruleId
         client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
         client_bonus.source = purchases_model.source
@@ -121,7 +121,7 @@ async def add_return_purchases(
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()
         client_bonus.client_id = user_id
-        client_bonus.loyalty_program = bonus.loyaltyProgram
+        client_bonus.loyalty_program = bonus.rule
         client_bonus.loyalty_program_id = bonus.ruleId
         client_bonus.operation_date = bonus.activationDate if bonus.accruedPoints > 0 else purchases.created_date
         client_bonus.source = purchase_return_model.source
