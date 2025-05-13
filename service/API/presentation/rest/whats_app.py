@@ -85,7 +85,8 @@ async def get_purchases_staff(
 async def get_client_purchases(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         phone: str,
-        date: bool
+        date: bool,
+        local: str = "rus"
 ):
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
@@ -95,6 +96,7 @@ async def get_client_purchases(
         if arr := await show_client_purchases(
                 session=session,
                 user_id=client.id,
+                local=local,
                 date=datetime.now() if date else None
         ):
             return {
