@@ -91,7 +91,7 @@ async def get_client_purchases(
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
         session=session,
-        phone=phone)
+        phone=parse_phone(phone))
     if client:
         answer = {
             "kaz": "Сіз біздің дүкенде әлі ешқандай сатып алған жоқсыз.",
@@ -152,7 +152,7 @@ async def get_client_purchases(
     session: AsyncSession = db_session.get()
     client = await Client.get_client_by_phone(
         session=session,
-        phone=phone_number)
+        phone=parse_phone(phone_number))
     available_bonus = 0
     if client:
         client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client.id)
