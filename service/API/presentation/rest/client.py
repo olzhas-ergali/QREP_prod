@@ -249,17 +249,18 @@ async def get_bonus_points(
             total_earned += accrued_points
             total_spent += write_off_points
             available_bonus += accrued_points if accrued_points else -write_off_points
-        if len(soon_expiring) < 5 and bonus.expiration_date.date() > datetime.datetime.now().date():
+        if len(soon_expiring) < 5 and bonus.expiration_date:
             #if isinstance(bonus.expiration_date, datetime.datetime):
-            exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
-            soon_expiring.append(
-                {
-                    "amount": bonus.accrued_points,
-                    "expiresAt": exp_date,
-                    "daysLeft": (bonus.expiration_date - datetime.datetime.now()).days
-                }
-            )
-        if bonus.expiration_date.date() <= datetime.datetime.now().date():
+            if bonus.expiration_date.date() > datetime.datetime.now().date():
+                exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
+                soon_expiring.append(
+                    {
+                        "amount": bonus.accrued_points,
+                        "expiresAt": exp_date,
+                        "daysLeft": (bonus.expiration_date - datetime.datetime.now()).days
+                    }
+                )
+        if bonus.expiration_date and bonus.expiration_date.date() <= datetime.datetime.now().date():
             expired_bonus += bonus.accrued_points
 
     answer = {
