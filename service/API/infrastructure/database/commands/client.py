@@ -25,11 +25,12 @@ async def add_purchases(
         bonuses: typing.List[ModelClientBonus] | None
 ):
     user_id = None
-    if not await session.get(Client, purchases_model.telegramId):
+    if not (client := await session.get(Client, purchases_model.telegramId)):
         client = await Client.get_client_by_phone(
             session=session,
             phone=purchases_model.phone
         )
+    if client:
         user_id = client.id
     purchases = ClientPurchase(
         id=purchases_model.purchaseId,
@@ -84,11 +85,12 @@ async def add_return_purchases(
         bonuses: typing.List[ModelClientBonus] | None
 ):
     user_id = None
-    if not await session.get(Client, purchase_return_model.telegramId):
+    if not (client := await session.get(Client, purchase_return_model.telegramId)):
         client = await Client.get_client_by_phone(
             session=session,
             phone=purchase_return_model.phone
         )
+    if client:
         user_id = client.id
     if not await session.get(ClientPurchase, purchase_return_model.purchase_id):
         return {
@@ -117,6 +119,7 @@ async def add_return_purchases(
     await session.commit()
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
+        client_bonus.id = uuid.uuid4()
         client_bonus.client_id = user_id
         client_bonus.loyalty_program = bonus.loyaltyProgram
         client_bonus.loyalty_program_id = bonus.ruleId
