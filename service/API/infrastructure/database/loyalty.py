@@ -52,7 +52,7 @@ class ClientBonusPoints(Base):
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             (client_id == ClientBonusPoints.client_id) &
-            (True_(ClientBonusPoints.is_active))
+            (ClientBonusPoints.is_active == True)
         ).order_by(asc(ClientBonusPoints.expiration_date))
         response = await session.execute(stmt)
 
