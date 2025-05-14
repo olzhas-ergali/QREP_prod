@@ -3,7 +3,7 @@ import typing
 import uuid
 
 from sqlalchemy import (Column, Integer, BigInteger, ForeignKey, Text, DateTime,
-                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc)
+                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc, Date)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.API.infrastructure.database.models import Base
@@ -52,7 +52,7 @@ class ClientBonusPoints(Base):
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             (client_id == ClientBonusPoints.client_id) &
-            (ClientBonusPoints.is_active == True)
+            (datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date))
         ).order_by(asc(ClientBonusPoints.expiration_date))
         response = await session.execute(stmt)
 

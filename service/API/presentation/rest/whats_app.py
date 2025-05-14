@@ -158,12 +158,11 @@ async def get_client_purchases(
         client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client.id)
         if client_bonuses:
             for bonus in client_bonuses:
-                if bonus.activation_date.date() <= datetime.now().date():
-                    accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
-                    write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
-                    logging.info(f"accrued_points: {accrued_points}")
-                    logging.info(f"write_off_points: {write_off_points}")
-                    available_bonus += accrued_points if accrued_points else -write_off_points
+                accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
+                write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
+                logging.info(f"accrued_points: {accrued_points}")
+                logging.info(f"write_off_points: {write_off_points}")
+                available_bonus += accrued_points if accrued_points else -write_off_points
             return {
                 "status_code": 200,
                 "answer": available_bonus
