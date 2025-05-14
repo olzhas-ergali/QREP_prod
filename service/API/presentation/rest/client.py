@@ -240,13 +240,13 @@ async def get_bonus_points(
     logging.info(f"ClinetID -> {client_b.phone_number}")
     for bonus in client_bonuses:
         logging.info(f"BonusActivationDate -> {bonus.activation_date}")
-        accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
-        write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
-        logging.info(f"accrued_points: {accrued_points}")
-        logging.info(f"write_off_points: {write_off_points}")
-        total_earned += accrued_points
-        total_spent += write_off_points
-        available_bonus += accrued_points if accrued_points else -write_off_points
+        #accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
+        #write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
+        logging.info(f"accrued_points: {bonus.accrued_points}")
+        logging.info(f"write_off_points: {bonus.write_off_points}")
+        total_earned += bonus.accrued_points
+        total_spent += bonus.write_off_points
+        #available_bonus += accrued_points if accrued_points else -write_off_points
         if len(soon_expiring) < 5 and bonus.expiration_date:
             #if isinstance(bonus.expiration_date, datetime.datetime):
             if bonus.expiration_date.date() > datetime.datetime.now().date():
@@ -260,11 +260,15 @@ async def get_bonus_points(
                 )
         if bonus.expiration_date and bonus.expiration_date.date() <= datetime.datetime.now().date():
             expired_bonus += bonus.accrued_points
+    if total_earned > 0:
+        available_bonus += total_earned
+    if total_spent > 0:
+        available_bonus -= total_spent
 
     answer = {
         'clientId': client_b.id,
         'phoneNumber': client_b.phone_number,
-        "availableBonus": available_bonus,
+        "availableBonus": available_bonus if available_bonus > 0 else 0,
         "pendingBonus": 0.0,
         "expiredBonus": expired_bonus,
         "totalEarned": total_earned,
