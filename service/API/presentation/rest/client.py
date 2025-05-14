@@ -244,8 +244,8 @@ async def get_bonus_points(
         #write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
         logging.info(f"accrued_points: {bonus.accrued_points}")
         logging.info(f"write_off_points: {bonus.write_off_points}")
-        total_earned += bonus.accrued_points
-        total_spent += bonus.write_off_points
+        total_earned += bonus.accrued_points if bonus.accrued_points else 0
+        total_spent += bonus.write_off_points if bonus.write_off_points else 0
         #available_bonus += accrued_points if accrued_points else -write_off_points
         if len(soon_expiring) < 5 and bonus.expiration_date:
             #if isinstance(bonus.expiration_date, datetime.datetime):
