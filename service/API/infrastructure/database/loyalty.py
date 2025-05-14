@@ -42,7 +42,7 @@ class ClientBonusPoints(Base):
         # ForeignKey("client_purchases_return.return_id", ondelete='CASCADE', onupdate='CASCADE'),
         nullable=True
     )
-    is_active = Column(Boolean)
+    #is_active = Column(Boolean)
 
     @classmethod
     async def get_by_client_id(

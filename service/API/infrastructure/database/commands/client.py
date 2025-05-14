@@ -56,7 +56,7 @@ async def add_purchases(
         client_bonus.accrued_points = bonus.accruedPoints
         client_bonus.write_off_points = bonus.writeOffPoints
         client_bonus.client_purchases_id = purchases_model.purchaseId
-        client_bonus.is_active = bonus.is_activate
+        #client_bonus.is_active = bonus.is_activate
         client_bonus.row_number = bonus.rowNumber
         client_bonus.document_type = purchases_model.documentType
         client_bonus.expiration_date = bonus.expirationDate
@@ -130,7 +130,7 @@ async def add_return_purchases(
         client_bonus.write_off_points = bonus.writeOffPoints
         client_bonus.client_purchases_id = purchase_return_model.purchaseId
         client_bonus.client_purchases_return_id = purchase_return_model.returnId
-        client_bonus.is_active = bonus.is_activate
+        #client_bonus.is_active = bonus.is_activate
         client_bonus.row_number = bonus.rowNumber
         client_bonus.document_type = purchase_return_model.documentType
         client_bonus.expiration_date = bonus.expirationDate

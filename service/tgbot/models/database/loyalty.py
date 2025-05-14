@@ -3,7 +3,7 @@ import typing
 import uuid
 
 from sqlalchemy import (Column, Integer, BigInteger, ForeignKey, Text, DateTime,
-                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc)
+                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc, Date)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.tgbot.models.database.base import Base
@@ -41,7 +41,7 @@ class ClientBonusPoints(Base):
         # ForeignKey("client_purchases_return.return_id", ondelete='CASCADE', onupdate='CASCADE'),
         nullable=True
     )
-    is_active = Column(Boolean)
+    #is_active = Column(Boolean)
 
     @classmethod
     async def get_by_client_id(
@@ -51,8 +51,8 @@ class ClientBonusPoints(Base):
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             (client_id == ClientBonusPoints.client_id) &
-            (True_(ClientBonusPoints.is_active))
-        ).group_by(ClientBonusPoints.expiration_date).order_by(asc(ClientBonusPoints.expiration_date))
+            datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date)
+        ).order_by(asc(ClientBonusPoints.expiration_date))
         response = await session.execute(stmt)
 
         return response.scalars().all()
@@ -63,7 +63,7 @@ class ClientBonusPoints(Base):
             session: AsyncSession
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
-            (True_(ClientBonusPoints.is_active))
+            (datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date))
         ).order_by(asc(ClientBonusPoints.expiration_date))
 
         response = await session.execute(stmt)
