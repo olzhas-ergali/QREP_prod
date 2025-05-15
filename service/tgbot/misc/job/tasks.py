@@ -82,11 +82,13 @@ async def push_client_about_bonus(
             7: "Вы можете потратить бонусы до истечения срока действия. Осталось 7 дней.",
             1: "Завтра ваши бонусы станут недоступны. Успейте их использовать сегодня!"
         }
+        logging.info(f"Date Now: {date_now}")
         for bonus in bonuses:
             try:
+                logging.info(f"Expiration Date {bonus.expiration_date.date()}")
                 await bot.send_message(
                     chat_id=bonus.client_id,
-                    text=texts.get((date_now - bonus.expiration_date).days)
+                    text=texts.get((date_now - bonus.expiration_date.date()).days)
                 )
             except Exception as ex:
                 logging.info(ex)
