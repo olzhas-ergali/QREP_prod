@@ -74,7 +74,7 @@ async def push_client_about_bonus(
 ):
     logging.info("Уведомление для клиентов по сгоранию бонусов")
     session: AsyncSession = pool()
-    date_now = datetime.now()
+    date_now = datetime.now().date()
     bonuses = await ClientBonusPoints.get_bonuses(session)
     if bonuses:
         texts = {

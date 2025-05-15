@@ -114,7 +114,6 @@ async def main():
         'interval',
         minutes=1,
         args=(db.pool, bot),
-
     )
     scheduler.add_job(
         staff_task.push_staff_about_dismissal,
