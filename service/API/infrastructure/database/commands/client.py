@@ -103,7 +103,10 @@ async def add_return_purchases(
     #        "statusCode": 404,
     #        "message": f"Purchase с id {return_id} был уже как возвратный",
     #    }
-
+    purchases = await ClientPurchaseReturn.get_by_purchase_id(session=session, purchase_id=purchase_return_model.purchaseId)
+    if purchases:
+        await session.delete(purchases)
+        await session.commit()
     purchases = ClientPurchaseReturn(
         purchase_id=purchase_return_model.purchaseId,
         source_system=purchase_return_model.sourceSystem,
@@ -117,6 +120,10 @@ async def add_return_purchases(
     )
     session.add(purchases)
     await session.commit()
+    await ClientBonusPoints().delete_by_return_purchase_id(
+        session=session,
+        purchase_id=purchase_return_model.returnId
+    )
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()

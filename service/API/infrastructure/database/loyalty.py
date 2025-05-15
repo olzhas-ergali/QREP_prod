@@ -3,7 +3,7 @@ import typing
 import uuid
 
 from sqlalchemy import (Column, Integer, BigInteger, ForeignKey, Text, DateTime,
-                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc, Date)
+                        func, String, Boolean, select, UUID, DECIMAL, desc, asc, Date, delete)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.API.infrastructure.database.models import Base
@@ -57,6 +57,17 @@ class ClientBonusPoints(Base):
         response = await session.execute(stmt)
 
         return response.scalars().all()
+
+    @classmethod
+    async def delete_by_return_purchase_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str
+    ) -> None:
+        stmt = delete(ClientBonusPoints).where(purchase_id == ClientBonusPoints.client_purchases_return_id)
+        await session.execute(stmt)
+
+        return None
 
 
 class BonusExpirationNotifications(Base):

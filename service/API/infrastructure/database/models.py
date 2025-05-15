@@ -302,6 +302,18 @@ class ClientPurchaseReturn(Base):
         lazy='selectin'
     )
 
+    @classmethod
+    async def get_by_purchase_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str
+    ) -> 'ClientPurchaseReturn':
+        stmt = select(ClientPurchaseReturn).where(
+            purchase_id == ClientPurchaseReturn.purchase_id
+        )
+
+        return await session.scalar(stmt)
+
 
 class ClientReview(Base):
     __tablename__ = "clients_review"
