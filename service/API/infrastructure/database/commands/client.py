@@ -103,7 +103,8 @@ async def add_return_purchases(
     #        "statusCode": 404,
     #        "message": f"Purchase с id {return_id} был уже как возвратный",
     #    }
-    if purchases := ClientPurchaseReturn.get_by_purchase_id(session=session, purchase_id=purchase_return_model.purchaseId):
+    purchases = await ClientPurchaseReturn.get_by_purchase_id(session=session, purchase_id=purchase_return_model.purchaseId)
+    if purchases:
         await session.delete(purchases)
         await session.commit()
     purchases = ClientPurchaseReturn(
