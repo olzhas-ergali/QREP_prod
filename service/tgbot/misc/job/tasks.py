@@ -86,6 +86,7 @@ async def push_client_about_bonus(
         for bonus in bonuses:
             try:
                 logging.info(f"Expiration Date {bonus.expiration_date.date()}")
+                logging.info(f"Days -> {(date_now - bonus.expiration_date.date()).days}")
                 await bot.send_message(
                     chat_id=bonus.client_id,
                     text=texts.get((date_now - bonus.expiration_date.date()).days)
