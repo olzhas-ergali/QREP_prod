@@ -7,7 +7,7 @@ from service.tgbot.keyboards.query_cb import (
     OperatorCallback,
     AnswerCallback,
     LocalCallback)
-from service.tgbot.data.faq import faq_lvls
+from service.tgbot.data.faq_new import faq_lvls
 
 
 async def get_faq_btns(

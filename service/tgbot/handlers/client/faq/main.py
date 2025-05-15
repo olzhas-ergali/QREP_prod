@@ -3,7 +3,7 @@ from aiogram.types.callback_query import CallbackQuery
 from aiogram.dispatcher.storage import FSMContext
 
 from service.tgbot.keyboards.client.faq import get_faq_btns
-from service.tgbot.data.faq import faq_texts_update, tags
+from service.tgbot.data.faq_new import faq_texts_update, tags
 from service.tgbot.misc.states.client import FaqState
 from service.tgbot.models.database.users import Client
 from service.tgbot.keyboards.staff import staff
@@ -38,7 +38,7 @@ async def faq_lvl_handler(
             text = _(faq_texts_update.get('operator'))
             await state.update_data(tag=tags.get(callback_data.get('chapter')))
             await FaqState.waiting_operator.set()
-    callback_data.get('lvl')
+
     await callback.message.edit_text(
         text=text,
         reply_markup=await get_faq_btns(callback_data.get('lvl'), _)

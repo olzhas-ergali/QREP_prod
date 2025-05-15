@@ -61,7 +61,7 @@ async def main():
     db = Database()
 
     scheduler = AsyncIOScheduler(
-         timezone='Asia/Aqtobe'
+        timezone='Asia/Aqtobe'
     )
     await db.create_pool(
         URL(
@@ -76,7 +76,7 @@ async def main():
     )
 
     dp = Dispatcher(bot, storage=storage)
-    #redis = await storage.redis()
+    # redis = await storage.redis()
 
     i18n = register_all_middlewares(dp)
     bot['i18n'] = i18n.gettext
@@ -108,15 +108,30 @@ async def main():
         args=(bot, db.pool,),
     )
 
-    #scheduler.add_job(
-    #    tasks.push_client_answer_operator,
-    #    'interval',
-    #    minutes=1,
-    #    args=(db.pool, bot)
-    #)
-    #bot['redis'] = redis
+    scheduler.add_job(
+        tasks.push_client_about_bonus,
+        'cron',
+        hour=10,
+        minute=00,
+        args=(db.pool, bot),
 
-    #register_all_middlewares(dp)
+    )
+    # scheduler.add_job(
+    #     tasks.push_client_about_bonus,
+    #     'interval',
+    #     minutes=1,
+    #     args=(db.pool, bot),
+    # )
+    scheduler.add_job(
+        staff_task.push_staff_about_dismissal,
+        'cron',
+        hour=10,
+        minute=00,
+        args=(db.pool, bot)
+    )
+    # bot['redis'] = redis
+
+    # register_all_middlewares(dp)
     register_all_filters(dp)
     register_all_handlers(dp)
 
@@ -127,11 +142,11 @@ async def main():
 
     # start
     try:
-        #arr = ['371683935', '398864433', '412249576',
+        # arr = ['371683935', '398864433', '412249576',
         #       '428917660', '483200140', '564023521',
         #       '875863049', '1006269986', '5551195067',
         #       '6845418199']
-        #for i in arr:
+        # for i in arr:
         #    try:
         #        await bot.send_message(i, "Функционал бота обновлен, нажмите /start")
         #    except:

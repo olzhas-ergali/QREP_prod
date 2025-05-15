@@ -38,3 +38,12 @@ class Cods(Base):
     ):
         stmt = select(Cods).where(code == Cods.code)
         return await session.scalar(stmt)
+
+    @classmethod
+    async def get_cody_by_phone(
+            cls,
+            phone: str,
+            session: AsyncSession
+    ):
+        stmt = select(Cods).where(phone == Cods.phone_number).order_by(Cods.id.desc())
+        return await session.scalar(stmt)

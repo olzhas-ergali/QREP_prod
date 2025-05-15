@@ -20,11 +20,11 @@ class ModelAuth(BaseModel):
 
 
 class ModelAuthSite(BaseModel):
-    phoneNumber: typing.Optional[str] = None
+    phoneNumber: typing.Optional[str]
     clientFullName: typing.Optional[str] | None = None
     birthDate: typing.Optional[str] | None = None
     gender: typing.Optional[str] | None = None
-    email: typing.Optional[str] | None = None
+    email: typing.Optional[str]
     source: typing.Optional[str] | None = None
 
 

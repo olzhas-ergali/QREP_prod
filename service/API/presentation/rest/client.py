@@ -2,7 +2,7 @@ import typing
 import datetime
 import re
 import regex
-import requests
+import logging
 
 from service.API.config import settings
 
@@ -23,6 +23,7 @@ from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
 from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
+from service.API.infrastructure.database.loyalty import ClientBonusPoints, BonusExpirationNotifications
 from service.API.infrastructure.utils.check_client import check_user_exists
 from service.tgbot.lib.bitrixAPI.leads import Leads
 from service.tgbot.data.faq import grade_text, grade_text_kaz
@@ -181,18 +182,13 @@ async def add_purchases_process(
     try:
         print(purchase.telegramId)
         return await client.add_purchases(
-            purchase_id=purchase.purchaseId,
             session=session,
-            user_id=purchase.telegramId if purchase.telegramId != -1 else None,
-            phone=purchase.phone,
-            products=purchase.products,
-            order_number=purchase.orderNumber,
-            number=purchase.number,
-            shift_number=purchase.shiftNumber,
-            ticket_print_url=purchase.ticketPrintUrl
+            bonuses=purchase.bonus,
+            purchases_model=purchase
         )
     except Exception as ex:
-        print(ex)
+        logging.info(ex)
+        return HTTPException(detail=ex, status_code=500)
 
 
 @router.post('/client/purchases/return',
@@ -205,22 +201,82 @@ async def add_purchases_return_process(
     session: AsyncSession = db_session.get()
     if purchase.returnId != '-1':
         return await client.add_return_purchases(
-            purchase_id=purchase.purchaseId,
-            return_id=purchase.returnId,
-            user_id=purchase.telegramId if purchase.telegramId != -1 else None,
-            phone=purchase.phone,
             session=session,
-            products=purchase.products,
-            order_number=purchase.orderNumber,
-            number=purchase.number,
-            shift_number=purchase.shiftNumber,
-            ticket_print_url=purchase.ticketPrintUrl
+            purchase_return_model=purchase,
+            bonuses=purchase.bonus
         )
     else:
         return {
             "statusCode": status.HTTP_403_FORBIDDEN,
             "message": "Return id не может быть пустым",
         }
+
+
+@router.get("/api/v1/clients/bonus-points")
+async def get_bonus_points(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone_number: str = Query(
+            default=None,
+            alias="phoneNumber",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        client_id: int = Query(
+            default=None,
+            alias="clientId",
+            description="Id клиента",
+            example=123456
+        )
+):
+    session: AsyncSession = db_session.get()
+    if not (client_b := await Client.get_client_by_phone(session=session, phone=phone_number)):
+        client_b = await session.get(Client, client_id)
+    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    total_earned = 0
+    total_spent = 0
+    available_bonus = 0
+    soon_expiring = []
+    expired_bonus = 0
+    logging.info(f"ClinetID -> {client_b.phone_number}")
+    for bonus in client_bonuses:
+        logging.info(f"BonusActivationDate -> {bonus.activation_date}")
+        #accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
+        #write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
+        logging.info(f"accrued_points: {bonus.accrued_points}")
+        logging.info(f"write_off_points: {bonus.write_off_points}")
+        total_earned += bonus.accrued_points if bonus.accrued_points else 0
+        total_spent += bonus.write_off_points if bonus.write_off_points else 0
+        #available_bonus += accrued_points if accrued_points else -write_off_points
+        if len(soon_expiring) < 5 and bonus.expiration_date:
+            #if isinstance(bonus.expiration_date, datetime.datetime):
+            if bonus.expiration_date.date() > datetime.datetime.now().date():
+                exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
+                soon_expiring.append(
+                    {
+                        "amount": bonus.accrued_points,
+                        "expiresAt": exp_date,
+                        "daysLeft": (bonus.expiration_date - datetime.datetime.now()).days
+                    }
+                )
+        if bonus.expiration_date and bonus.expiration_date.date() <= datetime.datetime.now().date():
+            expired_bonus += bonus.accrued_points
+    if total_earned > 0:
+        available_bonus += total_earned
+    if total_spent > 0:
+        available_bonus -= total_spent
+
+    answer = {
+        'clientId': client_b.id,
+        'phoneNumber': client_b.phone_number,
+        "availableBonus": available_bonus if available_bonus > 0 else 0,
+        "pendingBonus": 0.0,
+        "expiredBonus": expired_bonus,
+        "totalEarned": total_earned,
+        "totalSpent": total_spent,
+        "soonExpiring": soon_expiring,
+        "nextExpirationDate": soon_expiring[0].get('expiresAt') if soon_expiring else None
+    }
+    return answer
 
 
 @router.post("/client/reviews",

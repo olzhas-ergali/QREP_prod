@@ -70,7 +70,10 @@ async def get_my_qr_handler(
     qrcode = None
     code = await Cods.get_cody_by_phone(user.phone_number, session)
     if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds()/60 > 15:
-        text = _("Ваш QR")
+        text = _('''
+📲 Это ваш персональный QR-код для начисления и списания кэшбэка.
+‼️ Обязательно покажите его кассиру перед оплатой, чтобы получить кэшбэк или использовать накопленный.
+''')
         code = await generate_code(session, phone_number=user.phone_number)
         qrcode = segno.make(code.code, micro=False)
         qrcode.save(user.phone_number + ".png", border=4, scale=7)
@@ -104,18 +107,30 @@ async def get_my_bonus_handler(
     _ = callback.bot.get('i18n')
     await state.finish()
     res = 0
-    res, msg = await get_balance(
-        user=user,
-        bot=callback.bot
-    )
     await callback.message.delete()
-    if res == 0:
-        await callback.message.answer(
-            text=_('''У вас пока нет накопленных бонусов.
-Совершайте покупки и участвуйте в наших акциях, 
-чтобы начать зарабатывать баллы!''')
-        )
-    else:
-        await callback.message.answer(
-            text=_("У вас: {res} бонусов {msg}").format(res=res, msg=msg),
-        )
+    await callback.message.answer(
+        _('''
+💰 Ваш баланс кэшбэка: {cashback}\n
+Если сумма равна 0 ₸ — это значит, что вы ещё не совершали покупок или кэшбэк ещё не начислен (ожидает завершения возвратного периода — 14 дней).
+''').format(cashback=res)
+    )
+    btns = await get_faq_btns('main', _)
+    await callback.message.answer(
+        text=_("Чем могу помочь? Выберите одну из опций:"),
+        reply_markup=btns
+    )
+#     res, msg = await get_balance(
+#         user=user,
+#         bot=callback.bot
+#     )
+#     await callback.message.delete()
+#     if res == 0:
+#         await callback.message.answer(
+#             text=_('''У вас пока нет накопленных бонусов.
+# Совершайте покупки и участвуйте в наших акциях,
+# чтобы начать зарабатывать баллы!''')
+#         )
+#     else:
+#         await callback.message.answer(
+#             text=_("У вас: {res} бонусов {msg}").format(res=res, msg=msg),
+#         )

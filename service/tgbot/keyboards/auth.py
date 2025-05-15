@@ -63,7 +63,7 @@ def get_local_btns():
         )
     )
     btn_rus = InlineKeyboardButton(
-        text="Русский 🇷🇺",
+        text="Русский язык 🇷🇺",
         callback_data=LocalCallback.new(
             lang="rus",
             action='local'
