@@ -530,6 +530,11 @@ async def client_create(
         "statusСode": 200,
         "message": "Клиент успешно обновлен"
     }
+    if not model_client.phoneNumber:
+        return {
+            "statusСode": 400,
+            "message": "Не заполнен телефон"
+        }
     try:
         bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
         if not (client := await Client.get_client_by_phone(
@@ -588,6 +593,11 @@ async def client_create(
                     "message": "Не правильный email"
                 }
             client.email = model_client.email
+        else:
+            return {
+                "statusСode": 400,
+                "message": "Не заполнен email"
+            }
         session.add(client)
         await session.commit()
         return answer
