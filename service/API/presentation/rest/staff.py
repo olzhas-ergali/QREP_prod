@@ -96,7 +96,7 @@ async def get_user_info_process(
 
     user = await staff.get_user(
         session=session,
-        phone=phone_number
+        phone=parse_phone(phone_number)
     )
     if user and user.is_active:
         discount_percentage = 30.0
