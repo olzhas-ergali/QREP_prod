@@ -94,8 +94,10 @@ async def get_client_purchases(
         phone=parse_phone(phone))
     if client:
         answer = {
-            "kaz": "Сіз біздің дүкенде әлі ешқандай сатып алған жоқсыз.",
-            "rus": "Вы пока не совершали покупки в нашем магазине"
+            "kaz": "Сіз әлі біздің дүкеннен сауда жасамадыңыз.\n"
+                   "Сайттағы тауарлармен танысып шығуыңызды ұсынамыз — qazaqrepublic.com",
+            "rus": "Вы пока не совершали покупки в нашем магазине.\n"
+                   "Предлагаем вам просмотреть ассортимент на сайте — qazaqrepublic.com."
         }
         if arr := await show_client_purchases(
                 session=session,
