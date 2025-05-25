@@ -14,6 +14,7 @@ from service.tgbot.modules.OneС.Function_1C import get_balance
 from service.tgbot.misc.delete import remove
 from service.tgbot.keyboards.client.faq import get_faq_btns
 from service.tgbot.misc.generate import generate_code
+from service.tgbot.models.database.loyalty import ClientBonusPoints
 
 
 async def main_handler(
@@ -71,8 +72,8 @@ async def get_my_qr_handler(
     code = await Cods.get_cody_by_phone(user.phone_number, session)
     if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds()/60 > 15:
         text = _('''
-📲 Это ваш персональный QR-код для начисления и списания кэшбэка.
-‼️ Обязательно покажите его кассиру перед оплатой, чтобы получить кэшбэк или использовать накопленный.
+Это ваш персональный QR-код для начисления и списания кэшбэка.
+Обязательно покажите его кассиру перед оплатой, чтобы получить кэшбэк или использовать накопленный.
 ''')
         code = await generate_code(session, phone_number=user.phone_number)
         qrcode = segno.make(code.code, micro=False)
@@ -101,18 +102,32 @@ async def get_my_qr_handler(
 
 async def get_my_bonus_handler(
         callback: CallbackQuery,
+        session: AsyncSession,
         user: Client,
         state: FSMContext
 ):
     _ = callback.bot.get('i18n')
     await state.finish()
-    res = 0
     await callback.message.delete()
+    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=user.id)
+    available_bonus = 0
+    if client_bonuses:
+        total_earned = 0
+        total_spent = 0
+        for bonus in client_bonuses:
+            logging.info(f"accrued_points: {bonus.accrued_points}")
+            logging.info(f"write_off_points: {bonus.write_off_points}")
+            total_earned += bonus.accrued_points if bonus.accrued_points else 0
+            total_spent += bonus.write_off_points if bonus.write_off_points else 0
+        if total_earned > 0:
+            available_bonus += total_earned
+        if total_spent > 0:
+            available_bonus -= total_spent
     await callback.message.answer(
         _('''
-💰 Ваш баланс кэшбэка: {cashback}\n
+Ваш баланс кэшбэка: {cashback}\n
 Если сумма равна 0 ₸ — это значит, что вы ещё не совершали покупок или кэшбэк ещё не начислен (ожидает завершения возвратного периода — 14 дней).
-''').format(cashback=res)
+''').format(cashback=available_bonus if available_bonus > 0 else 0)
     )
     btns = await get_faq_btns('main', _)
     await callback.message.answer(
