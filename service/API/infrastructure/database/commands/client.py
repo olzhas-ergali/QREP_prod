@@ -95,7 +95,7 @@ async def add_return_purchases(
     if not await session.get(ClientPurchase, purchase_return_model.purchaseId):
         return {
             "statusCode": 404,
-            "message": f"Purchase с id {purchase_return_model.purchase_id} не найден базе",
+            "message": f"Purchase с id {purchase_return_model.purchaseId} не найден базе",
         }
 
     #if purchase.return_id:
