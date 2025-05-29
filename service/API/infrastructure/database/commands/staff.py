@@ -304,7 +304,7 @@ async def add_employees(
         user = UserTemp(
             id_staff=id_staff
         )
-    if user_tg := await User.get_by_iin(session, user.iin):
+    if user_tg := await User.get_by_iin(session, iin):
         texts = {
             'rus': '''
 🔄 *Изменение вашего статуса* 🔄
