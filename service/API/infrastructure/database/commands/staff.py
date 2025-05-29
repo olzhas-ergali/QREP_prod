@@ -254,8 +254,8 @@ async def add_staff_vacation(
             date_receipt=date_receipt,
             guid=id_staff
         )
-        session.add(staff)
-        await session.commit()
+    session.add(staff)
+    await session.commit()
 
     if not (vacation := await VacationDays.get_staff_vac_days_by_year(
             year=datetime.now().year + 1,
