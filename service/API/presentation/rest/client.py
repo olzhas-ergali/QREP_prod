@@ -233,6 +233,7 @@ async def get_bonus_points(
         client_b = await session.get(Client, client_id)
     if not client_b:
         return HTTPException(status_code=204, detail="Client not found")
+    logging.info(client_b.id)
     client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
     total_earned = 0
     total_spent = 0
