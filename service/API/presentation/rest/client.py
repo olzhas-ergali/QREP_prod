@@ -251,6 +251,7 @@ async def get_bonus_points(
         #available_bonus += accrued_points if accrued_points else -write_off_points
         if len(soon_expiring) < 5 and bonus.expiration_date:
             #if isinstance(bonus.expiration_date, datetime.datetime):
+            logging.info(f"soon_expiring: {len(soon_expiring)}")
             if bonus.expiration_date.date() > datetime.datetime.now().date():
                 exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
                 soon_expiring.append(
