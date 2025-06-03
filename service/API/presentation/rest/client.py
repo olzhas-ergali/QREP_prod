@@ -240,6 +240,7 @@ async def get_bonus_points(
     soon_expiring = []
     expired_bonus = 0
     logging.info(f"ClinetID -> {client_b.phone_number}")
+    logging.info(f"Lens -> {len(client_bonuses)}")
     for bonus in client_bonuses:
         logging.info(f"BonusActivationDate -> {bonus.activation_date}")
         #accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
