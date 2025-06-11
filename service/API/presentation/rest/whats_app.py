@@ -8,16 +8,19 @@ from starlette import status
 from starlette.responses import RedirectResponse
 import logging
 
+from service.API.config import settings
 from service.tgbot.misc.generate import generate_code
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.database.models import UserTemp, User, Client
-from service.API.infrastructure.models.purchases import ModelStaff
+from service.API.infrastructure.models.purchases import ModelStaff, ModelClientWA
 from service.API.infrastructure.utils.show_purchases import show_purchases, show_client_purchases
 from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
 from service.API.infrastructure.database.cods import Cods
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
 from service.API.infrastructure.utils.generate import generate_code
+from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
+from service.tgbot.lib.SendPlusAPI.templates import templates
 
 router = APIRouter()
 
@@ -181,4 +184,26 @@ async def get_client_purchases(
     return {
         "status_code": 204,
         "answer": "Нет данных о пользователе"
+    }
+
+
+@router.post('/client/wa/sendMessage',
+             tags=["WhatsApp"])
+async def client_send_quality_grade(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        model: ModelClientWA
+):
+    wb = SendPlus(
+        client_id=settings.wb_cred.client_id,
+        client_secret=settings.wb_cred.client_secret,
+        waba_bot_id=settings.wb_cred.wb_bot_id
+    )
+    await wb.send_by_phone(
+        phone=model.phoneNumber,
+        bot_id=settings.wb_cred.wb_bot_id,
+        text=model.message
+    )
+    return {
+        'status_code': status.HTTP_200_OK,
+        'message': 'Сообщение отправлено'
     }

@@ -41,6 +41,38 @@ class SendPlus(BaseApi):
 
         return result
 
+    async def send_by_phone(
+            self,
+            phone: str,
+            bot_id: str,
+            text: str
+    ):
+        url = self.url.format(method='contacts/sendByPhone')
+        local = await self.__get_local_by_phone(
+            phone=phone
+        )
+        result = await self.request_session(
+            method=MethodRequest.post,
+            url=url,
+            client_id=self.client_id,
+            client_secret=self.client_secret,
+            json_status=True,
+            answer_log=False,
+            #params={'phone': phone},
+            json={
+                "bot_id": bot_id,
+                "phone": phone,
+                "message": {
+                    "type": "text",
+                    "text": {
+                        "body": text
+                    }
+                }
+            }
+        )
+
+        return result
+
     async def __get_local_by_phone(
             self,
             phone: str,
