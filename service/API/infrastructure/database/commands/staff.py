@@ -238,7 +238,7 @@ async def add_staff_vacation(
         # await session.delete(staff)
         # await session.commit()
         return
-    if not (staff := await StaffVacation.get_by_guid(iin, session)):
+    if not (staff := await StaffVacation.get_by_iin(iin, session)):
         staff = StaffVacation(
             iin=iin,
             fullname=fullname,
@@ -247,6 +247,7 @@ async def add_staff_vacation(
         )
     if staff.guid != id_staff:
         await session.delete(staff)
+        await session.commit()
         staff = StaffVacation(
             iin=iin,
             fullname=fullname,
@@ -303,7 +304,7 @@ async def add_employees(
         user = UserTemp(
             id_staff=id_staff
         )
-    if user_tg := await User.get_by_iin(session, user.iin):
+    if user_tg := await User.get_by_iin(session, iin):
         texts = {
             'rus': '''
 🔄 *Изменение вашего статуса* 🔄

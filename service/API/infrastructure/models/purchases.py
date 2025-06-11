@@ -106,3 +106,8 @@ class ModelUserTemp(BaseModel):
 class ModelStaff(BaseModel):
     iin: typing.Optional[str] = None
     phone_number: typing.Optional[str] = None
+
+
+class ModelClientWA(BaseModel):
+    phoneNumber: typing.Optional[str] = None
+    message: typing.Optional[str] = None

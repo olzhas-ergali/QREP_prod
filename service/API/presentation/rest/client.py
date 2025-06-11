@@ -233,6 +233,7 @@ async def get_bonus_points(
         client_b = await session.get(Client, client_id)
     if not client_b:
         return HTTPException(status_code=204, detail="Client not found")
+    logging.info(client_b.id)
     client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
     total_earned = 0
     total_spent = 0
@@ -240,6 +241,7 @@ async def get_bonus_points(
     soon_expiring = []
     expired_bonus = 0
     logging.info(f"ClinetID -> {client_b.phone_number}")
+    logging.info(f"Lens -> {len(client_bonuses)}")
     for bonus in client_bonuses:
         logging.info(f"BonusActivationDate -> {bonus.activation_date}")
         #accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
@@ -251,6 +253,7 @@ async def get_bonus_points(
         #available_bonus += accrued_points if accrued_points else -write_off_points
         if len(soon_expiring) < 5 and bonus.expiration_date:
             #if isinstance(bonus.expiration_date, datetime.datetime):
+            logging.info(f"soon_expiring: {len(soon_expiring)}")
             if bonus.expiration_date.date() > datetime.datetime.now().date():
                 exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
                 soon_expiring.append(
@@ -554,11 +557,11 @@ async def client_create(
             answer["message"] = "Клиент успешно создан"
         answer["telegramId"] = client.id if await check_user_exists(client.id, bot) else None
         if model_client.clientFullName:
-            # if not regex.fullmatch(r'^[\p{L}\s]+$', model_client.clientFullName):
-            #     return {
-            #         "statusСode": 400,
-            #         "message": "ФИО не должно содержать цифры и символы"
-            #     }
+            #if not regex.fullmatch(r'^[\p{L}\s]+$', model_client.clientFullName):
+                # return {
+                #     "statusСode": 400,
+                #     "message": "ФИО не должно содержать цифры и символы"
+                # }
             client.name = model_client.clientFullName
         if model_client.birthDate:
             if not is_valid_date(model_client.birthDate):
