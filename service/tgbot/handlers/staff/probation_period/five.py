@@ -83,7 +83,8 @@ async def probation_period_five_day_handler(
 ):
     _ = c.bot.get('i18n')
     question_id = int(callback_data.get('value'))
-    current_day = callback_data.get('action')
+    action = callback_data.get('action')
+    current_day = int(callback_data.get('current_day'))
     await c.message.edit_reply_markup()
 
     questions = {
@@ -107,14 +108,14 @@ async def probation_period_five_day_handler(
         }
     }
 
-    if current_day == 'five_day':
+    if action == 'five_day':
         await ProbationPeriodAnswer(
             user_id=c.from_user.id,
             day=current_day,
             question="Перед тем как мы закончим, оцени, насколько онбординг был полезным для тебя:",
-            answer=question_id
+            answer=str(question_id)
         ).save(session)
-        current_question = current_days[False if question_id > 3 else True]
+        current_question = current_days[True if question_id > 3 else False]
         await state.finish()
         return await c.message.answer(
             text=current_question.get('answer')
@@ -133,18 +134,18 @@ async def probation_period_five_day_handler(
                                current_question.get('files').get(user.local).name)
         )
 
-        return await c.message.answer(
-            text=_('Поздравляю! Ты успешно завершил онбординг. Надеюсь, это было полезно и помогло тебе лучше адаптироваться в компании.'
-                   '\nПеред тем как мы закончим, оцени, насколько онбординг был полезным для тебя:'),
-            reply_markup=get_evaluation_btn(
-                current_day=5,
-                action="five_day"
-            )
-        )
     else:
         await c.message.answer(
             text=current_question.get('answer')
         )
+    return await c.message.answer(
+        text=_(
+            'Поздравляю! Ты успешно завершил онбординг. Надеюсь, это было полезно и помогло тебе лучше адаптироваться в компании.'
+            '\nПеред тем как мы закончим, оцени, насколько онбординг был полезным для тебя:'),
+        reply_markup=get_evaluation_btn(
+            current_day=5,
+            action="five_day"
+        )
+    )
 
-    await state.finish()
 
