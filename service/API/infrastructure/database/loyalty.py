@@ -59,6 +59,19 @@ class ClientBonusPoints(Base):
         return response.scalars().all()
 
     @classmethod
+    async def get_all_by_client_id(
+            cls,
+            session: AsyncSession,
+            client_id: int
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            (client_id == ClientBonusPoints.client_id)
+        ).order_by(asc(ClientBonusPoints.expiration_date))
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
     async def get_by_client_id_limit(
             cls,
             session: AsyncSession,

@@ -159,23 +159,35 @@ async def get_client_purchases(
         session=session,
         phone=parse_phone(phone_number))
     available_bonus = 0
+    future_bonus = 0
     if client:
-        client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client.id)
+        client_bonuses = await ClientBonusPoints.get_all_by_client_id(session=session, client_id=client.id)
         if client_bonuses:
             total_earned = 0
             total_spent = 0
+            total_future_spent = 0
+            total_future_earned = 0
             for bonus in client_bonuses:
                 logging.info(f"accrued_points: {bonus.accrued_points}")
                 logging.info(f"write_off_points: {bonus.write_off_points}")
-                total_earned += bonus.accrued_points if bonus.accrued_points else 0
-                total_spent += bonus.write_off_points if bonus.write_off_points else 0
+                if datetime.now().date() >= bonus.activation_date.date():
+                    total_earned += bonus.accrued_points if bonus.accrued_points else 0
+                    total_spent += bonus.write_off_points if bonus.write_off_points else 0
+                else:
+                    total_future_earned += bonus.accrued_points if bonus.accrued_points else 0
+                    total_future_spent += bonus.write_off_points if bonus.write_off_points else 0
             if total_earned > 0:
                 available_bonus += total_earned
             if total_spent > 0:
                 available_bonus -= total_spent
+            if total_future_earned > 0:
+                future_bonus += total_future_earned
+            if total_future_spent > 0:
+                future_bonus -= total_future_spent
             return {
                 "status_code": 200,
-                "answer": available_bonus if available_bonus > 0 else 0
+                "bonus": available_bonus if available_bonus > 0 else 0,
+                "future_bonus": future_bonus if future_bonus > 0 else 0
             }
         return {
             "status_code": 204,
