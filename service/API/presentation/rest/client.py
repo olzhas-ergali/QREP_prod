@@ -350,7 +350,7 @@ async def get_client_bonus_history(
             logging.info(bonus.client_purchases_id)
             if bonus.client_purchases_return_id:
                 logging.info(bonus.client_purchases_return_id)
-                purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_return_id)
+                purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_id)
 
             points = 0
             if bonus.accrued_points > 0:
