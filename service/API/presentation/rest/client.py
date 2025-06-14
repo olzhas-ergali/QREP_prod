@@ -314,7 +314,7 @@ async def get_client_bonus_history(
         ),
         offset: int = Query(
             default=0,
-            alias="clientId",
+            alias="offset",
             description="Пропуск",
             example=0
         )
