@@ -369,7 +369,7 @@ async def get_client_bonus_history(
                     "operationDate": bonus.operation_date,
                     "type": "accrual" if bonus.accrued_points > 0 else "write_off",
                     "points": points,
-                    "description": "Заказ №13904 / 12.09.2024",
+                    "description": "",
                     "bonusExpirationDate": exp_date
                 }
             )
