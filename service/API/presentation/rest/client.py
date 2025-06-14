@@ -347,7 +347,9 @@ async def get_client_bonus_history(
         total_spent += bonus.write_off_points if bonus.write_off_points else 0
         if i >= offset and i <= limit:
             purchase = await session.get(ClientPurchase, bonus.client_purchases_id)
+            logging.info(bonus.client_purchases_id)
             if bonus.client_purchases_return_id:
+                logging.info(bonus.client_purchases_return_id)
                 purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_return_id)
 
             points = 0
