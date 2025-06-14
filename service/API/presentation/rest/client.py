@@ -320,7 +320,10 @@ async def get_client_bonus_history(
         )
 ):
     session: AsyncSession = db_session.get()
-    if not (client_b := await Client.get_client_by_phone(session=session, phone=phone_number)):
+    client_b = None
+    if phone_number:
+        client_b = await Client.get_client_by_phone(session=session, phone=phone_number)
+    elif client_id:
         client_b = await session.get(Client, client_id)
     if not client_b:
         return HTTPException(status_code=204, detail="Client not found")
