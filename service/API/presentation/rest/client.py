@@ -357,7 +357,10 @@ async def get_client_bonus_history(
                 points = bonus.accrued_points
             if bonus.write_off_points > 0:
                 points = bonus.write_off_points
-            exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
+
+            exp_date = None
+            if bonus.expiration_date:
+                exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
             history.append(
                 {
                     "source": bonus.source,
