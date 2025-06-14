@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.responses import RedirectResponse
 
+from service.API.infrastructure.database.cods import Cods
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
@@ -24,11 +25,13 @@ from service.API.infrastructure.models.client import ModelAuth, ModelReview, Mod
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.database.loyalty import ClientBonusPoints, BonusExpirationNotifications
+from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn
 from service.API.infrastructure.utils.check_client import check_user_exists
 from service.tgbot.lib.bitrixAPI.leads import Leads
 from service.tgbot.data.faq import grade_text, grade_text_kaz
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
 from service.tgbot.lib.SendPlusAPI.templates import templates
+from service.API.infrastructure.utils.generate import generate_code
 
 router = APIRouter()
 
@@ -42,7 +45,7 @@ async def client_notification(
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
-    if client := await session.get(Client, telegramId):
+    if client := await session.get(Client, telegramId) is not None:
         await send_notification_from_client(
             bot=bot,
             user=client
@@ -282,6 +285,121 @@ async def get_bonus_points(
         "nextExpirationDate": soon_expiring[0].get('expiresAt') if soon_expiring else None
     }
     return answer
+
+
+@router.get(
+    "/api/v1/clients/bonus-history",
+    tags=['client'],
+    summary="Добавление отзыва клиента"
+)
+async def get_client_bonus_history(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone_number: str = Query(
+            default=None,
+            alias="phoneNumber",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        client_id: int = Query(
+            default=None,
+            alias="clientId",
+            description="Id клиента",
+            example=123456
+        ),
+        limit: int = Query(
+            default=20,
+            alias="limit",
+            description="Лимит",
+            example=20
+        ),
+        offset: int = Query(
+            default=0,
+            alias="clientId",
+            description="Пропуск",
+            example=0
+        )
+):
+    session: AsyncSession = db_session.get()
+    if not (client_b := await Client.get_client_by_phone(session=session, phone=phone_number)):
+        client_b = await session.get(Client, client_id)
+    if not client_b:
+        return HTTPException(status_code=204, detail="Client not found")
+    logging.info(client_b.id)
+    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    available_bonus = 0
+    total_earned = 0
+    total_spent = 0
+
+    # client_bonuses = await ClientBonusPoints.get_by_client_id_limit(
+    #     session=session,
+    #     client_id=client_b.id,
+    #     limit=20,
+    #     offset=0
+    # )
+    logging.info(f"ClinetID -> {client_b.phone_number}")
+    logging.info(f"Lens -> {len(client_bonuses)}")
+    history = []
+    for i, bonus in enumerate(client_bonuses):
+        total_earned += bonus.accrued_points if bonus.accrued_points else 0
+        total_spent += bonus.write_off_points if bonus.write_off_points else 0
+        if i >= offset and i <= limit:
+            purchase = await session.get(ClientPurchase, bonus.client_purchases_id)
+            if bonus.client_purchases_return_id:
+                purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_return_id)
+
+            points = 0
+            if bonus.accrued_points > 0:
+                points = bonus.accrued_points
+            if bonus.write_off_points > 0:
+                points = bonus.write_off_points
+            exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
+            history.append(
+                {
+                    "source": bonus.source,
+                    "siteId": purchase.site_id,
+                    "mcId": purchase.mc_id,
+                    "operationDate": bonus.operation_date,
+                    "type": "accrual" if bonus.accrued_points > 0 else "write_off",
+                    "points": points,
+                    "description": "Заказ №13904 / 12.09.2024",
+                    "bonusExpirationDate": exp_date
+                }
+            )
+    if total_earned > 0:
+        available_bonus += total_earned
+    if total_spent > 0:
+        available_bonus -= total_spent
+    answer = {
+        "clientId": client_b.id,
+        "clientName": client_b.name,
+        "balance": available_bonus,
+        "history": history
+    }
+
+    return answer
+
+
+@router.get("/api/v2/qr-code/generate-id",
+            tags=['client'],
+            summary="Добавление отзыва клиента"
+            )
+async def get_generate_id(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone: str
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=parse_phone(phone)
+    )
+    code = await Cods.get_cody_by_phone(client.phone_number, session)
+    if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds() / 60 > 15:
+        code = await generate_code(session, phone_number=client.phone_number)
+
+    return {
+        "qrCode": code.code,
+        "expiresAt": code.created_at + datetime.timedelta(minutes=15)
+    }
 
 
 @router.post("/client/reviews",

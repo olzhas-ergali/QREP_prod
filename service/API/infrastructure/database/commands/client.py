@@ -40,7 +40,9 @@ async def add_purchases(
         order_number=purchases_model.orderNumber,
         number=purchases_model.number,
         shift_number=purchases_model.shiftNumber,
-        ticket_print_url=purchases_model.ticketPrintUrl
+        ticket_print_url=purchases_model.ticketPrintUrl,
+        site_id=purchases_model.siteId,
+        mc_id=purchases_model.mcId
     )
     session.add(purchases)
     await session.commit()
@@ -116,7 +118,9 @@ async def add_return_purchases(
         order_number=purchase_return_model.orderNumber,
         number=purchase_return_model.number,
         shift_number=purchase_return_model.shiftNumber,
-        ticket_print_url=purchase_return_model.ticketPrintUrl
+        ticket_print_url=purchase_return_model.ticketPrintUrl,
+        site_id=purchase_return_model.siteId,
+        mc_id=purchase_return_model.mcId
     )
     session.add(purchases)
     await session.commit()

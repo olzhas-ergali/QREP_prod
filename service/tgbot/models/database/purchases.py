@@ -74,6 +74,8 @@ class ClientPurchase(Base):
         uselist=True,
         lazy='selectin'
     )
+    site_id = Column(String)
+    mc_id = Column(String)
 
 
 class ClientPurchaseReturn(Base):
@@ -108,3 +110,5 @@ class ClientPurchaseReturn(Base):
         uselist=True,
         lazy='selectin'
     )
+    site_id = Column(String)
+    mc_id = Column(String)

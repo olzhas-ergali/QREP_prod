@@ -59,6 +59,22 @@ class ClientBonusPoints(Base):
         return response.scalars().all()
 
     @classmethod
+    async def get_by_client_id_limit(
+            cls,
+            session: AsyncSession,
+            client_id: int,
+            limit: int,
+            offset: int
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            (client_id == ClientBonusPoints.client_id) &
+            (datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date))
+        ).order_by(asc(ClientBonusPoints.expiration_date)).limit(limit).offset(offset)
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
     async def delete_by_return_purchase_id(
             cls,
             session: AsyncSession,
