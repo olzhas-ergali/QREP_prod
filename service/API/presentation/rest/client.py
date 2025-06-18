@@ -19,7 +19,7 @@ from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.database.models import Client, ClientReview, ClientsApp, ClientMailing
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
-from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
+from service.API.infrastructure.utils.parse import parse_phone, is_valid_date, parse_date
 from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
@@ -564,24 +564,24 @@ async def client_create(
                 # }
             client.name = model_client.clientFullName
         if model_client.birthDate:
-            if not is_valid_date(model_client.birthDate):
+            date = await parse_date(model_client.birthDate)
+            if not date:
                 return {
                     "statusСode": 400,
                     "message": "Не правильный формат даты"
                 }
-            birth_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
             downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
-            if birth_date.date() >= datetime.datetime.now().date():
+            if date.date() >= datetime.datetime.now().date():
                 return {
                     "statusСode": 400,
                     "message": "Дата рождения не может быть позже текущей даты"
                 }
-            if birth_date < downgrade_date:
+            if date < downgrade_date:
                 return {
                     "statusСode": 400,
                     "message": "Дата рождения не может быть раньше 01.01.1900"
                 }
-            client.birthday_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
+            client.birthday_date = date
         if model_client.gender:
             if model_client.gender != 'F' and model_client.gender != 'M':
                 return {
