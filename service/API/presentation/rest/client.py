@@ -565,7 +565,7 @@ async def client_create(
             client.name = model_client.clientFullName
         if model_client.birthDate:
             date = await parse_date(model_client.birthDate)
-            if not date:
+            if date is None:
                 return {
                     "statusСode": 400,
                     "message": "Не правильный формат даты"
