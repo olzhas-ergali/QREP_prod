@@ -623,7 +623,7 @@ async def client_create(
         )
 ):
     if birth:
-        b_date = await is_valid_date(birth)
+        b_date = await parse_date(birth)
         if not b_date:
             return {
                 "statusСode": 400,
