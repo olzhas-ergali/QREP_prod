@@ -622,34 +622,40 @@ async def client_create(
             example="19.06.205"
         )
 ):
-    if birth:
-        b_date = await parse_date(birth)
-        if not b_date:
+    try:
+        if birth:
+            b_date = await parse_date(birth)
+            if not b_date:
+                return {
+                    "statusСode": 400,
+                    "message": "Не правильный формат даты"
+                }
+            downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
+            if b_date.date() >= datetime.datetime.now().date():
+                return {
+                    "statusСode": 400,
+                    "message": "Дата рождения не может быть позже текущей даты"
+                }
+            if b_date < downgrade_date:
+                return {
+                    "statusСode": 400,
+                    "message": "Дата рождения не может быть раньше 01.01.1900"
+                }
+            client.birthday_date = b_date
             return {
-                "statusСode": 400,
-                "message": "Не правильный формат даты"
+                "statusСode": 200,
+                "message": "Дата корректная"
             }
-        downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
-        if b_date.date() >= datetime.datetime.now().date():
-            return {
-                "statusСode": 400,
-                "message": "Дата рождения не может быть позже текущей даты"
-            }
-        if b_date < downgrade_date:
-            return {
-                "statusСode": 400,
-                "message": "Дата рождения не может быть раньше 01.01.1900"
-            }
-        client.birthday_date = b_date
-        return {
-            "statusСode": 200,
-            "message": "Корректная дата"
-        }
 
-    return {
-        "statusСode": 400,
-        "message": "Ошибка"
-    }
+        return {
+            "statusСode": 400,
+            "message": "Ошибка"
+        }
+    except:
+        return {
+            "statusСode": 400,
+            "message": "Ошибка"
+        }
 
 
 @router.post('/client/verification',
