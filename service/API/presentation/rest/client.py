@@ -738,7 +738,7 @@ async def client_create(
         }
 
 
-@router.post("/client",
+@router.post("/client/validation_date",
              tags=['client'])
 async def client_create(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
@@ -749,28 +749,33 @@ async def client_create(
         )
 ):
     if birth:
+        b_date = is_valid_date(birth)
         if not is_valid_date(birth):
             return {
                 "statusСode": 400,
                 "message": "Не правильный формат даты"
             }
-        birth_date = datetime.datetime.strptime(birth, "%Y-%m-%d")
         downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
-        if birth_date.date() >= datetime.datetime.now().date():
+        if b_date.date() >= datetime.datetime.now().date():
             return {
                 "statusСode": 400,
                 "message": "Дата рождения не может быть позже текущей даты"
             }
-        if birth_date < downgrade_date:
+        if b_date < downgrade_date:
             return {
                 "statusСode": 400,
                 "message": "Дата рождения не может быть раньше 01.01.1900"
             }
-        client.birthday_date = datetime.datetime.strptime(birth, "%Y-%m-%d")
+        client.birthday_date = b_date
         return {
             "statusСode": 200,
             "message": "Дата рождения не может быть раньше 01.01.1900"
         }
+
+    return {
+        "statusСode": 400,
+        "message": "Ошибка"
+    }
 
 
 @router.post('/client/verification',
