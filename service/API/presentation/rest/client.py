@@ -623,8 +623,8 @@ async def client_create(
         )
 ):
     if birth:
-        b_date = is_valid_date(birth)
-        if not is_valid_date(birth):
+        b_date = await is_valid_date(birth)
+        if not b_date:
             return {
                 "statusСode": 400,
                 "message": "Не правильный формат даты"
