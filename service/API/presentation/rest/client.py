@@ -20,7 +20,7 @@ from service.API.infrastructure.database.session import db_session
 from service.API.infrastructure.database.models import Client, ClientReview, ClientsApp, ClientMailing
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
-from service.API.infrastructure.utils.parse import parse_phone, is_valid_date
+from service.API.infrastructure.utils.parse import parse_phone, is_valid_date, parse_date
 from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
@@ -690,7 +690,7 @@ async def client_create(
                 # }
             client.name = model_client.clientFullName
         if model_client.birthDate:
-            date = await is_valid_date(model_client.birthDate)
+            date = await parse_date(model_client.birthDate)
             if date is None:
                 return {
                     "statusСode": 400,
@@ -749,7 +749,7 @@ async def client_create(
         )
 ):
     if birth:
-        b_date = await is_valid_date(birth)
+        b_date = await parse_date(birth)
         if not b_date:
             return {
                 "statusСode": 400,
