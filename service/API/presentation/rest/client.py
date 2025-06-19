@@ -643,7 +643,7 @@ async def client_create(
         client.birthday_date = b_date
         return {
             "statusСode": 200,
-            "message": "Дата рождения не может быть раньше 01.01.1900"
+            "message": "Корректная дата"
         }
 
     return {
