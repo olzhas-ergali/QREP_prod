@@ -739,8 +739,8 @@ async def client_create(
         }
 
 
-@router.qa("/client/validation_date",
-             tags=['client'])
+@router.get("/client/validation_date",
+            tags=['client'])
 async def client_create(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         birth: str = Query(
