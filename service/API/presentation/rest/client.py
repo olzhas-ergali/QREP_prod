@@ -45,10 +45,11 @@ async def client_notification(
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
-    if client := await session.get(Client, telegramId) is not None:
+    c: Client | None = await session.get(Client, telegramId)
+    if client is not None:
         await send_notification_from_client(
             bot=bot,
-            user=client
+            user=c
         )
         return {
             "status_code": 200,
