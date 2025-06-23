@@ -6,6 +6,6 @@ if __name__ == "__main__":
     uvicorn.run(
         app='service.API.main:app',
         log_config=f"{cwd}/log.ini",
-        host='0.0.0.0',
+        #host='0.0.0.0',
         port=8445
     )

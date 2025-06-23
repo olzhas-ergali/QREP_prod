@@ -48,12 +48,15 @@ class ClientBonusPoints(Base):
     async def get_by_client_id(
             cls,
             session: AsyncSession,
-            client_id: int
+            client_id: int,
+            sort,
+            order: typing.Callable = asc,
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             (client_id == ClientBonusPoints.client_id) &
             (datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date))
-        ).order_by(asc(ClientBonusPoints.expiration_date))
+        ).order_by(order(sort))
+        #ClientBonusPoints.expiration_date
         response = await session.execute(stmt)
 
         return response.scalars().all()

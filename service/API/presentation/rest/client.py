@@ -10,6 +10,7 @@ from aiogram import Bot
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import desc, asc
 from starlette import status
 from starlette.responses import RedirectResponse
 
@@ -32,6 +33,7 @@ from service.tgbot.data.faq import grade_text, grade_text_kaz
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
 from service.tgbot.lib.SendPlusAPI.templates import templates
 from service.API.infrastructure.utils.generate import generate_code
+from service.API.infrastructure.utils.types import Sort, Order
 
 router = APIRouter()
 
@@ -238,7 +240,11 @@ async def get_bonus_points(
     if not client_b:
         return HTTPException(status_code=204, detail="Client not found")
     logging.info(client_b.id)
-    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    client_bonuses = await ClientBonusPoints.get_by_client_id(
+        session=session,
+        client_id=client_b.id,
+        sort=ClientBonusPoints.expiration_date
+    )
     total_earned = 0
     total_spent = 0
     available_bonus = 0
@@ -318,6 +324,18 @@ async def get_client_bonus_history(
             alias="offset",
             description="Пропуск",
             example=0
+        ),
+        sort: Sort = Query(
+            default=Sort.operationDate,
+            alias="sort",
+            description="Сортировка",
+            example=Sort.operationDate
+        ),
+        order: Order = Query(
+            default=Order.asc,
+            alias="order",
+            description="",
+            example=Order.asc
         )
 ):
     session: AsyncSession = db_session.get()
@@ -329,7 +347,21 @@ async def get_client_bonus_history(
     if not client_b:
         return HTTPException(status_code=204, detail="Client not found")
     logging.info(client_b.id)
-    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    orders = {
+        "asc": asc,
+        "desc": desc
+    }
+    sorts = {
+        "activationDate": ClientBonusPoints.activation_date,
+        "expirationDate": ClientBonusPoints.expiration_date,
+        "operationDate": ClientBonusPoints.operation_date
+    }
+    client_bonuses = await ClientBonusPoints.get_by_client_id(
+        session=session,
+        client_id=client_b.id,
+        sort=sorts.get(sort.value),
+        order=orders.get(order.value)
+    )
     available_bonus = 0
     total_earned = 0
     total_spent = 0
@@ -354,9 +386,9 @@ async def get_client_bonus_history(
                 purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_id)
 
             points = 0
-            if bonus.accrued_points > 0:
+            if bonus.accrued_points and bonus.accrued_points > 0:
                 points = bonus.accrued_points
-            if bonus.write_off_points > 0:
+            if bonus.write_off_points and bonus.write_off_points > 0:
                 points = bonus.write_off_points
 
             exp_date = None
@@ -374,15 +406,24 @@ async def get_client_bonus_history(
                     "bonusExpirationDate": exp_date
                 }
             )
+        else:
+            break
     if total_earned > 0:
         available_bonus += total_earned
     if total_spent > 0:
         available_bonus -= total_spent
     answer = {
-        "clientId": client_b.id,
-        "clientName": client_b.name,
-        "balance": available_bonus,
-        "history": history
+        "meta": {
+            "total": len(client_bonuses),
+            "limit": limit,
+            "offset": offset
+        },
+        "data": {
+            "clientId": client_b.id,
+            "clientName": client_b.name,
+            "balance": available_bonus,
+            "history": history
+        }
     }
 
     return answer
