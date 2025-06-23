@@ -421,7 +421,7 @@ async def get_client_bonus_history(
         "data": {
             "clientId": client_b.id,
             "clientName": client_b.name,
-            "balance": available_bonus,
+            "balance": available_bonus if available_bonus > 0 else 0,
             "history": history
         }
     }
