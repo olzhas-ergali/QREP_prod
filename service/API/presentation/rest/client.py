@@ -397,8 +397,8 @@ async def get_client_bonus_history(
             history.append(
                 {
                     "source": bonus.source,
-                    "siteId": purchase.site_id,
-                    "mcId": purchase.mc_id,
+                    "siteId": purchase.site_id if purchase else None,
+                    "mcId": purchase.mc_id if purchase else None,
                     "operationDate": bonus.operation_date,
                     "type": "accrual" if bonus.accrued_points > 0 else "write_off",
                     "points": points,
