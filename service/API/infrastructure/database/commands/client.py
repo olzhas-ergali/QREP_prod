@@ -32,6 +32,13 @@ async def add_purchases(
         )
     if client:
         user_id = client.id
+    if await session.get(purchases_model.purchaseId, ClientPurchase) is None:
+        return {
+            "status_code": 500,
+            "message": "Чек уже записан",
+            "purchaseId": purchases_model.purchaseI,
+            "telegramId": user_id,
+        }
     purchases = ClientPurchase(
         id=purchases_model.purchaseId,
         source_system=purchases_model.sourceSystem,
