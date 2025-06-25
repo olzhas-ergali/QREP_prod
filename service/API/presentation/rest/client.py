@@ -406,8 +406,6 @@ async def get_client_bonus_history(
                     "bonusExpirationDate": exp_date
                 }
             )
-        else:
-            break
     if total_earned > 0:
         available_bonus += total_earned
     if total_spent > 0:
