@@ -38,6 +38,25 @@ class MessageTemplate(Base):
     updated_at = Column(DateTime, default=func.now())
     local = Column(String)
 
+    @classmethod
+    async def get_message_template(
+            cls,
+            session: AsyncSession,
+            channel: str,
+            event_type: EventType,
+            local: str,
+            audience_type: str
+    ):
+        stmt = select(MessageTemplate).where(
+            (channel == MessageTemplate.channel) &
+            (event_type == MessageTemplate.even_type) &
+            (local == MessageTemplate.local) &
+            (True == MessageTemplate.is_active) &
+            (audience_type == MessageTemplate.audience_type)
+        )
+
+        return await session.scalar(stmt)
+
 
 class MessageConfig(Base):
     __tablename__ = 'message_config'
@@ -53,7 +72,10 @@ class MessageConfig(Base):
 class MessageLog(Base):
     __tablename__ = 'message_log'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
-    client_id = Column(String)
+    client_id = Column(
+        BigInteger,
+        ForeignKey("clients.id", onupdate='CASCADE', ondelete='CASCADE')
+    )
     channel = Column(Enum(TriggerSource))
     event_type = Column(Integer)
     message_content = Column(String)

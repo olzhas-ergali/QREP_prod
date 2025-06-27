@@ -326,10 +326,10 @@ async def get_client_bonus_history(
             example=0
         ),
         sort: Sort = Query(
-            default=Sort.operationDate,
+            default=Sort.createdAt,
             alias="sort",
             description="Сортировка",
-            example=Sort.operationDate
+            example=Sort.createdAt
         ),
         order: Order = Query(
             default=Order.asc,
@@ -354,7 +354,8 @@ async def get_client_bonus_history(
     sorts = {
         "activationDate": ClientBonusPoints.activation_date,
         "expirationDate": ClientBonusPoints.expiration_date,
-        "operationDate": ClientBonusPoints.operation_date
+        "operationDate": ClientBonusPoints.operation_date,
+        "createdAt": ClientBonusPoints.created_at
     }
     client_bonuses = await ClientBonusPoints.get_by_client_id(
         session=session,
@@ -400,6 +401,7 @@ async def get_client_bonus_history(
                     "siteId": purchase.site_id if purchase else None,
                     "mcId": purchase.mc_id if purchase else None,
                     "operationDate": bonus.operation_date,
+                    "createdAt": bonus.created_at,
                     "type": "accrual" if bonus.accrued_points > 0 else "write_off",
                     "points": points,
                     "description": "",
