@@ -58,12 +58,12 @@ scheduler = AsyncIOScheduler(
          timezone='Asia/Aqtobe'
     )
 
-scheduler.add_job(
-    bonus_credit_notification,
-    'interval',
-    minutes=59,
-    args=(SESSION_MAKER,)
-)
+# scheduler.add_job(
+#     bonus_credit_notification,
+#     'interval',
+#     minutes=59,
+#     args=(SESSION_MAKER,)
+# )
 
 
 @app.on_event('startup')
