@@ -115,3 +115,5 @@ class ModelStaff(BaseModel):
 class ModelClientWA(BaseModel):
     phoneNumber: typing.Optional[str] = None
     message: typing.Optional[str] = None
+    email: typing.Optional[str] = None
+    local: typing.Optional[str] = None

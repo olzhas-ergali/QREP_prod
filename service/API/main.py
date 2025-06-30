@@ -8,9 +8,11 @@ from starlette.responses import JSONResponse
 from service.API.config import settings
 from service.API import application
 from service.API.infrastructure.database.models import Base
-from service.API.infrastructure.database.session import engine
+from service.API.infrastructure.database.session import engine, SESSION_MAKER
 from service.API.presentation import rest, middleware
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from service.API.infrastructure.utils.tasks.jobs import bonus_credit_notification
 # Adjust the logging
 # -------------------------------
 
@@ -50,6 +52,17 @@ app: FastAPI = application.create(
     startup_tasks=[],
     shutdown_tasks=[],
     docs_url="/docs", redoc_url=None
+)
+
+scheduler = AsyncIOScheduler(
+         timezone='Asia/Aqtobe'
+    )
+
+scheduler.add_job(
+    bonus_credit_notification,
+    'interval',
+    minutes=59,
+    args=(SESSION_MAKER,)
 )
 
 

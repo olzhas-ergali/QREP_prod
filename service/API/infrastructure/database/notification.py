@@ -13,10 +13,13 @@ from service.API.infrastructure.database.models import Client
 
 class EventType(enum.Enum):
     qr_enrollment_offline = "qr_enrollment_offline"
+    qr_enrollment_online = "qr_enrollment_online"
     points_credited_email = "points_credited_email"
     points_debited_email = "points_debited_email"
     points_credited_whatsapp = "points_credited_whatsapp"
+    points_credited_whatsapp_offline = "points_credited_whatsapp_offline"
     points_debited_whatsapp = "points_debited_whatsapp"
+    points_debited_whatsapp_offline = "points_debited_whatsapp_offline"
 
 
 class TriggerSource(enum.Enum):
@@ -58,15 +61,15 @@ class MessageTemplate(Base):
         return await session.scalar(stmt)
 
 
-class MessageConfig(Base):
-    __tablename__ = 'message_config'
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
-    even_type = Column(String)
-    trigger_source = Column(Enum(TriggerSource))
-    delivery_delay = Column(Integer)
-    is_enabled = Column(Boolean)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now())
+# class MessageConfig(Base):
+#     __tablename__ = 'message_config'
+#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
+#     even_type = Column(String)
+#     trigger_source = Column(Enum(TriggerSource))
+#     delivery_delay = Column(Integer)
+#     is_enabled = Column(Boolean)
+#     created_at = Column(DateTime, default=func.now())
+#     updated_at = Column(DateTime, default=func.now())
 
 
 class MessageLog(Base):

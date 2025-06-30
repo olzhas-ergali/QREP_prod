@@ -101,6 +101,24 @@ class ClientBonusPoints(Base):
 
         return None
 
+    @classmethod
+    async def get_credited_bonuses(
+            cls,
+            session: AsyncSession,
+            data: datetime.date
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            (ClientBonusPoints.client_purchases_id.in_(
+                select(ClientBonusPoints.client_purchases_id).where(
+                    ClientBonusPoints.client_purchases_id is not None
+                ).group_by(ClientBonusPoints.client_purchases_id).having(func.count() == 1)
+            )) & (data == func.cast(ClientBonusPoints.activation_date, Date))
+        ).order_by(asc(ClientBonusPoints.expiration_date))
+
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
 
 class BonusExpirationNotifications(Base):
     __tablename__ = 'bonus_expiration_notifications'

@@ -21,7 +21,7 @@ class SendPlus(BaseApi):
             json: dict = None
     ):
         url = self.url.format(method='contacts/sendTemplateByPhone')
-        local = await self.__get_local_by_phone(
+        local = await self.get_local_by_phone(
             phone=phone
         )
         result = await self.request_session(
@@ -45,10 +45,11 @@ class SendPlus(BaseApi):
             self,
             phone: str,
             bot_id: str,
-            text: str
+            text: str = None,
+            texts: dict = None
     ):
         url = self.url.format(method='contacts/sendByPhone')
-        local = await self.__get_local_by_phone(
+        local = await self.get_local_by_phone(
             phone=phone
         )
         result = await self.request_session(
@@ -65,7 +66,7 @@ class SendPlus(BaseApi):
                 "message": {
                     "type": "text",
                     "text": {
-                        "body": text
+                        "body": texts.get(local) if texts else text
                     }
                 }
             }
@@ -73,7 +74,7 @@ class SendPlus(BaseApi):
 
         return result
 
-    async def __get_local_by_phone(
+    async def get_local_by_phone(
             self,
             phone: str,
             json: dict = None

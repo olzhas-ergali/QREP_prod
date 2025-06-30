@@ -22,9 +22,10 @@ from service.API.infrastructure.database.models import Client, ClientReview, Cli
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
 from service.API.infrastructure.utils.parse import parse_phone, is_valid_date, parse_date
-from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
+from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite, ModelTemplate
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
+from service.API.infrastructure.database.notification import MessageTemplate, EventType
 from service.API.infrastructure.database.loyalty import ClientBonusPoints, BonusExpirationNotifications
 from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn
 from service.API.infrastructure.utils.check_client import check_user_exists
@@ -431,7 +432,7 @@ async def get_client_bonus_history(
 
 @router.get("/api/v2/qr-code/generate-id",
             tags=['client'],
-            summary="Добавление отзыва клиента"
+            summary="Генерация qr-code"
             )
 async def get_generate_id(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
@@ -931,3 +932,47 @@ async def client_send_quality_grade(
         'status_code': status.HTTP_200_OK,
         'message': 'Сообщение отправлено'
     }
+
+
+@router.post('/client/template',
+             tags=['client'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        template: ModelTemplate
+):
+    session: AsyncSession = db_session.get()
+    temp = MessageTemplate(
+        channel=template.channel,
+        even_type=template.event_type,
+        audience_type=template.audience_type,
+        title_template=template.title_template,
+        body_template=template.body_template,
+        local=template.local,
+        is_active=True
+    )
+    session.add(temp)
+    await session.commit()
+
+
+@router.get('/client/testSQL',
+            tags=['client'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)]
+):
+    session: AsyncSession = db_session.get()
+    date_temp = "20.06.2025"
+    results = await ClientBonusPoints.get_credited_bonuses(
+        session,
+        datetime.datetime.strptime(date_temp, "%d.%m.%Y").date())
+    answer = []
+    for r in results:
+        answer.append(
+            {
+                "client_id": r.client_id,
+                "purchase_id": r.client_purchases_id,
+                "accrued_points": r.accrued_points,
+                "write_off_points": r.write_off_points,
+                "expiration_date": r.expiration_date,
+                "activation_date": r.activation_date
+            })
+    return answer
