@@ -954,16 +954,42 @@ async def add_template_process(
     await session.commit()
 
 
-@router.get('/client/testSQL',
-            tags=['client'])
+@router.get('/client/get_credits',
+            tags=['dev'])
 async def add_template_process(
-        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)]
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        date_in: str
 ):
     session: AsyncSession = db_session.get()
-    date_temp = "20.06.2025"
     results = await ClientBonusPoints.get_credited_bonuses(
         session,
-        datetime.datetime.strptime(date_temp, "%d.%m.%Y").date())
+        datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
+    answer = []
+    for r in results:
+        answer.append(
+            {
+                "client_id": r.client_id,
+                "purchase_id": r.client_purchases_id,
+                "accrued_points": r.accrued_points,
+                "write_off_points": r.write_off_points,
+                "expiration_date": r.expiration_date,
+                "activation_date": r.activation_date
+            })
+    return answer
+
+
+@router.get('/client/get_debits',
+            tags=['dev'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        days: int
+):
+    session: AsyncSession = db_session.get()
+    results = await ClientBonusPoints.get_debited_bonuses(
+        session,
+        days
+    )
+
     answer = []
     for r in results:
         answer.append(

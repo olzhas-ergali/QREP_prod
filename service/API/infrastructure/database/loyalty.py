@@ -113,6 +113,26 @@ class ClientBonusPoints(Base):
                     ClientBonusPoints.client_purchases_id is not None
                 ).group_by(ClientBonusPoints.client_purchases_id).having(func.count() == 1)
             )) & (data == func.cast(ClientBonusPoints.activation_date, Date))
+            & ((ClientBonusPoints.write_off_points == 0) | (ClientBonusPoints.write_off_points is None))
+        ).order_by(asc(ClientBonusPoints.expiration_date))
+
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
+    async def get_debited_bonuses(
+            cls,
+            session: AsyncSession,
+            days: int
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            (ClientBonusPoints.client_purchases_id.in_(
+                select(ClientBonusPoints.client_purchases_id).where(
+                    ClientBonusPoints.client_purchases_id is not None
+                ).group_by(ClientBonusPoints.client_purchases_id).having(func.count() == 1)
+            )) & ((func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()) == days)
+            & ((ClientBonusPoints.write_off_points > 0) | (ClientBonusPoints.write_off_points is not None))
         ).order_by(asc(ClientBonusPoints.expiration_date))
 
         response = await session.execute(stmt)
