@@ -132,7 +132,7 @@ class ClientBonusPoints(Base):
                     ClientBonusPoints.client_purchases_id is not None
                 ).group_by(ClientBonusPoints.client_purchases_id).having(func.count() == 1)
             )) & ((func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()) == days)
-            & ((ClientBonusPoints.write_off_points > 0) | (ClientBonusPoints.write_off_points is not None))
+            & (ClientBonusPoints.write_off_points > 0)
         ).order_by(asc(ClientBonusPoints.expiration_date))
 
         response = await session.execute(stmt)
