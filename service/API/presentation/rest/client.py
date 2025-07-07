@@ -964,6 +964,7 @@ async def add_template_process(
     results = await ClientBonusPoints.get_credited_bonuses(
         session,
         datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
+    logging.info(datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
     answer = []
     for r in results:
         answer.append(
