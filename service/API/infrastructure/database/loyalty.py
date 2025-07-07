@@ -119,10 +119,10 @@ class ClientBonusPoints(Base):
 #             (ClientBonusPoints.client_purchases_return_id is None)
 #         ).order_by(asc(ClientBonusPoints.activation_date))
         stmt = select(ClientBonusPoints).where(
-            ClientBonusPoints.client_purchases_id.isnot(None),
-            ClientBonusPoints.client_purchases_return_id.is_(None),
-            data == func.cast(ClientBonusPoints.activation_date, Date),
-            (ClientBonusPoints.write_off_points.is_(None) | 0 == ClientBonusPoints.write_off_points),
+            ClientBonusPoints.client_purchases_id.isnot(None) &
+            ClientBonusPoints.client_purchases_return_id.is_(None) &
+            data == func.cast(ClientBonusPoints.activation_date, Date) &
+            (ClientBonusPoints.write_off_points.is_(None) | 0 == ClientBonusPoints.write_off_points)
         ).order_by(asc(ClientBonusPoints.activation_date))
 
         response = await session.execute(stmt)
