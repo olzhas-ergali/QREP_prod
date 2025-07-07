@@ -108,11 +108,12 @@ class ClientBonusPoints(Base):
             data: datetime.date
     ) -> typing.Sequence['ClientBonusPoints']:
 #.having(func.count() == 1)
+#.group_by(ClientBonusPoints.client_purchases_id)
         stmt = select(ClientBonusPoints).where(
             (ClientBonusPoints.client_purchases_id.in_(
                 select(ClientBonusPoints.client_purchases_id).where(
                     (ClientBonusPoints.client_purchases_id is not None) & (ClientBonusPoints.client_purchases_return_id is None)
-                ).group_by(ClientBonusPoints.client_purchases_id)
+                )
             )) & (data == func.cast(ClientBonusPoints.activation_date, Date))
             & ((ClientBonusPoints.write_off_points == 0) | (ClientBonusPoints.write_off_points is None))
         ).order_by(asc(ClientBonusPoints.expiration_date))
