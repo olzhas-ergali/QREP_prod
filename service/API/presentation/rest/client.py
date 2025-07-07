@@ -966,6 +966,7 @@ async def add_template_process(
         datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
     logging.info(datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
     answer = []
+    logging.info(len(results))
     for r in results:
         answer.append(
             {
