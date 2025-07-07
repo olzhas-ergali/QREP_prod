@@ -117,7 +117,7 @@ class ClientBonusPoints(Base):
                     (ClientBonusPoints.client_purchases_return_id is None)
                 )
             )) & (data == func.cast(ClientBonusPoints.activation_date, Date))
-        ).order_by(asc(ClientBonusPoints.expiration_date))
+        ).order_by(asc(ClientBonusPoints.activation_date))
 
         response = await session.execute(stmt)
 
