@@ -140,15 +140,26 @@ class ClientBonusPoints(Base):
             session: AsyncSession,
             days: int
     ) -> typing.Sequence['ClientBonusPoints']:
-        stmt = select(ClientBonusPoints).where(
-            (ClientBonusPoints.client_purchases_id.in_(
-                select(ClientBonusPoints.client_purchases_id).where(
-                    ClientBonusPoints.client_purchases_id is not None
-                ).group_by(ClientBonusPoints.client_purchases_id).having(func.count() == 1)
-            )) & ((func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()) == days)
-            & (ClientBonusPoints.accrued_points > 0)
-        ).order_by(asc(ClientBonusPoints.expiration_date))
+        # stmt = select(ClientBonusPoints).where(
+        #     (ClientBonusPoints.client_purchases_id.in_(
+        #         select(ClientBonusPoints.client_purchases_id).where(
+        #             ClientBonusPoints.client_purchases_id is not None
+        #         ).group_by(ClientBonusPoints.client_purchases_id).having(func.count() == 1)
+        #     )) & ((func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()) == days)
+        #     & (ClientBonusPoints.accrued_points > 0)
+        # ).order_by(asc(ClientBonusPoints.expiration_date))
 
+        stmt = select(ClientBonusPoints).where(
+            and_(
+                ClientBonusPoints.client_purchases_id.isnot(None),
+                ClientBonusPoints.client_purchases_return_id.is_(None),
+                (func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()).days == days,
+                or_(
+                    ClientBonusPoints.write_off_points.is_(None),
+                    0 == ClientBonusPoints.write_off_points
+                )
+            )
+        ).order_by(asc(ClientBonusPoints.activation_date))
         response = await session.execute(stmt)
 
         return response.scalars().all()
