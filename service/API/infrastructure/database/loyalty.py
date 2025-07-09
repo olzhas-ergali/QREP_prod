@@ -153,7 +153,7 @@ class ClientBonusPoints(Base):
             and_(
                 ClientBonusPoints.client_purchases_id.isnot(None),
                 ClientBonusPoints.client_purchases_return_id.is_(None),
-                (func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()).days == days,
+                func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date() == days,
                 or_(
                     ClientBonusPoints.write_off_points.is_(None),
                     0 == ClientBonusPoints.write_off_points
