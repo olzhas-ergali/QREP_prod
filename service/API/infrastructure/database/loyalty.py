@@ -121,7 +121,7 @@ class ClientBonusPoints(Base):
         stmt = select(ClientBonusPoints).where(
             and_(
                 ClientBonusPoints.client_purchases_id.isnot(None),
-                ClientBonusPoints.client_purchases_return_id.is_(None),
+                #ClientBonusPoints.client_purchases_return_id.is_(None),
                 data == func.cast(ClientBonusPoints.activation_date, Date),
                 or_(
                     ClientBonusPoints.write_off_points.is_(None),

@@ -966,18 +966,22 @@ async def add_template_process(
         datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
     logging.info(datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
     answer = []
+    bonuses = {}
     logging.info(len(results))
     for r in results:
-        answer.append(
-            {
+        if not bonuses.get(r.client_purchases_id):
+            bonuses[r.client_purchases_id] = {
                 "client_id": r.client_id,
                 "purchase_id": r.client_purchases_id,
                 "accrued_points": r.accrued_points,
                 "write_off_points": r.write_off_points,
                 "expiration_date": r.expiration_date,
                 "activation_date": r.activation_date
-            })
-    return answer
+            }
+        elif r.client_purchases_return_id and bonuses.get(r.client_purchases_id).get("accrued_points") - r.write_off_points == 0:
+            bonuses.pop(r.client_purchases_id)
+
+    return bonuses
 
 
 @router.get('/client/get_debits',
