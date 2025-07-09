@@ -121,12 +121,12 @@ class ClientBonusPoints(Base):
         stmt = select(ClientBonusPoints).where(
             and_(
                 ClientBonusPoints.client_purchases_id.isnot(None),
-                #ClientBonusPoints.client_purchases_return_id.is_(None),
+                ClientBonusPoints.client_purchases_return_id.is_(None),
                 data == func.cast(ClientBonusPoints.activation_date, Date),
-                # or_(
-                #     ClientBonusPoints.write_off_points.is_(None),
-                #     0 == ClientBonusPoints.write_off_points
-                # )
+                or_(
+                    ClientBonusPoints.write_off_points.is_(None),
+                    0 == ClientBonusPoints.write_off_points
+                )
             )
         ).order_by(asc(ClientBonusPoints.activation_date))
 
@@ -148,6 +148,25 @@ class ClientBonusPoints(Base):
             )) & ((func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()) == days)
             & (ClientBonusPoints.accrued_points > 0)
         ).order_by(asc(ClientBonusPoints.expiration_date))
+
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
+    async def get_by_purchase_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str,
+            accrued_points: int
+    ):
+        stmt = select(ClientBonusPoints).where(
+            and_(
+                ClientBonusPoints.client_purchases_id == purchase_id,
+                ClientBonusPoints.client_purchases_return_id.isnot(None),
+                accrued_points - ClientBonusPoints.accrued_points == 0
+            )
+        )
 
         response = await session.execute(stmt)
 

@@ -978,8 +978,13 @@ async def add_template_process(
                 "expiration_date": r.expiration_date,
                 "activation_date": r.activation_date
             }
-        elif r.client_purchases_return_id and bonuses.get(r.client_purchases_id).get("accrued_points") - r.write_off_points == 0:
-            bonuses.pop(r.client_purchases_id)
+            res = await ClientBonusPoints.get_by_purchase_id(
+                session=session,
+                purchase_id=r.client_purchases_id,
+                accrued_points=r.accrued_points
+            )
+            if res:
+                bonuses.pop(r.client_purchases_id)
 
     return bonuses
 
