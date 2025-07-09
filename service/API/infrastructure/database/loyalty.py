@@ -164,7 +164,7 @@ class ClientBonusPoints(Base):
             and_(
                 ClientBonusPoints.client_purchases_id == purchase_id,
                 ClientBonusPoints.client_purchases_return_id.isnot(None),
-                accrued_points - ClientBonusPoints.accrued_points == 0
+                accrued_points + ClientBonusPoints.accrued_points == 0
             )
         )
 

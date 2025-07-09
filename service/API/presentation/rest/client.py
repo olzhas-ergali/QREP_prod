@@ -984,6 +984,7 @@ async def add_template_process(
                 purchase_id=r.client_purchases_id,
                 accrued_points=r.accrued_points
             )
+            logging.info(len(res))
             if len(res) > 0:
                 bonuses.pop(r.client_purchases_id)
 
