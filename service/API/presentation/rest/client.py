@@ -1003,15 +1003,25 @@ async def add_template_process(
         days
     )
 
-    answer = []
+    bonuses = {}
+    logging.info(len(results))
     for r in results:
-        answer.append(
-            {
+        if not bonuses.get(r.client_purchases_id):
+            bonuses[r.client_purchases_id] = {
                 "client_id": r.client_id,
                 "purchase_id": r.client_purchases_id,
                 "accrued_points": r.accrued_points,
                 "write_off_points": r.write_off_points,
                 "expiration_date": r.expiration_date,
                 "activation_date": r.activation_date
-            })
-    return answer
+            }
+            logging.info(r.client_purchases_id)
+            res = await ClientBonusPoints.get_by_purchase_id(
+                session=session,
+                purchase_id=r.client_purchases_id,
+                accrued_points=r.accrued_points
+            )
+            logging.info(len(res))
+            if len(res) > 0:
+                bonuses.pop(r.client_purchases_id)
+    return bonuses
