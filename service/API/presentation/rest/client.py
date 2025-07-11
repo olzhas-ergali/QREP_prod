@@ -388,9 +388,11 @@ async def get_client_bonus_history(
                 purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_id)
 
             points = 0
-            if bonus.accrued_points and bonus.accrued_points > 0:
+            # and bonus.accrued_points > 0
+            if bonus.accrued_points:
                 points = bonus.accrued_points
-            if bonus.write_off_points and bonus.write_off_points > 0:
+            # and bonus.write_off_points > 0
+            if bonus.write_off_points:
                 points = bonus.write_off_points
 
             exp_date = None
