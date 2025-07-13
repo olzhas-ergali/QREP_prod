@@ -220,7 +220,7 @@ async def client_send_quality_grade(
     template = await MessageTemplate.get_message_template(
         session=session,
         channel="WhatsApp",
-        event_type=EventType.points_debited_whatsapp_offline,
+        event_type=EventType.points_debited_whatsapp,
         local=ModelClientWA.local,
         audience_type="client"
     )
@@ -235,7 +235,7 @@ async def client_send_quality_grade(
     log = MessageLog(
         clint_id=client.id,
         channel="WhatsApp",
-        event_type=EventType.points_debited_email,
+        event_type=EventType.points_debited_whatsapp,
         local=model.local,
         status="Good",
         message_content=template.body_template.format(
