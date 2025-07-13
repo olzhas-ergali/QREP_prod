@@ -131,7 +131,8 @@ async def add_purchases(
                     to_address=[client.email]
                 )
                 log = MessageLog(
-                    client_id=client.id,
+                    id=uuid.uuid4(),
+                    client_id=client.id if client else 2,
                     channel="Email",
                     event_type=EventType.points_debited_email,
                     status="Good",
@@ -163,21 +164,21 @@ async def add_purchases(
                     phone=client.phone_number,
                     bot_id=settings.wb_cred.wb_bot_id,
                     text=template_wa.body_template.format(
-                        client_name=client.name,
+                        order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
                         cashback=client_bonus.write_off_points
                     )
                 )
             except Exception as ex:
                 status = ex
             log = MessageLog(
-                client_id=client.id,
+                id=uuid.uuid4(),
+                client_id=client.id if client else 2,
                 channel="WhatsApp",
-                event_type=EventType.qr_enrollment_online,
+                event_type=EventType.points_debited_whatsapp,
                 status=status,
                 message_content=template.body_template.format(
-                    client_name=client.name,
-                    cashback=client_bonus.write_off_points,
-                    order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+                    order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
+                    cashback=client_bonus.write_off_points
                 )
             )
             session.add(log)
@@ -201,7 +202,8 @@ async def add_purchases(
                     to_address=[client.email]
                 )
                 log = MessageLog(
-                    client_id=client.id,
+                    id=uuid.uuid4(),
+                    client_id=client.id if client else 2,
                     channel="Email",
                     event_type=EventType.points_future_credit_email,
                     status="Good",
