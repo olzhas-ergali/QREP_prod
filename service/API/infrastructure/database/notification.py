@@ -35,7 +35,7 @@ class MessageTemplate(Base):
     __tablename__ = 'message_template'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
     channel = Column(String)
-    even_type = Column(Enum(EventType))
+    event_type = Column(Enum(EventType))
     audience_type = Column(String)
     title_template = Column(String)
     body_template = Column(String)
@@ -55,7 +55,7 @@ class MessageTemplate(Base):
     ):
         stmt = select(MessageTemplate).where(
             (channel == MessageTemplate.channel) &
-            (event_type == MessageTemplate.even_type) &
+            (event_type == MessageTemplate.event_type) &
             (local == MessageTemplate.local) &
             (True == MessageTemplate.is_active) &
             (audience_type == MessageTemplate.audience_type)
@@ -83,7 +83,7 @@ class MessageLog(Base):
         ForeignKey("clients.id", onupdate='CASCADE', ondelete='CASCADE')
     )
     channel = Column(Enum(TriggerSource))
-    event_type = Column(Integer)
+    event_type = Column(Enum(EventType))
     message_content = Column(String)
     status = Column(String)
     sent_at = Column(DateTime, default=func.now())
