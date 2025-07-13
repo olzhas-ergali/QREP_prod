@@ -229,7 +229,7 @@ async def client_send_quality_grade(
         phone=model.phoneNumber,
         bot_id=settings.wb_cred.wb_bot_id,
         text=template.body_template.format(
-            cashback=client.name,
+            cashback="100",
             order_number="123")
     )
     log = MessageLog(

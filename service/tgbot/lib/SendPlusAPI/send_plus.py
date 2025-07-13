@@ -1,3 +1,5 @@
+import logging
+
 from service.tgbot.lib.SendPlusAPI.base import BaseApi, MethodRequest
 
 
@@ -52,6 +54,7 @@ class SendPlus(BaseApi):
         local = await self.get_local_by_phone(
             phone=phone
         )
+        logging.info(local)
         result = await self.request_session(
             method=MethodRequest.post,
             url=url,
