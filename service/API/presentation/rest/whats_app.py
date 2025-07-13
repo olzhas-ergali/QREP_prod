@@ -225,7 +225,7 @@ async def client_send_quality_grade(
         audience_type="client"
     )
     #С вашего бонусного счёта списано {cashback} кэшбека при оплате заказа {order_number}Спасибо, что выбираете Qazaq Republic 💙
-    await wb.send_by_phone(
+    res = await wb.send_by_phone(
         phone=model.phoneNumber,
         bot_id=settings.wb_cred.wb_bot_id,
         text=template.body_template.format(
@@ -245,7 +245,8 @@ async def client_send_quality_grade(
     await session.commit()
     return {
         'status_code': status.HTTP_200_OK,
-        'message': 'Сообщение отправлено'
+        'message': 'Сообщение отправлено',
+        'res': res
     }
 
 
