@@ -82,7 +82,7 @@ class MessageLog(Base):
         BigInteger,
         ForeignKey("clients.id", onupdate='CASCADE', ondelete='CASCADE')
     )
-    channel = Column(Enum(TriggerSource))
+    channel = Column(String)
     event_type = Column(Enum(EventType))
     message_content = Column(String)
     status = Column(String)
