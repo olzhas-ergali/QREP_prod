@@ -236,7 +236,6 @@ async def client_send_quality_grade(
         client_id=client.id,
         channel="WhatsApp",
         event_type=EventType.points_debited_whatsapp,
-        local=model.local,
         status="Good",
         message_content=template.body_template.format(
             order_number="123",
