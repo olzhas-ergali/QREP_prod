@@ -130,7 +130,7 @@ async def add_purchases(
                 to_address=[client.email]
             )
             log = MessageLog(
-                clint_id=client.id,
+                client_id=client.id,
                 channel="Email",
                 event_type=EventType.points_debited_email,
                 local=local,
@@ -166,7 +166,7 @@ async def add_purchases(
                 )
             )
             log = MessageLog(
-                clint_id=client.id,
+                client_id=client.id,
                 channel="WhatsApp",
                 event_type=EventType.qr_enrollment_online,
                 local=local,
@@ -197,7 +197,7 @@ async def add_purchases(
                 to_address=[client.email]
             )
             log = MessageLog(
-                clint_id=client.id,
+                client_id=client.id,
                 channel="Email",
                 event_type=EventType.qr_enrollment_online,
                 local=local,
