@@ -233,7 +233,7 @@ async def client_send_quality_grade(
             order_number="123")
     )
     log = MessageLog(
-        client_id=client.id,
+        client_id=client.id if client else 2,
         channel="WhatsApp",
         event_type=EventType.points_debited_whatsapp,
         status="Good",
