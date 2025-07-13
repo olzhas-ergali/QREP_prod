@@ -176,9 +176,9 @@ async def add_purchases(
                 channel="WhatsApp",
                 event_type=EventType.points_debited_whatsapp,
                 status=status,
-                message_content=template.body_template.format(
-                    order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
-                    cashback=client_bonus.write_off_points
+                message_content=template_wa.body_template.format(
+                        order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
+                        cashback=client_bonus.write_off_points
                 )
             )
             session.add(log)
