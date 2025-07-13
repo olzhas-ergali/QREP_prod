@@ -73,7 +73,7 @@ async def add_purchases(
             event_type=EventType.qr_enrollment_online,
             local=local,
             status="Good",
-            message_content=template.body_template.format(name=client.name, cashback="100")
+            message_content=template.body_template.format(clname=client.name, cashback="100")
         )
         session.add(log)
 

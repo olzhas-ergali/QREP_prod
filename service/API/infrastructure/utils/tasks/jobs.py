@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
@@ -25,34 +26,35 @@ async def bonus_credit_notification(
         data=datetime.datetime.now().date()
     )
     clients_credits = {}
-    for bonus in client_bonuses:
-        purchase = await ClientPurchase.get_by_purchase_id(
-            session=session,
-            purchase_id=bonus.client_purchases_id
-        )
-        if clients_credits.get(bonus.client_id):
-            clients_credits[bonus.client_id]["points"] = clients_credits[bonus.client_id]["points"] + bonus.accrued_points
-        else:
-            clients_credits[bonus.client_id] = {
-                "points": bonus.accrued_points,
-                "number": purchase.mc_id if purchase.mc_id is not None else purchase.ticket_print_url,
-                "online": purchase.mc_id if True else False
+    for r in client_bonuses:
+        if not clients_credits.get(r.client_purchases_id):
+            clients_credits[r.client_purchases_id] = {
+                "client_id": r.client_id,
+                "purchase_id": r.client_purchases_id,
+                "accrued_points": r.accrued_points,
+                "write_off_points": r.write_off_points,
+                "expiration_date": r.expiration_date,
+                "activation_date": r.activation_date
             }
-        # if bonus.expiration_date and bonus.expiration_date.date() == date_today and bonus.write_off_points == 0:
-        #     if clients_debits.get(bonus.client_id):
-        #         clients_debits[bonus.client_id]["points"] = clients_debits[bonus.client_id]["points"]
-        #     else:
-        #         clients_debits[bonus.client_id] = {
-        #             "points": bonus.accrued_points,
-        #             "online": purchase.mc_id if purchase.mc_id is not None else purchase.ticket_print_url,
-        #             "days": 0
-        #         }
+            logging.info(r.client_purchases_id)
+            res = await ClientBonusPoints.get_by_purchase_id(
+                session=session,
+                purchase_id=r.client_purchases_id,
+                accrued_points=r.accrued_points
+            )
+            logging.info(len(res))
+            if len(res) > 0:
+                clients_credits.pop(r.client_purchases_id)
 
     mail = Mail()
     for key, value in clients_credits.items():
         client = await Client.get_client_by_id(
             session=session,
-            client_id=key
+            client_id=value.get('client_id')
+        )
+        purchase = await ClientPurchase.get_by_purchase_id(
+            session=session,
+            purchase_id=key
         )
         local = await wb.get_local_by_phone(
             phone=client.phone_number
@@ -64,7 +66,7 @@ async def bonus_credit_notification(
             local=local,
             audience_type="client"
         )
-        if value.get("online"):
+        if purchase.mc_id is not None:
             event_type = EventType.points_credited_whatsapp
             template_wa = await MessageTemplate.get_message_template(
                 session=session,
@@ -83,7 +85,7 @@ async def bonus_credit_notification(
                 audience_type="client"
             )
         await mail.send_message(
-            message=template_mail.body_template.format(name=client.name, cashback=value.get("points")),
+            message=template_mail.body_template.format(name=client.name, cashback=value.get("accrued_points")),
             subject=template_mail.title_template,
             to_address=["bob.ost@mail.ru"]
         )
@@ -93,13 +95,13 @@ async def bonus_credit_notification(
             event_type=EventType.points_credited_email,
             local=local,
             status="Good",
-            message_content=template_mail.body_template.format(name=client.name, cashback=value.get("points"))
+            message_content=template_mail.body_template.format(name=client.name, cashback=value.get("accrued_points"))
         )
         session.add(log)
         await wb.send_by_phone(
             phone="77075346231",
             bot_id=settings.wb_cred.wb_bot_id,
-            text=template_wa.title_template.format(name=client.name, cashback=value.get("points"))
+            text=template_wa.title_template.format(name=client.name, cashback=value.get("accrued_points"))
         )
         log = MessageLog(
             clint_id=client.id,
@@ -107,7 +109,7 @@ async def bonus_credit_notification(
             event_type=event_type,
             local=local,
             status="Good",
-            message_content=template_wa.title_template.format(name=client.name, cashback=value.get("points"))
+            message_content=template_wa.title_template.format(name=client.name, cashback=value.get("accrued_points"))
         )
         session.add(log)
         await session.commit()
