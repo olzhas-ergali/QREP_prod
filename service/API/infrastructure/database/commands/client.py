@@ -47,13 +47,13 @@ async def add_purchases(
         session=session,
         client_id=user_id
     )
+    wb = SendPlus(
+        client_id=settings.wb_cred.client_id,
+        client_secret=settings.wb_cred.client_secret,
+        waba_bot_id=settings.wb_cred.wb_bot_id
+    )
+    mail = Mail()
     if client_p is None:
-        mail = Mail()
-        wb = SendPlus(
-            client_id=settings.wb_cred.client_id,
-            client_secret=settings.wb_cred.client_secret,
-            waba_bot_id=settings.wb_cred.wb_bot_id
-        )
         local = await wb.get_local_by_phone(purchases_model.phone)
         template = await MessageTemplate.get_message_template(
             session=session,
@@ -112,12 +112,6 @@ async def add_purchases(
         session.add(client_bonus)
         await session.commit()
     if client_bonus and client_bonus.write_off_points > 0:
-        mail = Mail()
-        wb = SendPlus(
-            client_id=settings.wb_cred.client_id,
-            client_secret=settings.wb_cred.client_secret,
-            waba_bot_id=settings.wb_cred.wb_bot_id
-        )
         local = await wb.get_local_by_phone(purchases_model.phone)
         template = await MessageTemplate.get_message_template(
             session=session,
@@ -158,7 +152,7 @@ async def add_purchases(
                 audience_type="client"
             )
         await wb.send_by_phone(
-            phone=client.phone_number,
+            phone="77075346231",
             bot_id=settings.wb_cred.wb_bot_id,
             text=template_wa
         )
