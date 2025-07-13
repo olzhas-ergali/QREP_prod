@@ -221,7 +221,7 @@ async def client_send_quality_grade(
         session=session,
         channel="WhatsApp",
         event_type=EventType.points_debited_whatsapp,
-        local=ModelClientWA.local,
+        local=model.local,
         audience_type="client"
     )
     #С вашего бонусного счёта списано {cashback} кэшбека при оплате заказа {order_number}Спасибо, что выбираете Qazaq Republic 💙
