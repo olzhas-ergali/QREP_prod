@@ -121,26 +121,27 @@ async def add_purchases(
                 local=local,
                 audience_type="client"
             )
-            await mail.send_message(
-                message=template.body_template.format(
-                    client_name=client.name,
-                    cashback=client_bonus.write_off_points
-                ),
-                subject=template.title_template,
-                to_address=[client.email]
-            )
-            log = MessageLog(
-                client_id=client.id,
-                channel="Email",
-                event_type=EventType.points_debited_email,
-                local=local,
-                status="Good",
-                message_content=template.body_template.format(
-                    client_name=client.name,
-                    cashback=client_bonus.write_off_points)
-            )
-            session.add(log)
-            await session.commit()
+            if client.email:
+                await mail.send_message(
+                    message=template.body_template.format(
+                        client_name=client.name,
+                        cashback=client_bonus.write_off_points
+                    ),
+                    subject=template.title_template,
+                    to_address=[client.email]
+                )
+                log = MessageLog(
+                    client_id=client.id,
+                    channel="Email",
+                    event_type=EventType.points_debited_email,
+                    local=local,
+                    status="Good",
+                    message_content=template.body_template.format(
+                        client_name=client.name,
+                        cashback=client_bonus.write_off_points)
+                )
+                session.add(log)
+                await session.commit()
             #if purchases_model.mcId is not None:
             template_wa = await MessageTemplate.get_message_template(
                 session=session,
@@ -157,20 +158,24 @@ async def add_purchases(
             #         local=local,
             #         audience_type="client"
             #     )
-            await wb.send_by_phone(
-                phone=client.phone_number,
-                bot_id=settings.wb_cred.wb_bot_id,
-                text=template_wa.body_template.format(
-                    client_name=client.name,
-                    cashback=client_bonus.write_off_points
+            try:
+                status = "Good"
+                await wb.send_by_phone(
+                    phone=client.phone_number,
+                    bot_id=settings.wb_cred.wb_bot_id,
+                    text=template_wa.body_template.format(
+                        client_name=client.name,
+                        cashback=client_bonus.write_off_points
+                    )
                 )
-            )
+            except Exception as ex:
+                status = ex
             log = MessageLog(
                 client_id=client.id,
                 channel="WhatsApp",
                 event_type=EventType.qr_enrollment_online,
                 local=local,
-                status="Good",
+                status=status,
                 message_content=template.body_template.format(
                     client_name=client.name,
                     cashback=client_bonus.write_off_points,
@@ -187,25 +192,26 @@ async def add_purchases(
                 local=local,
                 audience_type="client"
             )
-            await mail.send_message(
-                message=template.body_template.format(
-                    client_name=client.name,
-                    cashback=client_bonus.write_off_points,
-                    order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
-                ),
-                subject=template.title_template,
-                to_address=[client.email]
-            )
-            log = MessageLog(
-                client_id=client.id,
-                channel="Email",
-                event_type=EventType.qr_enrollment_online,
-                local=local,
-                status="Good",
-                message_content=template.body_template.format(client_name=client.name, cashback=client_bonus.write_off_points)
-            )
-            session.add(log)
-            await session.commit()
+            if client.email:
+                await mail.send_message(
+                    message=template.body_template.format(
+                        client_name=client.name,
+                        cashback=client_bonus.write_off_points,
+                        order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+                    ),
+                    subject=template.title_template,
+                    to_address=[client.email]
+                )
+                log = MessageLog(
+                    client_id=client.id,
+                    channel="Email",
+                    event_type=EventType.qr_enrollment_online,
+                    local=local,
+                    status="Good",
+                    message_content=template.body_template.format(client_name=client.name, cashback=client_bonus.write_off_points)
+                )
+                session.add(log)
+                await session.commit()
 
     return {
         "message": "Чек успешно записан",
