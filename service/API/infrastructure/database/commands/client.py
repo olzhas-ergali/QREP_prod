@@ -179,7 +179,7 @@ async def add_purchases(
             )
             session.add(log)
             await session.commit()
-        else:
+        elif client_bonus.accrued_points > 0:
             template = await MessageTemplate.get_message_template(
                 session=session,
                 channel="Email",
