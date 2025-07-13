@@ -1,6 +1,8 @@
 import typing
 import datetime
 import re
+import uuid
+
 import regex
 import logging
 
@@ -944,6 +946,7 @@ async def add_template_process(
 ):
     session: AsyncSession = db_session.get()
     temp = MessageTemplate(
+        id=uuid.uuid4(),
         channel=template.channel,
         even_type=template.event_type,
         audience_type=template.audience_type,
