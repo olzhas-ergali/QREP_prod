@@ -208,9 +208,9 @@ async def client_send_quality_grade(
         model: ModelClientWA
 ):
     session: AsyncSession = db_session.get()
-    client = await Client.get_client_by_id(
+    client = await Client.get_client_by_phone(
         session=session,
-        client_id=settings.wb_cred.client_id
+        phone=model.phoneNumber
     )
     wb = SendPlus(
         client_id=settings.wb_cred.client_id,
@@ -220,15 +220,30 @@ async def client_send_quality_grade(
     template = await MessageTemplate.get_message_template(
         session=session,
         channel="WhatsApp",
-        event_type=EventType.points_credited_whatsapp,
+        event_type=EventType.points_debited_whatsapp_offline,
         local=ModelClientWA.local,
         audience_type="client"
     )
+    #С вашего бонусного счёта списано {cashback} кэшбека при оплате заказа {order_number}Спасибо, что выбираете Qazaq Republic 💙
     await wb.send_by_phone(
         phone=model.phoneNumber,
         bot_id=settings.wb_cred.wb_bot_id,
-        text=template.body_template.format(cashback="100")
+        text=template.body_template.format(
+            cashback=client.name,
+            order_number="123")
     )
+    log = MessageLog(
+        clint_id=client.id,
+        channel="WhatsApp",
+        event_type=EventType.points_debited_email,
+        local=model.local,
+        status="Good",
+        message_content=template.body_template.format(
+            order_number="123",
+            cashback="100")
+    )
+    session.add(log)
+    await session.commit()
     return {
         'status_code': status.HTTP_200_OK,
         'message': 'Сообщение отправлено'
