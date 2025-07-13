@@ -20,6 +20,8 @@ class EventType(enum.Enum):
     points_credited_whatsapp_offline = "points_credited_whatsapp_offline"
     points_debited_whatsapp = "points_debited_whatsapp"
     points_debited_whatsapp_offline = "points_debited_whatsapp_offline"
+    points_future_credit_email = "points_future_credit_email"
+    points_future_debit_email = "points_future_debit_email"
     qr_wellcome_message = "qr_wellcome_message"
 
 
