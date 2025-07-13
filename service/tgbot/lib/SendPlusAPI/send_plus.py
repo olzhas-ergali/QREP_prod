@@ -69,7 +69,7 @@ class SendPlus(BaseApi):
                 "message": {
                     "type": "text",
                     "text": {
-                        "body": "Testttt"
+                        "body": texts.get(local) if texts else text
                     }
                 }
             }
