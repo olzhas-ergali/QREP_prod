@@ -188,16 +188,16 @@ async def add_purchases_process(
         purchase: ModelPurchaseClient
 ):
     session: AsyncSession = db_session.get()
-    #try:
-    print(purchase.telegramId)
-    return await client.add_purchases(
-        session=session,
-        bonuses=purchase.bonus,
-        purchases_model=purchase
-    )
-    # except Exception as ex:
-    #     logging.info(ex)
-    #     return HTTPException(detail=ex, status_code=500)
+    try:
+        print(purchase.telegramId)
+        return await client.add_purchases(
+            session=session,
+            bonuses=purchase.bonus,
+            purchases_model=purchase
+        )
+    except Exception as ex:
+        logging.info(ex)
+        return HTTPException(detail=ex, status_code=500)
 
 
 @router.post('/client/purchases/return',
