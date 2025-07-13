@@ -152,7 +152,7 @@ async def add_purchases(
                 audience_type="client"
             )
         await wb.send_by_phone(
-            phone="77075346231",
+            phone=client.phone_number,
             bot_id=settings.wb_cred.wb_bot_id,
             text=template_wa
         )

@@ -87,7 +87,7 @@ async def bonus_credit_notification(
         await mail.send_message(
             message=template_mail.body_template.format(name=client.name, cashback=value.get("accrued_points")),
             subject=template_mail.title_template,
-            to_address=["bob.ost@mail.ru"]
+            to_address=client.email
         )
         log = MessageLog(
             clint_id=client.id,
@@ -99,7 +99,7 @@ async def bonus_credit_notification(
         )
         session.add(log)
         await wb.send_by_phone(
-            phone="77075346231",
+            phone=client.phone_number,
             bot_id=settings.wb_cred.wb_bot_id,
             text=template_wa.title_template.format(name=client.name, cashback=value.get("accrued_points"))
         )
