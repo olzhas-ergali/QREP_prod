@@ -58,7 +58,7 @@ async def add_purchases(
         template = await MessageTemplate.get_message_template(
             session=session,
             channel="Email",
-            event_type=EventType.qr_enrollment_online,
+            event_type=EventType.qr_wellcome_message,
             local=local,
             audience_type="client"
         )
@@ -70,7 +70,7 @@ async def add_purchases(
         log = MessageLog(
             clint_id=client.id,
             channel="Email",
-            event_type=EventType.qr_enrollment_online,
+            event_type=EventType.qr_wellcome_message,
             local=local,
             status="Good",
             message_content=template.body_template.format(clname=client.name, cashback="100")
@@ -111,15 +111,55 @@ async def add_purchases(
         client_bonus.activation_date = bonus.activationDate
         session.add(client_bonus)
         await session.commit()
-    if client_bonus and client_bonus.write_off_points > 0:
+    if client_bonus:
         local = await wb.get_local_by_phone(purchases_model.phone)
-        template = await MessageTemplate.get_message_template(
-            session=session,
-            channel="Email",
-            event_type=EventType.points_debited_email,
-            local=local,
-            audience_type="client"
-        )
+        if client_bonus.write_off_points > 0:
+            template = await MessageTemplate.get_message_template(
+                session=session,
+                channel="Email",
+                event_type=EventType.points_debited_email,
+                local=local,
+                audience_type="client"
+            )
+            if purchases_model.mcId is not None:
+                template_wa = await MessageTemplate.get_message_template(
+                    session=session,
+                    channel="WhatsApp",
+                    event_type=EventType.points_debited_whatsapp,
+                    local=local,
+                    audience_type="client"
+                )
+            else:
+                template_wa = await MessageTemplate.get_message_template(
+                    session=session,
+                    channel="WhatsApp",
+                    event_type=EventType.points_debited_whatsapp_offline,
+                    local=local,
+                    audience_type="client"
+                )
+            await wb.send_by_phone(
+                phone=client.phone_number,
+                bot_id=settings.wb_cred.wb_bot_id,
+                text=template_wa
+            )
+            log = MessageLog(
+                clint_id=client.id,
+                channel="WhatsApp",
+                event_type=EventType.qr_enrollment_online,
+                local=local,
+                status="Good",
+                message_content=template.body_template.format(name=client.name, cashback=client_bonus.write_off_points)
+            )
+            session.add(log)
+            await session.commit()
+        else:
+            template = await MessageTemplate.get_message_template(
+                session=session,
+                channel="Email",
+                event_type=EventType.points_future_credit_email,
+                local=local,
+                audience_type="client"
+            )
         await mail.send_message(
             message=template.body_template.format(name=client.name, cashback=client_bonus.write_off_points),
             subject=template.title_template,
@@ -135,37 +175,7 @@ async def add_purchases(
         )
         session.add(log)
         await session.commit()
-        if purchases_model.mcId is not None:
-            template_wa = await MessageTemplate.get_message_template(
-                session=session,
-                channel="WhatsApp",
-                event_type=EventType.points_debited_whatsapp,
-                local=local,
-                audience_type="client"
-            )
-        else:
-            template_wa = await MessageTemplate.get_message_template(
-                session=session,
-                channel="WhatsApp",
-                event_type=EventType.points_debited_whatsapp_offline,
-                local=local,
-                audience_type="client"
-            )
-        await wb.send_by_phone(
-            phone=client.phone_number,
-            bot_id=settings.wb_cred.wb_bot_id,
-            text=template_wa
-        )
-        log = MessageLog(
-            clint_id=client.id,
-            channel="WhatsApp",
-            event_type=EventType.qr_enrollment_online,
-            local=local,
-            status="Good",
-            message_content=template.body_template.format(name=client.name, cashback=client_bonus.write_off_points)
-        )
-        session.add(log)
-        await session.commit()
+
     return {
         "message": "Чек успешно записан",
         "purchaseId": purchases.id,
