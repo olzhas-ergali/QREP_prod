@@ -64,7 +64,7 @@ async def add_purchases(
     session.add(purchases)
     await session.commit()
 
-    client_bonus = None
+    #client_bonus = None
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()
@@ -84,7 +84,6 @@ async def add_purchases(
         client_bonus.activation_date = bonus.activationDate
         session.add(client_bonus)
         await session.commit()
-    if client_bonus:
         if client_bonus.write_off_points > 0:
             await send_notification_email(
                 session=session,
@@ -126,6 +125,7 @@ async def add_purchases(
                 },
                 client=client
             )
+    #if client_bonus:
 
     return {
         "message": "Чек успешно записан",
