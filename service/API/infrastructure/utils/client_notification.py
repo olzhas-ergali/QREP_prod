@@ -135,7 +135,6 @@ async def send_notification_email(
         client_id=client.id,
         channel="Email",
         event_type=event_type,
-        local=local,
         status=status,
         error_message=message,
         message_content=template.body_template.format(**formats)
