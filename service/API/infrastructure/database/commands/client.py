@@ -10,6 +10,7 @@ from service.API.infrastructure.database.models import ClientPurchase, ClientPur
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
 from service.API.infrastructure.models.purchases import ModelClientBonus, ModelPurchaseClient, ModelClientPurchaseReturn
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
+from service.API.infrastructure.utils.client_notification import send_notification_wa, send_notification_email
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
 from service.API.config import settings
 from service.API.infrastructure.utils.smpt import Mail
@@ -47,35 +48,6 @@ async def add_purchases(
         session=session,
         client_id=user_id
     )
-    wb = SendPlus(
-        client_id=settings.wb_cred.client_id,
-        client_secret=settings.wb_cred.client_secret,
-        waba_bot_id=settings.wb_cred.wb_bot_id
-    )
-    mail = Mail()
-    if client_p is None:
-        local = await wb.get_local_by_phone(purchases_model.phone)
-        template = await MessageTemplate.get_message_template(
-            session=session,
-            channel="Email",
-            event_type=EventType.qr_wellcome_message,
-            local=local,
-            audience_type="client"
-        )
-        await mail.send_message(
-            message=template.body_template.format(name=client.name, cashback="100"),
-            subject=template.title_template,
-            to_address=[client.email]
-        )
-        log = MessageLog(
-            clint_id=client.id,
-            channel="Email",
-            event_type=EventType.qr_wellcome_message,
-            local=local,
-            status="Good",
-            message_content=template.body_template.format(clname=client.name, cashback="100")
-        )
-        session.add(log)
 
     purchases = ClientPurchase(
         id=purchases_model.purchaseId,
@@ -91,6 +63,7 @@ async def add_purchases(
     )
     session.add(purchases)
     await session.commit()
+
     client_bonus = None
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
@@ -112,105 +85,47 @@ async def add_purchases(
         session.add(client_bonus)
         await session.commit()
     if client_bonus:
-        local = await wb.get_local_by_phone(purchases_model.phone)
         if client_bonus.write_off_points > 0:
-            template = await MessageTemplate.get_message_template(
+            await send_notification_email(
                 session=session,
-                channel="Email",
                 event_type=EventType.points_debited_email,
-                local=local,
-                audience_type="client"
+                formats={
+                    "client_name": client.name,
+                    "cashback": client_bonus.write_off_points,
+                },
+                client=client
             )
-            if client.email:
-                await mail.send_message(
-                    message=template.body_template.format(
-                        client_name=client.name,
-                        cashback=client_bonus.write_off_points
-                    ),
-                    subject=template.title_template,
-                    to_address=[client.email]
-                )
-                log = MessageLog(
-                    id=uuid.uuid4(),
-                    client_id=client.id if client else 2,
-                    channel="Email",
-                    event_type=EventType.points_debited_email,
-                    status="Good",
-                    message_content=template.body_template.format(
-                        client_name=client.name,
-                        cashback=client_bonus.write_off_points)
-                )
-                session.add(log)
-                await session.commit()
-            #if purchases_model.mcId is not None:
-            template_wa = await MessageTemplate.get_message_template(
+            await send_notification_wa(
                 session=session,
-                channel="WhatsApp",
                 event_type=EventType.points_debited_whatsapp,
-                local=local,
-                audience_type="client"
+                client=client,
+                formats={
+                    "order_number": purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
+                    "cashback": client_bonus.write_off_points
+                }
             )
-            # else:
-            #     template_wa = await MessageTemplate.get_message_template(
-            #         session=session,
-            #         channel="WhatsApp",
-            #         event_type=EventType.points_debited_whatsapp_offline,
-            #         local=local,
-            #         audience_type="client"
-            #     )
-            try:
-                status = "Good"
-                await wb.send_by_phone(
-                    phone=client.phone_number,
-                    bot_id=settings.wb_cred.wb_bot_id,
-                    text=template_wa.body_template.format(
-                        order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
-                        cashback=client_bonus.write_off_points
-                    )
-                )
-            except Exception as ex:
-                status = ex
-            log = MessageLog(
-                id=uuid.uuid4(),
-                client_id=client.id if client else 2,
-                channel="WhatsApp",
-                event_type=EventType.points_debited_whatsapp,
-                status=status,
-                message_content=template_wa.body_template.format(
-                        order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
-                        cashback=client_bonus.write_off_points
-                )
-            )
-            session.add(log)
-            await session.commit()
         elif client_bonus.accrued_points > 0:
-            template = await MessageTemplate.get_message_template(
+            if client_p is None or len(client_p) == 0:
+                await send_notification_email(
+                    session=session,
+                    event_type=EventType.qr_wellcome_message,
+                    formats={
+                        "client_name": client.name,
+                        "cashback": client_bonus.accrued_points,
+                        "order_number": purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+                    },
+                    client=client
+                )
+            await send_notification_email(
                 session=session,
-                channel="Email",
                 event_type=EventType.points_future_credit_email,
-                local=local,
-                audience_type="client"
+                formats={
+                    "client_name": client.name,
+                    "cashback": client_bonus.accrued_points,
+                    "order_number": purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+                },
+                client=client
             )
-            if client.email:
-                await mail.send_message(
-                    message=template.body_template.format(
-                        client_name=client.name,
-                        cashback=client_bonus.accrued_points,
-                        order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
-                    ),
-                    subject=template.title_template,
-                    to_address=[client.email]
-                )
-                log = MessageLog(
-                    id=uuid.uuid4(),
-                    client_id=client.id if client else 2,
-                    channel="Email",
-                    event_type=EventType.points_future_credit_email,
-                    status="Good",
-                    message_content=template.body_template.format(client_name=client.name, cashback=client_bonus.accrued_points)
-                )
-                session.add(log)
-                await session.commit()
 
     return {
         "message": "Чек успешно записан",

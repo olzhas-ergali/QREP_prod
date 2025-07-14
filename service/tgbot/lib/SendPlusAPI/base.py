@@ -73,7 +73,9 @@ class BaseApi:
             print(response.status)
             if response.status == 400:
                 logging.info("STATUS CODE -> 400")
-                return
+                return {
+                    "status_code": 400
+                }
 
             try:
                 if json_status:

@@ -1,10 +1,16 @@
 import logging
+import uuid
+
 from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from service.API.infrastructure.database.models import Client, ClientsApp
+from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
+from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
+from service.API.config import settings
+from service.API.infrastructure.utils.smpt import Mail
 
 
 async def send_notification_from_client(
@@ -92,3 +98,99 @@ async def push_client_answer_operator(
     session_bot = await bot.get_session()
     await session_bot.close()
     await session.commit()
+
+
+async def send_notification_email(
+        session: AsyncSession,
+        event_type: EventType,
+        formats: dict,
+        client: Client
+):
+    wb = SendPlus(
+        client_id=settings.wb_cred.client_id,
+        client_secret=settings.wb_cred.client_secret,
+        waba_bot_id=settings.wb_cred.wb_bot_id
+    )
+    mail = Mail()
+    local = await wb.get_local_by_phone(client.phone_number)
+    template = await MessageTemplate.get_message_template(
+        session=session,
+        channel="Email",
+        event_type=event_type,
+        local=local,
+        audience_type="client"
+    )
+    status = "Error"
+    message = "Email doesn't exist"
+    if client.email:
+        status = "Good"
+        message = ""
+        await mail.send_message(
+            message=template.body_template.format(**formats),
+            subject=template.title_template,
+            to_address=[client.email]
+        )
+    log = MessageLog(
+        id=uuid.uuid4(),
+        clint_id=client.id,
+        channel="Email",
+        event_type=event_type,
+        local=local,
+        status=status,
+        error_message=message,
+        message_content=template.body_template.format(**formats)
+    )
+
+    session.add(log)
+    await session.commit()
+    await session.close()
+
+
+async def send_notification_wa(
+        session: AsyncSession,
+        event_type: EventType,
+        formats: dict,
+        client: Client
+):
+    wb = SendPlus(
+        client_id=settings.wb_cred.client_id,
+        client_secret=settings.wb_cred.client_secret,
+        waba_bot_id=settings.wb_cred.wb_bot_id
+    )
+    local = await wb.get_local_by_phone(client.phone_number)
+    template_wa = await MessageTemplate.get_message_template(
+        session=session,
+        channel="WhatsApp",
+        event_type=event_type,
+        local=local,
+        audience_type="client"
+    )
+
+    message = ""
+    status = "Good"
+    try:
+        #order_number=purchases.mc_id if purchases.mc_id else purchases.ticket_print_url, cashback=client_bonus.write_off_points
+        result = await wb.send_by_phone(
+            phone=client.phone_number,
+            bot_id=settings.wb_cred.wb_bot_id,
+            text=template_wa.body_template.format(**formats)
+        )
+        if result.get("status_code") == 400:
+            message = "Номер телефона не активен 24ч"
+            status = "Error"
+    except Exception as ex:
+        message = ex
+        status = "Error"
+    log = MessageLog(
+        id=uuid.uuid4(),
+        client_id=client.id if client else 2,
+        channel="WhatsApp",
+        event_type=EventType.points_debited_whatsapp,
+        status=status,
+        error_message=message,
+        message_content=template_wa.body_template.format(**formats)
+    )
+    session.add(log)
+    await session.commit()
+    await session.close()
+
