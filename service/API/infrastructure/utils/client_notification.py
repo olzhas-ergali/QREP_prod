@@ -132,7 +132,7 @@ async def send_notification_email(
         )
     log = MessageLog(
         id=uuid.uuid4(),
-        clint_id=client.id,
+        client_id=client.id,
         channel="Email",
         event_type=event_type,
         local=local,
