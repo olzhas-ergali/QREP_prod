@@ -113,11 +113,12 @@ async def send_notification_email(
     )
     mail = Mail()
     local = await wb.get_local_by_phone(client.phone_number)
+    logging.info(local)
     template = await MessageTemplate.get_message_template(
         session=session,
         channel="Email",
         event_type=event_type,
-        local=local if local or local != "" else 'rus',
+        local=local if local and local != "" else 'rus',
         audience_type="client"
     )
     status = "Error"
@@ -157,11 +158,12 @@ async def send_notification_wa(
         waba_bot_id=settings.wb_cred.wb_bot_id
     )
     local = await wb.get_local_by_phone(client.phone_number)
+    logging.info(local)
     template_wa = await MessageTemplate.get_message_template(
         session=session,
         channel="WhatsApp",
         event_type=event_type,
-        local=local if local or local != "" else 'rus',
+        local=local if local and local != "" else 'rus',
         audience_type="client"
     )
 
