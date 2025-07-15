@@ -117,7 +117,7 @@ async def send_notification_email(
         session=session,
         channel="Email",
         event_type=event_type,
-        local=local,
+        local=local if local or local != "" else 'rus',
         audience_type="client"
     )
     status = "Error"
@@ -161,7 +161,7 @@ async def send_notification_wa(
         session=session,
         channel="WhatsApp",
         event_type=event_type,
-        local=local,
+        local=local if local or local != "" else 'rus',
         audience_type="client"
     )
 
