@@ -11,9 +11,6 @@ from service.API.infrastructure.database.loyalty import ClientBonusPoints
 from service.API.infrastructure.models.purchases import ModelClientBonus, ModelPurchaseClient, ModelClientPurchaseReturn
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
 from service.API.infrastructure.utils.client_notification import send_notification_wa, send_notification_email
-from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
-from service.API.config import settings
-from service.API.infrastructure.utils.smpt import Mail
 
 
 async def add_purchases(
@@ -63,7 +60,7 @@ async def add_purchases(
     )
     session.add(purchases)
     await session.commit()
-
+    order_number = purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
     #client_bonus = None
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
@@ -94,12 +91,13 @@ async def add_purchases(
                 },
                 client=client
             )
+
             await send_notification_wa(
                 session=session,
                 event_type=EventType.points_debited_whatsapp,
                 client=client,
                 formats={
-                    "order_number": purchases.mc_id if purchases.mc_id else purchases.ticket_print_url,
+                    "order_number": order_number or "Нет",
                     "cashback": client_bonus.write_off_points
                 }
             )
@@ -111,7 +109,7 @@ async def add_purchases(
                     formats={
                         "client_name": client.name,
                         "cashback": client_bonus.accrued_points,
-                        "order_number": purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+                        "order_number": order_number or "Нет"
                     },
                     client=client
                 )
@@ -121,7 +119,7 @@ async def add_purchases(
                 formats={
                     "client_name": client.name,
                     "cashback": client_bonus.accrued_points,
-                    "order_number": purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+                    "order_number": order_number or "Нет"
                 },
                 client=client
             )

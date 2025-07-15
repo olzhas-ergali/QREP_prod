@@ -12,7 +12,7 @@ from service.API.infrastructure.database.session import engine, SESSION_MAKER
 from service.API.presentation import rest, middleware
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from service.API.infrastructure.utils.tasks.jobs import bonus_credit_notification
+from service.API.infrastructure.utils.tasks.jobs import bonus_notification
 # Adjust the logging
 # -------------------------------
 
@@ -58,12 +58,12 @@ scheduler = AsyncIOScheduler(
          timezone='Asia/Aqtobe'
     )
 
-# scheduler.add_job(
-#     bonus_credit_notification,
-#     'interval',
-#     minutes=59,
-#     args=(SESSION_MAKER,)
-# )
+scheduler.add_job(
+    bonus_notification,
+    'interval',
+    minutes=120,
+    args=(SESSION_MAKER,)
+)
 
 
 @app.on_event('startup')
