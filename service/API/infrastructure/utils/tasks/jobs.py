@@ -67,6 +67,11 @@ async def bonus_notification(
         )
         for r in client_bonuses:
             if not clients_debits.get(r.client_purchases_id):
+                purchase = await ClientPurchase.get_by_purchase_id(
+                    session=session,
+                    purchase_id=r.client_purchases_id
+                )
+                order_number = purchase.mc_id if purchase.mc_id else purchase.ticket_print_url
                 clients_debits[r.client_purchases_id] = {
                     "client_id": r.client_id,
                     "purchase_id": r.client_purchases_id,
@@ -79,7 +84,8 @@ async def bonus_notification(
                 if day == -1:
                     clients_debits[r.client_purchases_id]["formats"] = {
                         "cashback": r.accrued_points,
-                        "client_name": ""
+                        "client_name": "",
+                        "order_number": order_number or "Нет"
                     }
                 else:
                     clients_debits[r.client_purchases_id]["formats"] = {
