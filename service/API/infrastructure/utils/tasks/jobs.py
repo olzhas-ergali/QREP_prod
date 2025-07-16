@@ -58,7 +58,7 @@ async def bonus_notification(
             formats=value.get("formats")
         )
 
-    days_left = [0, 7, 14, 30]
+    days_left = [-1, 7, 14, 30]
     clients_debits = {}
     for day in days_left:
         client_bonuses = await ClientBonusPoints.get_debited_bonuses(
@@ -76,7 +76,7 @@ async def bonus_notification(
                     "activation_date": r.activation_date,
                 }
 
-                if day == 0:
+                if day == -1:
                     clients_debits[r.client_purchases_id]["formats"] = {
                         "cashback": r.accrued_points,
                         "client_name": ""
