@@ -186,7 +186,7 @@ async def send_notification_wa(
         id=uuid.uuid4(),
         client_id=client.id if client else 2,
         channel="WhatsApp",
-        event_type=EventType.points_debited_whatsapp,
+        event_type=event_type,
         status=status,
         error_message=message,
         message_content=template_wa.body_template.format(**formats)
