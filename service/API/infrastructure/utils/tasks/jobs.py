@@ -84,7 +84,6 @@ async def bonus_notification(
                 if day == -1:
                     clients_debits[r.client_purchases_id]["formats"] = {
                         "cashback": r.accrued_points,
-                        "client_name": "",
                         "order_number": order_number or "Нет"
                     }
                 else:
