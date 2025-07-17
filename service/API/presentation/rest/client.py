@@ -379,11 +379,16 @@ async def get_client_bonus_history(
     logging.info(f"ClinetID -> {client_b.phone_number}")
     logging.info(f"Lens -> {len(client_bonuses)}")
     history = []
-    #clear_data = {}
     for i, bonus in enumerate(client_bonuses):
         total_earned += bonus.accrued_points if bonus.accrued_points else 0
         total_spent += bonus.write_off_points if bonus.write_off_points else 0
         if i >= offset and len(history) < limit:
+            result = await ClientBonusPoints.get_sum_purchases_by_id(
+                session=session,
+                purchase_id=bonus.client_purchases_id
+            )
+            if result <= 0:
+                continue
             purchase = await session.get(ClientPurchase, bonus.client_purchases_id)
             logging.info(bonus.client_purchases_id)
             if bonus.client_purchases_return_id:
@@ -391,10 +396,8 @@ async def get_client_bonus_history(
                 purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_id)
 
             points = 0
-            # and bonus.accrued_points > 0
             if bonus.accrued_points:
                 points = bonus.accrued_points
-            # and bonus.write_off_points > 0
             if bonus.write_off_points:
                 points = bonus.write_off_points
 
@@ -415,14 +418,6 @@ async def get_client_bonus_history(
                     "bonusExpirationDate": exp_date
                 }
             )
-            # if not clear_data.get(bonus.client_purchases_id):
-            #     clear_data[bonus.client_purchases_id] = {
-            #         'indexes': [len(history) - 1],
-            #         'bonuses': bonus.accrued_points
-            #     }
-            # else:
-            #     clear_data[bonus.client_purchases_id]['indexes'].append(len(history) - 1)
-            #     clear_data[bonus.client_purchases_id]['bonuses'] = clear_data[bonus.client_purchases_id]['bonuses'] + bonus.accrued_points
 
     if total_earned > 0:
         available_bonus += total_earned
