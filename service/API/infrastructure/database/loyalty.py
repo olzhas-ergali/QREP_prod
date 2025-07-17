@@ -53,8 +53,9 @@ class ClientBonusPoints(Base):
             order: typing.Callable = asc,
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
-            (client_id == ClientBonusPoints.client_id) &
-            (datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date))
+            and_(client_id == ClientBonusPoints.client_id,
+                 datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date),
+                 ClientBonusPoints.client_purchases_id.isnot(None))
         ).order_by(order(sort))
         #ClientBonusPoints.expiration_date
         response = await session.execute(stmt)
@@ -182,6 +183,18 @@ class ClientBonusPoints(Base):
         response = await session.execute(stmt)
 
         return response.scalars().all()
+
+    @classmethod
+    async def get_sum_purchases_by_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str
+    ):
+        stmt = select(func.sum(ClientBonusPoints.accrued_points)).where(
+                purchase_id == ClientBonusPoints.client_purchases_id
+        )
+
+        return await session.scalar(stmt)
 
 
 class BonusExpirationNotifications(Base):

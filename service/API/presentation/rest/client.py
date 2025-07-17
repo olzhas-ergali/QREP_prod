@@ -379,6 +379,7 @@ async def get_client_bonus_history(
     logging.info(f"ClinetID -> {client_b.phone_number}")
     logging.info(f"Lens -> {len(client_bonuses)}")
     history = []
+    #clear_data = {}
     for i, bonus in enumerate(client_bonuses):
         total_earned += bonus.accrued_points if bonus.accrued_points else 0
         total_spent += bonus.write_off_points if bonus.write_off_points else 0
@@ -400,6 +401,7 @@ async def get_client_bonus_history(
             exp_date = None
             if bonus.expiration_date:
                 exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
+
             history.append(
                 {
                     "source": bonus.source,
@@ -413,6 +415,15 @@ async def get_client_bonus_history(
                     "bonusExpirationDate": exp_date
                 }
             )
+            # if not clear_data.get(bonus.client_purchases_id):
+            #     clear_data[bonus.client_purchases_id] = {
+            #         'indexes': [len(history) - 1],
+            #         'bonuses': bonus.accrued_points
+            #     }
+            # else:
+            #     clear_data[bonus.client_purchases_id]['indexes'].append(len(history) - 1)
+            #     clear_data[bonus.client_purchases_id]['bonuses'] = clear_data[bonus.client_purchases_id]['bonuses'] + bonus.accrued_points
+
     if total_earned > 0:
         available_bonus += total_earned
     if total_spent > 0:
@@ -1030,3 +1041,19 @@ async def add_template_process(
             if len(res) > 0:
                 bonuses.pop(r.client_purchases_id)
     return bonuses
+
+
+@router.get('/client/get_sum_purchases',
+            tags=['dev'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        purchase_id: str
+):
+    session: AsyncSession = db_session.get()
+    results = await ClientBonusPoints.get_sum_purchases_by_id(
+        session,
+        purchase_id=purchase_id
+    )
+
+    return results
+
