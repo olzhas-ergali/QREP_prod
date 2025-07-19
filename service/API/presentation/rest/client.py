@@ -407,7 +407,7 @@ async def get_client_bonus_history(
 
             history.append(
                 {
-                    "purchase_id": bonus.client_purchases_id,
+                    #"purchase_id": bonus.client_purchases_id,
                     "source": bonus.source,
                     "siteId": purchase.site_id if purchase else None,
                     "mcId": purchase.mc_id if purchase else None,
