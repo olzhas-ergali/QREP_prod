@@ -226,12 +226,13 @@ async def client_send_quality_grade(
         audience_type="client"
     )
     #С вашего бонусного счёта списано {cashback} кэшбека при оплате заказа {order_number}Спасибо, что выбираете Qazaq Republic 💙
+    # template.body_template.format(
+    #     cashback="100",
+    #     order_number="123")
     res = await wb.send_by_phone(
         phone=model.phoneNumber,
         bot_id=settings.wb_cred.wb_bot_id,
-        text=template.body_template.format(
-            cashback="100",
-            order_number="123")
+        text=model.message
     )
     log = MessageLog(
         id=uuid.uuid4(),
