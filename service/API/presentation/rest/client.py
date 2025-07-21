@@ -440,8 +440,7 @@ async def get_client_bonus_history(
             "clientName": client_b.name,
             "balance": available_bonus if available_bonus > 0 else 0,
             "history": [val for k, val in mc_ids.items()]
-        },
-        "test": mc_ids
+        }
     }
 
     return answer
