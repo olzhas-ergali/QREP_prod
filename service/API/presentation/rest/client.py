@@ -408,7 +408,7 @@ async def get_client_bonus_history(
             type_points = "accrual" if bonus.accrued_points else "write_off"
             if not mc_ids.get(purchase.mc_id + "_" + type_points):
                 mc_ids[purchase.mc_id + "_" + type_points] = {
-                    # "purchase_id": bonus.client_purchases_id,
+                    "purchase_id": bonus.client_purchases_id,
                     "source": bonus.source,
                     "siteId": purchase.site_id if purchase else None,
                     "mcId": purchase.mc_id if purchase else None,
