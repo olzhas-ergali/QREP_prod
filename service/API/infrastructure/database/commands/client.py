@@ -97,7 +97,7 @@ async def add_purchases(
                 event_type=EventType.points_debited_whatsapp,
                 client=client,
                 formats={
-                    "order_number": order_number or "Нет",
+                    "order_number": order_number or "",
                     "cashback": client_bonus.write_off_points
                 }
             )
@@ -109,7 +109,7 @@ async def add_purchases(
                     formats={
                         "client_name": client.name,
                         "cashback": client_bonus.accrued_points,
-                        "order_number": order_number or "Нет"
+                        "order_number": order_number or ""
                     },
                     client=client
                 )
@@ -119,7 +119,7 @@ async def add_purchases(
                 formats={
                     "client_name": client.name,
                     "cashback": client_bonus.accrued_points,
-                    "order_number": order_number or "Нет"
+                    "order_number": order_number or ""
                 },
                 client=client
             )
