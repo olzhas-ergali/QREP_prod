@@ -406,8 +406,8 @@ async def get_client_bonus_history(
             if bonus.expiration_date:
                 exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
 
-            if not mc_ids.get(purchase.mc_id + "_accrual") and not mc_ids.get(purchase.mc_id + "_write_off"):
-                mc_ids[purchase.mc_id + "_" + "accrual" if bonus.accrued_points != 0 else "write_off"] = {
+            if not mc_ids.get(purchase.mc_id + "_1") and not mc_ids.get(purchase.mc_id + "_0"):
+                mc_ids[purchase.mc_id + "_" + "1" if bonus.accrued_points != 0 else "0"] = {
                     # "purchase_id": bonus.client_purchases_id,
                     "source": bonus.source,
                     "siteId": purchase.site_id if purchase else None,
@@ -419,10 +419,10 @@ async def get_client_bonus_history(
                     "description": "",
                     "bonusExpirationDate": exp_date
                 }
-            elif mc_ids.get(purchase.mc_id + "_accrual"):
-                mc_ids.get(purchase.mc_id + "_accrual")['points'] += points
+            elif mc_ids.get(purchase.mc_id + "_1"):
+                mc_ids.get(purchase.mc_id + "_1")['points'] += points
             else:
-                mc_ids.get(purchase.mc_id + "_write_off")['points'] += points
+                mc_ids.get(purchase.mc_id + "_0")['points'] += points
             # history.append(
             #
             # )
@@ -442,7 +442,8 @@ async def get_client_bonus_history(
             "clientName": client_b.name,
             "balance": available_bonus if available_bonus > 0 else 0,
             "history": [val for k, val in mc_ids.items()]
-        }
+        },
+        "test": mc_ids
     }
 
     return answer
