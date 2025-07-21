@@ -32,9 +32,12 @@ async def bonus_notification(
                 "write_off_points": r.write_off_points,
                 "expiration_date": r.expiration_date,
                 "activation_date": r.activation_date,
-                "formats": {
+                "formats_wa": {
                     "cashback": r.accrued_points,
-                    "order_number": order_number or "Нет"
+                    "order_number": order_number or ""
+                },
+                "formats_email": {
+                    "cashback": r.accrued_points
                 }
             }
             logging.info(r.client_purchases_id)
@@ -51,11 +54,18 @@ async def bonus_notification(
             session=session,
             client_id=value.get('client_id')
         )
+        value.get("formats_email")["client_name"] = client.name
         await send_notification_wa(
             session=session,
             event_type=EventType.points_credited_whatsapp,
             client=client,
-            formats=value.get("formats")
+            formats=value.get("formats_wa")
+        )
+        await send_notification_email(
+            session=session,
+            event_type=EventType.points_credited_email,
+            client=client,
+            formats=value.get("formats_email")
         )
 
     days_left = [-1, 7, 14, 30]
@@ -84,7 +94,7 @@ async def bonus_notification(
                 if day == -1:
                     clients_debits[r.client_purchases_id]["formats"] = {
                         "cashback": r.accrued_points,
-                        "order_number": order_number or "Нет"
+                        "order_number": order_number or ""
                     }
                 else:
                     clients_debits[r.client_purchases_id]["formats"] = {
