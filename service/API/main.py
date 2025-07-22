@@ -60,10 +60,18 @@ scheduler = AsyncIOScheduler(
 
 scheduler.add_job(
     bonus_notification,
-    'interval',
-    minutes=120,
+    'cron',
+    hour=10,
+    minute=00,
     args=(SESSION_MAKER,)
 )
+
+# scheduler.add_job(
+#     bonus_notification,
+#     'interval',
+#     minutes=120,
+#     args=(SESSION_MAKER,)
+# )
 
 
 @app.on_event('startup')
