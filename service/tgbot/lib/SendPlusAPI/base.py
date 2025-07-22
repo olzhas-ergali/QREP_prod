@@ -80,6 +80,7 @@ class BaseApi:
 
             try:
                 if json_status:
+                    logging.info(await response.text())
                     data = await response.read()
                     data = json.loads(data)
                     return data
