@@ -222,18 +222,18 @@ async def send_template_wa(
     message = ""
     status = "Good"
     logging.info(template)
-    #try:
-    result = await wb.send_template_by_phone(
-        phone=client.phone_number,
-        bot_id=settings.wb_cred.wb_bot_id,
-        template=template
-    )
-    if result.get("status_code") == 400:
-        message = "Номер телефона не активен 24ч"
+    try:
+        result = await wb.send_template_by_phone(
+            phone=client.phone_number,
+            bot_id=settings.wb_cred.wb_bot_id,
+            template=template
+        )
+        if result.get("status_code") == 400:
+            message = "Номер телефона не активен 24ч"
+            status = "Error"
+    except Exception as ex:
+        message = ex
         status = "Error"
-    # except Exception as ex:
-    #     message = ex
-    #     status = "Error"
     log = MessageLog(
         id=uuid.uuid4(),
         client_id=client.id if client else 412249576,
