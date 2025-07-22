@@ -536,7 +536,7 @@ async def add_client_operator_grade(
             await wb.send_template_by_phone(
                 phone=phone,
                 bot_id=settings.wb_cred.wb_bot_id,
-                json=templates.get('operator')
+                template=templates.get('operator')
             )
             app.is_push = True
             session.add(app)
@@ -919,7 +919,7 @@ async def client_send_verification_code(
     await wb.send_template_by_phone(
         phone=phone,
         bot_id=settings.wb_cred.wb_bot_id,
-        json=verification_temp
+        template=verification_temp
     )
     return {
         'status_code': status.HTTP_200_OK,
@@ -942,7 +942,7 @@ async def client_send_quality_grade(
     await wb.send_template_by_phone(
         phone=phone,
         bot_id=settings.wb_cred.wb_bot_id,
-        json=templates.get('grade')
+        template=templates.get('grade')
     )
     return {
         'status_code': status.HTTP_200_OK,
