@@ -253,7 +253,7 @@ async def client_send_quality_grade(
         event_type=EventType.points_debited_whatsapp,
         client=client,
         formats={
-            "order_number": "",
+            "order_number": "\"\"",
             "cashback": 1234
         }
     )
