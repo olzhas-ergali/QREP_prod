@@ -1,5 +1,6 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.header import Header
 import aiosmtplib
 import smtplib, ssl
 from service.API.config import settings
@@ -35,8 +36,8 @@ class Mail:
             to_address: list
     ):
         msg = MIMEMultipart()
-        msg.preamble = subject
-        msg['Subject'] = subject
+        #msg.preamble = str(Header(subject, 'utf-8'))
+        msg['Subject'] = str(Header(subject, 'utf-8'))
         msg['From'] = self.__username
         msg['To'] = ', '.join(to_address)
         msg.attach(MIMEText(message, 'html', 'utf-8'))

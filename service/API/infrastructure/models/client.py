@@ -3,7 +3,7 @@ import typing
 
 from fastapi import Query, Body
 from pydantic import BaseModel
-
+from service.API.infrastructure.database.notification import EventType
 
 class ModelClient(BaseModel):
     telegramId: typing.Optional[int] = None
@@ -40,3 +40,13 @@ class ModelLead(BaseModel):
     tag: typing.Optional[str] = None
     grade: typing.Optional[str] = None
     loc: typing.Optional[str] = None
+
+
+class ModelTemplate(BaseModel):
+    channel: typing.Optional[str] = None
+    event_type: typing.Optional[EventType] = None
+    audience_type: typing.Optional[str] = None
+    title_template: typing.Optional[str] = None
+    body_template: typing.Optional[str] = None
+    local: typing.Optional[str] = None
+

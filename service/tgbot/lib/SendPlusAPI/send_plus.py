@@ -1,3 +1,7 @@
+import json
+import logging
+import asyncio
+
 from service.tgbot.lib.SendPlusAPI.base import BaseApi, MethodRequest
 
 
@@ -18,12 +22,13 @@ class SendPlus(BaseApi):
             self,
             phone: str,
             bot_id: str,
-            json: dict = None
+            template: dict | str = None
     ):
         url = self.url.format(method='contacts/sendTemplateByPhone')
-        local = await self.__get_local_by_phone(
-            phone=phone
-        )
+        # local = await self.get_local_by_phone(
+        #     phone=phone
+        # )
+        logging.info(json.loads(template))
         result = await self.request_session(
             method=MethodRequest.post,
             url=url,
@@ -35,22 +40,24 @@ class SendPlus(BaseApi):
             json={
                 "bot_id": bot_id,
                 "phone": phone,
-                "template": json.get(local)
+                "template": json.loads(template)
             }
         )
-
+        await asyncio.sleep(0.3)
         return result
 
     async def send_by_phone(
             self,
             phone: str,
             bot_id: str,
-            text: str
+            text: str = None,
+            texts: dict = None
     ):
         url = self.url.format(method='contacts/sendByPhone')
-        local = await self.__get_local_by_phone(
+        local = await self.get_local_by_phone(
             phone=phone
         )
+        logging.info(local)
         result = await self.request_session(
             method=MethodRequest.post,
             url=url,
@@ -65,15 +72,16 @@ class SendPlus(BaseApi):
                 "message": {
                     "type": "text",
                     "text": {
-                        "body": text
+                        "body": texts.get(local) if texts else text
                     }
                 }
             }
         )
+        #"body": texts.get(local) if texts else text
 
         return result
 
-    async def __get_local_by_phone(
+    async def get_local_by_phone(
             self,
             phone: str,
             json: dict = None

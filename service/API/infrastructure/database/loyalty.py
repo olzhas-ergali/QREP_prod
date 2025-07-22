@@ -3,7 +3,7 @@ import typing
 import uuid
 
 from sqlalchemy import (Column, Integer, BigInteger, ForeignKey, Text, DateTime,
-                        func, String, Boolean, select, UUID, DECIMAL, desc, asc, Date, delete)
+                        func, String, Boolean, select, UUID, DECIMAL, desc, asc, Date, delete, or_, and_)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.API.infrastructure.database.models import Base
@@ -48,12 +48,47 @@ class ClientBonusPoints(Base):
     async def get_by_client_id(
             cls,
             session: AsyncSession,
+            client_id: int,
+            sort,
+            order: typing.Callable = asc,
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            and_(
+                client_id == ClientBonusPoints.client_id,
+                datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date),
+                ClientBonusPoints.client_purchases_id.isnot(None)
+            )
+        ).order_by(order(sort))
+        #ClientBonusPoints.expiration_date
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
+    async def get_all_by_client_id(
+            cls,
+            session: AsyncSession,
             client_id: int
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            (client_id == ClientBonusPoints.client_id)
+        ).order_by(asc(ClientBonusPoints.expiration_date))
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
+    async def get_by_client_id_limit(
+            cls,
+            session: AsyncSession,
+            client_id: int,
+            limit: int,
+            offset: int
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             (client_id == ClientBonusPoints.client_id) &
             (datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date))
-        ).order_by(asc(ClientBonusPoints.expiration_date))
+        ).order_by(asc(ClientBonusPoints.expiration_date)).limit(limit).offset(offset)
         response = await session.execute(stmt)
 
         return response.scalars().all()
@@ -68,6 +103,100 @@ class ClientBonusPoints(Base):
         await session.execute(stmt)
 
         return None
+
+    @classmethod
+    async def get_credited_bonuses(
+            cls,
+            session: AsyncSession,
+            data: datetime.date
+    ) -> typing.Sequence['ClientBonusPoints']:
+#.having(func.count() == 1)
+#.group_by(ClientBonusPoints.client_purchases_id)
+# & ((ClientBonusPoints.write_off_points == 0) | (ClientBonusPoints.write_off_points is None))
+#         stmt = select(ClientBonusPoints).where(
+#             (ClientBonusPoints.client_purchases_id.in_(
+#                 select(ClientBonusPoints.client_purchases_id).where(
+#                     (ClientBonusPoints.client_purchases_id is not None)
+#                 )
+#             )) & (data == func.cast(ClientBonusPoints.activation_date, Date)) &
+#             (ClientBonusPoints.client_purchases_return_id is None)
+#         ).order_by(asc(ClientBonusPoints.activation_date))
+        stmt = select(ClientBonusPoints).where(
+            and_(
+                ClientBonusPoints.client_purchases_id.isnot(None),
+                ClientBonusPoints.client_purchases_return_id.is_(None),
+                data == func.cast(ClientBonusPoints.activation_date, Date),
+                or_(
+                    ClientBonusPoints.write_off_points.is_(None),
+                    0 == ClientBonusPoints.write_off_points
+                )
+            )
+        ).order_by(asc(ClientBonusPoints.activation_date))
+
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
+    async def get_debited_bonuses(
+            cls,
+            session: AsyncSession,
+            days: int
+    ) -> typing.Sequence['ClientBonusPoints']:
+        # stmt = select(ClientBonusPoints).where(
+        #     (ClientBonusPoints.client_purchases_id.in_(
+        #         select(ClientBonusPoints.client_purchases_id).where(
+        #             ClientBonusPoints.client_purchases_id is not None
+        #         ).group_by(ClientBonusPoints.client_purchases_id).having(func.count() == 1)
+        #     )) & ((func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date()) == days)
+        #     & (ClientBonusPoints.accrued_points > 0)
+        # ).order_by(asc(ClientBonusPoints.expiration_date))
+
+        stmt = select(ClientBonusPoints).where(
+            and_(
+                ClientBonusPoints.client_purchases_id.isnot(None),
+                ClientBonusPoints.client_purchases_return_id.is_(None),
+                func.cast(ClientBonusPoints.expiration_date, Date) - datetime.datetime.now().date() == days,
+                or_(
+                    ClientBonusPoints.write_off_points.is_(None),
+                    0 == ClientBonusPoints.write_off_points
+                )
+            )
+        ).order_by(asc(ClientBonusPoints.activation_date))
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
+    async def get_by_purchase_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str,
+            accrued_points: int
+    ):
+        stmt = select(ClientBonusPoints).where(
+            and_(
+                ClientBonusPoints.client_purchases_id == purchase_id,
+                ClientBonusPoints.client_purchases_return_id.isnot(None),
+                accrued_points + ClientBonusPoints.accrued_points == 0
+            )
+        )
+
+        response = await session.execute(stmt)
+
+        return response.scalars().all()
+
+    @classmethod
+    async def get_sum_purchases_by_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str
+    ):
+        stmt = select(func.sum(ClientBonusPoints.accrued_points)).where(
+                purchase_id == ClientBonusPoints.client_purchases_id
+        )
+
+        return await session.scalar(stmt)
 
 
 class BonusExpirationNotifications(Base):

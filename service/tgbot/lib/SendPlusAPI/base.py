@@ -61,6 +61,7 @@ class BaseApi:
                 data={"grant_type": "client_credentials"},
                 auth=aiohttp.BasicAuth(client_id, client_secret)
             )
+            logging.info(response)
             data = await response.read()
             data = json.loads(data)
             print(data)
@@ -72,11 +73,15 @@ class BaseApi:
             )
             print(response.status)
             if response.status == 400:
+                logging.info(await response.text())
                 logging.info("STATUS CODE -> 400")
-                return
+                return {
+                    "status_code": 400
+                }
 
             try:
                 if json_status:
+                    logging.info(await response.text())
                     data = await response.read()
                     data = json.loads(data)
                     return data

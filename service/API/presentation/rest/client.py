@@ -10,9 +10,11 @@ from aiogram import Bot
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import desc, asc
 from starlette import status
 from starlette.responses import RedirectResponse
 
+from service.API.infrastructure.database.cods import Cods
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
@@ -20,15 +22,19 @@ from service.API.infrastructure.database.models import Client, ClientReview, Cli
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
 from service.API.infrastructure.utils.parse import parse_phone, is_valid_date, parse_date
-from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite
+from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite, ModelTemplate
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
+from service.API.infrastructure.database.notification import MessageTemplate, EventType
 from service.API.infrastructure.database.loyalty import ClientBonusPoints, BonusExpirationNotifications
+from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn
 from service.API.infrastructure.utils.check_client import check_user_exists
 from service.tgbot.lib.bitrixAPI.leads import Leads
 from service.tgbot.data.faq import grade_text, grade_text_kaz
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
 from service.tgbot.lib.SendPlusAPI.templates import templates
+from service.API.infrastructure.utils.generate import generate_code
+from service.API.infrastructure.utils.types import Sort, Order
 
 router = APIRouter()
 
@@ -42,10 +48,11 @@ async def client_notification(
 ):
     session: AsyncSession = db_session.get()
     bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
-    if client := await session.get(Client, telegramId):
+    c: Client | None = await session.get(Client, telegramId)
+    if client is not None:
         await send_notification_from_client(
             bot=bot,
-            user=client
+            user=c
         )
         return {
             "status_code": 200,
@@ -234,7 +241,11 @@ async def get_bonus_points(
     if not client_b:
         return HTTPException(status_code=204, detail="Client not found")
     logging.info(client_b.id)
-    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client_b.id)
+    client_bonuses = await ClientBonusPoints.get_by_client_id(
+        session=session,
+        client_id=client_b.id,
+        sort=ClientBonusPoints.expiration_date
+    )
     total_earned = 0
     total_spent = 0
     available_bonus = 0
@@ -282,6 +293,179 @@ async def get_bonus_points(
         "nextExpirationDate": soon_expiring[0].get('expiresAt') if soon_expiring else None
     }
     return answer
+
+
+@router.get(
+    "/api/v1/clients/bonus-history",
+    tags=['client'],
+    summary="Добавление отзыва клиента"
+)
+async def get_client_bonus_history(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        phone_number: str = Query(
+            default=None,
+            alias="phoneNumber",
+            description="Телефонный номер пользователя",
+            example="77077777777"
+        ),
+        client_id: int = Query(
+            default=None,
+            alias="clientId",
+            description="Id клиента",
+            example=123456
+        ),
+        limit: int = Query(
+            default=20,
+            alias="limit",
+            description="Лимит",
+            example=20
+        ),
+        offset: int = Query(
+            default=0,
+            alias="offset",
+            description="Пропуск",
+            example=0
+        ),
+        sort: Sort = Query(
+            default=Sort.createdAt,
+            alias="sort",
+            description="Сортировка",
+            example=Sort.createdAt
+        ),
+        order: Order = Query(
+            default=Order.asc,
+            alias="order",
+            description="",
+            example=Order.asc
+        )
+):
+    session: AsyncSession = db_session.get()
+    client_b = None
+    if phone_number:
+        client_b = await Client.get_client_by_phone(session=session, phone=phone_number)
+    elif client_id:
+        client_b = await session.get(Client, client_id)
+    if not client_b:
+        return HTTPException(status_code=204, detail="Client not found")
+    logging.info(client_b.id)
+    orders = {
+        "asc": asc,
+        "desc": desc
+    }
+    sorts = {
+        "activationDate": ClientBonusPoints.activation_date,
+        "expirationDate": ClientBonusPoints.expiration_date,
+        "operationDate": ClientBonusPoints.operation_date,
+        "createdAt": ClientBonusPoints.created_at
+    }
+    client_bonuses = await ClientBonusPoints.get_by_client_id(
+        session=session,
+        client_id=client_b.id,
+        sort=sorts.get(sort.value),
+        order=orders.get(order.value)
+    )
+    available_bonus = 0
+    total_earned = 0
+    total_spent = 0
+
+    # client_bonuses = await ClientBonusPoints.get_by_client_id_limit(
+    #     session=session,
+    #     client_id=client_b.id,
+    #     limit=20,
+    #     offset=0
+    # )
+    logging.info(f"ClinetID -> {client_b.phone_number}")
+    logging.info(f"Lens -> {len(client_bonuses)}")
+    #history = []
+    mc_ids = {}
+    for i, bonus in enumerate(client_bonuses):
+        total_earned += bonus.accrued_points if bonus.accrued_points else 0
+        total_spent += bonus.write_off_points if bonus.write_off_points else 0
+        if i >= offset and len(mc_ids) < limit:
+            result = await ClientBonusPoints.get_sum_purchases_by_id(
+                session=session,
+                purchase_id=bonus.client_purchases_id
+            )
+            if result <= 0:
+                continue
+            purchase = await session.get(ClientPurchase, bonus.client_purchases_id)
+            logging.info(bonus.client_purchases_id)
+            # if bonus.client_purchases_return_id:
+            #     logging.info(bonus.client_purchases_return_id)
+            #     purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_id)
+
+            points = 0
+            if bonus.accrued_points:
+                points = bonus.accrued_points
+            if bonus.write_off_points:
+                points = bonus.write_off_points
+
+            exp_date = None
+            if bonus.expiration_date:
+                exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
+            type_points = "accrual" if bonus.accrued_points else "write_off"
+            if not mc_ids.get(purchase.mc_id + "_" + type_points):
+                mc_ids[purchase.mc_id + "_" + type_points] = {
+                    "purchase_id": bonus.client_purchases_id,
+                    "source": bonus.source,
+                    "siteId": purchase.site_id if purchase else None,
+                    "mcId": purchase.mc_id if purchase else None,
+                    "operationDate": bonus.operation_date,
+                    "createdAt": bonus.created_at,
+                    "type": "accrual" if bonus.accrued_points else "write_off",
+                    "points": points,
+                    "description": "",
+                    "bonusExpirationDate": exp_date
+                }
+            else:
+                mc_ids.get(purchase.mc_id + "_" + type_points)['points'] += points
+            # history.append(
+            #
+            # )
+
+    if total_earned > 0:
+        available_bonus += total_earned
+    if total_spent > 0:
+        available_bonus -= total_spent
+    answer = {
+        "meta": {
+            "total": len(client_bonuses),
+            "limit": limit,
+            "offset": offset
+        },
+        "data": {
+            "clientId": client_b.id,
+            "clientName": client_b.name,
+            "balance": available_bonus if available_bonus > 0 else 0,
+            "history": [val for k, val in mc_ids.items()]
+        }
+    }
+
+    return answer
+
+
+# @router.get("/api/v2/qr-code/generate-id",
+#             tags=['client'],
+#             summary="Генерация qr-code",
+#             deprecated=True
+#             )
+# async def get_generate_id(
+#         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+#         phone: str
+# ):
+#     session: AsyncSession = db_session.get()
+#     client = await Client.get_client_by_phone(
+#         session=session,
+#         phone=parse_phone(phone)
+#     )
+#     code = await Cods.get_cody_by_phone(client.phone_number, session)
+#     if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds() / 60 > 15:
+#         code = await generate_code(session, phone_number=client.phone_number)
+#
+#     return {
+#         "qrCode": code.code,
+#         "expiresAt": code.created_at + datetime.timedelta(minutes=15)
+#     }
 
 
 @router.post("/client/reviews",
@@ -351,7 +535,7 @@ async def add_client_operator_grade(
             await wb.send_template_by_phone(
                 phone=phone,
                 bot_id=settings.wb_cred.wb_bot_id,
-                json=templates.get('operator')
+                template=templates.get('operator')
             )
             app.is_push = True
             session.add(app)
@@ -570,6 +754,7 @@ async def client_create(
                     "statusСode": 400,
                     "message": "Не правильный формат даты"
                 }
+            birth_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
             downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
             if date.date() >= datetime.datetime.now().date():
                 return {
@@ -659,7 +844,7 @@ async def client_create(
 
 
 @router.post('/client/verification',
-             tags=['client'],
+             tags=["WhatsApp"],
              deprecated=True)
 async def client_send_verification_code(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
@@ -734,7 +919,7 @@ async def client_send_verification_code(
     await wb.send_template_by_phone(
         phone=phone,
         bot_id=settings.wb_cred.wb_bot_id,
-        json=verification_temp
+        template=verification_temp
     )
     return {
         'status_code': status.HTTP_200_OK,
@@ -757,9 +942,119 @@ async def client_send_quality_grade(
     await wb.send_template_by_phone(
         phone=phone,
         bot_id=settings.wb_cred.wb_bot_id,
-        json=templates.get('grade')
+        template=templates.get('grade')
     )
     return {
         'status_code': status.HTTP_200_OK,
         'message': 'Сообщение отправлено'
     }
+
+
+@router.post('/client/template',
+             tags=['client'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        template: ModelTemplate
+):
+    session: AsyncSession = db_session.get()
+    temp = MessageTemplate(
+        id=uuid.uuid4(),
+        channel=template.channel,
+        even_type=template.event_type,
+        audience_type=template.audience_type,
+        title_template=template.title_template,
+        body_template=template.body_template,
+        local=template.local,
+        is_active=True
+    )
+    session.add(temp)
+    await session.commit()
+
+
+@router.get('/client/get_credits',
+            tags=['dev'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        date_in: str
+):
+    session: AsyncSession = db_session.get()
+    results = await ClientBonusPoints.get_credited_bonuses(
+        session,
+        datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
+    logging.info(datetime.datetime.strptime(date_in, "%d.%m.%Y").date())
+    answer = []
+    bonuses = {}
+    logging.info(len(results))
+    for r in results:
+        if not bonuses.get(r.client_purchases_id):
+            bonuses[r.client_purchases_id] = {
+                "client_id": r.client_id,
+                "purchase_id": r.client_purchases_id,
+                "accrued_points": r.accrued_points,
+                "write_off_points": r.write_off_points,
+                "expiration_date": r.expiration_date,
+                "activation_date": r.activation_date
+            }
+            logging.info(r.client_purchases_id)
+            res = await ClientBonusPoints.get_by_purchase_id(
+                session=session,
+                purchase_id=r.client_purchases_id,
+                accrued_points=r.accrued_points
+            )
+            logging.info(len(res))
+            if len(res) > 0:
+                bonuses.pop(r.client_purchases_id)
+
+    return bonuses
+
+
+@router.get('/client/get_debits',
+            tags=['dev'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        days: int
+):
+    session: AsyncSession = db_session.get()
+    results = await ClientBonusPoints.get_debited_bonuses(
+        session,
+        days
+    )
+
+    bonuses = {}
+    logging.info(len(results))
+    for r in results:
+        if not bonuses.get(r.client_purchases_id):
+            bonuses[r.client_purchases_id] = {
+                "client_id": r.client_id,
+                "purchase_id": r.client_purchases_id,
+                "accrued_points": r.accrued_points,
+                "write_off_points": r.write_off_points,
+                "expiration_date": r.expiration_date,
+                "activation_date": r.activation_date
+            }
+            logging.info(r.client_purchases_id)
+            res = await ClientBonusPoints.get_by_purchase_id(
+                session=session,
+                purchase_id=r.client_purchases_id,
+                accrued_points=r.accrued_points
+            )
+            logging.info(len(res))
+            if len(res) > 0:
+                bonuses.pop(r.client_purchases_id)
+    return bonuses
+
+
+@router.get('/client/get_sum_purchases',
+            tags=['dev'])
+async def add_template_process(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        purchase_id: str
+):
+    session: AsyncSession = db_session.get()
+    results = await ClientBonusPoints.get_sum_purchases_by_id(
+        session,
+        purchase_id=purchase_id
+    )
+
+    return results
+

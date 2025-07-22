@@ -9,6 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn, Client
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
 from service.API.infrastructure.models.purchases import ModelClientBonus, ModelPurchaseClient, ModelClientPurchaseReturn
+from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
+from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
+                                                                  send_template_wa)
 
 
 async def add_purchases(
@@ -32,6 +35,18 @@ async def add_purchases(
         )
     if client:
         user_id = client.id
+    if await session.get(ClientPurchase, purchases_model.purchaseId) is not None:
+        return {
+            "status_code": 500,
+            "message": "Чек уже записан",
+            "purchaseId": purchases_model.purchaseId,
+            "telegramId": user_id,
+        }
+    client_p = await ClientPurchase.get_by_client_id(
+        session=session,
+        client_id=user_id
+    )
+
     purchases = ClientPurchase(
         id=purchases_model.purchaseId,
         source_system=purchases_model.sourceSystem,
@@ -40,10 +55,14 @@ async def add_purchases(
         order_number=purchases_model.orderNumber,
         number=purchases_model.number,
         shift_number=purchases_model.shiftNumber,
-        ticket_print_url=purchases_model.ticketPrintUrl
+        ticket_print_url=purchases_model.ticketPrintUrl,
+        site_id=purchases_model.siteId,
+        mc_id=purchases_model.mcId
     )
     session.add(purchases)
     await session.commit()
+    order_number = purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+    #client_bonus = None
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()
@@ -63,6 +82,50 @@ async def add_purchases(
         client_bonus.activation_date = bonus.activationDate
         session.add(client_bonus)
         await session.commit()
+        if client_bonus.write_off_points > 0:
+            await send_notification_email(
+                session=session,
+                event_type=EventType.points_debited_email,
+                formats={
+                    "client_name": client.name,
+                    "cashback": client_bonus.write_off_points,
+                },
+                client=client
+            )
+
+            # await send_template_wa(
+            #     session=session,
+            #     event_type=EventType.points_debited_whatsapp,
+            #     client=client,
+            #     formats={
+            #         "order_number": order_number or "",
+            #         "cashback": client_bonus.write_off_points
+            #     }
+            # )
+        elif client_bonus.accrued_points > 0:
+            if client_p is None or len(client_p) == 0:
+                await send_notification_email(
+                    session=session,
+                    event_type=EventType.qr_wellcome_message,
+                    formats={
+                        "client_name": client.name,
+                        "cashback": client_bonus.accrued_points,
+                        "order_number": order_number or ""
+                    },
+                    client=client
+                )
+            await send_notification_email(
+                session=session,
+                event_type=EventType.points_future_credit_email,
+                formats={
+                    "client_name": client.name,
+                    "cashback": client_bonus.accrued_points,
+                    "order_number": order_number or ""
+                },
+                client=client
+            )
+    #if client_bonus:
+
     return {
         "message": "Чек успешно записан",
         "purchaseId": purchases.id,
@@ -116,7 +179,9 @@ async def add_return_purchases(
         order_number=purchase_return_model.orderNumber,
         number=purchase_return_model.number,
         shift_number=purchase_return_model.shiftNumber,
-        ticket_print_url=purchase_return_model.ticketPrintUrl
+        ticket_print_url=purchase_return_model.ticketPrintUrl,
+        site_id=purchase_return_model.siteId,
+        mc_id=purchase_return_model.mcId
     )
     session.add(purchases)
     await session.commit()

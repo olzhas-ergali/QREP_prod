@@ -245,6 +245,18 @@ class Client(Base):
 
         return await session.scalar(stmt)
 
+    @classmethod
+    async def get_client_by_id(
+            cls,
+            session: AsyncSession,
+            client_id: str
+    ) -> 'Client':
+        stmt = select(Client).where(
+            client_id == Client.id
+        )
+
+        return await session.scalar(stmt)
+
 
 class ClientPurchase(Base):
     __tablename__ = "client_purchases"
@@ -267,6 +279,32 @@ class ClientPurchase(Base):
         uselist=True,
         lazy='selectin'
     )
+    site_id = Column(String)
+    mc_id = Column(String)
+
+    @classmethod
+    async def get_by_client_id(
+            cls,
+            session: AsyncSession,
+            client_id: int
+    ) -> typing.Sequence['ClientPurchase']:
+        stmt = select(ClientPurchase).where(
+            client_id == ClientPurchase.user_id
+        )
+        response = await session.execute(stmt)
+        return response.scalars().all()
+
+    @classmethod
+    async def get_by_purchase_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str
+    ) -> 'ClientPurchase':
+        stmt = select(ClientPurchase).where(
+            purchase_id == ClientPurchase.id
+        )
+
+        return await session.scalar(stmt)
 
 
 class ClientPurchaseReturn(Base):
@@ -301,6 +339,8 @@ class ClientPurchaseReturn(Base):
         uselist=True,
         lazy='selectin'
     )
+    site_id = Column(String)
+    mc_id = Column(String)
 
     @classmethod
     async def get_by_purchase_id(

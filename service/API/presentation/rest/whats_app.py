@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 import typing
 
@@ -20,6 +21,10 @@ from service.API.infrastructure.database.cods import Cods
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
 from service.API.infrastructure.utils.generate import generate_code
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
+from service.API.infrastructure.utils.smpt import Mail
+from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
+from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
+                                                                  send_template_wa)
 from service.tgbot.lib.SendPlusAPI.templates import templates
 
 router = APIRouter()
@@ -159,23 +164,35 @@ async def get_client_purchases(
         session=session,
         phone=parse_phone(phone_number))
     available_bonus = 0
+    future_bonus = 0
     if client:
-        client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=client.id)
+        client_bonuses = await ClientBonusPoints.get_all_by_client_id(session=session, client_id=client.id)
         if client_bonuses:
             total_earned = 0
             total_spent = 0
+            total_future_spent = 0
+            total_future_earned = 0
             for bonus in client_bonuses:
                 logging.info(f"accrued_points: {bonus.accrued_points}")
                 logging.info(f"write_off_points: {bonus.write_off_points}")
-                total_earned += bonus.accrued_points if bonus.accrued_points else 0
-                total_spent += bonus.write_off_points if bonus.write_off_points else 0
+                if datetime.now().date() >= bonus.activation_date.date():
+                    total_earned += bonus.accrued_points if bonus.accrued_points else 0
+                    total_spent += bonus.write_off_points if bonus.write_off_points else 0
+                else:
+                    total_future_earned += bonus.accrued_points if bonus.accrued_points else 0
+                    total_future_spent += bonus.write_off_points if bonus.write_off_points else 0
             if total_earned > 0:
                 available_bonus += total_earned
             if total_spent > 0:
                 available_bonus -= total_spent
+            if total_future_earned > 0:
+                future_bonus += total_future_earned
+            if total_future_spent > 0:
+                future_bonus -= total_future_spent
             return {
                 "status_code": 200,
-                "answer": available_bonus if available_bonus > 0 else 0
+                "bonus": available_bonus if available_bonus > 0 else 0,
+                "future_bonus": future_bonus if future_bonus > 0 else 0
             }
         return {
             "status_code": 204,
@@ -193,15 +210,85 @@ async def client_send_quality_grade(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         model: ModelClientWA
 ):
-    wb = SendPlus(
-        client_id=settings.wb_cred.client_id,
-        client_secret=settings.wb_cred.client_secret,
-        waba_bot_id=settings.wb_cred.wb_bot_id
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=model.phoneNumber
     )
-    await wb.send_by_phone(
-        phone=model.phoneNumber,
-        bot_id=settings.wb_cred.wb_bot_id,
-        text=model.message
+    # wb = SendPlus(
+    #     client_id=settings.wb_cred.client_id,
+    #     client_secret=settings.wb_cred.client_secret,
+    #     waba_bot_id=settings.wb_cred.wb_bot_id
+    # )
+    # template = await MessageTemplate.get_message_template(
+    #     session=session,
+    #     channel="WhatsApp",
+    #     event_type=EventType.points_debited_whatsapp,
+    #     local=model.local,
+    #     audience_type="client"
+    # )
+    # #С вашего бонусного счёта списано {cashback} кэшбека при оплате заказа {order_number}Спасибо, что выбираете Qazaq Republic 💙
+    # # template.body_template.format(
+    # #     cashback="100",
+    # #     order_number="123")
+    # res = await wb.send_by_phone(
+    #     phone=model.phoneNumber,
+    #     bot_id=settings.wb_cred.wb_bot_id,
+    #     text=model.message
+    # )
+    # log = MessageLog(
+    #     id=uuid.uuid4(),
+    #     client_id=client.id if client else 2,
+    #     channel="WhatsApp",
+    #     event_type=EventType.points_debited_whatsapp,
+    #     status="Good",
+    #     message_content=template.body_template.format(
+    #         order_number="123",
+    #         cashback="100")
+    # )
+    # session.add(log)
+
+    res = await send_template_wa(
+        session=session,
+        event_type=EventType.points_debited_whatsapp,
+        client=client,
+        formats={
+            "order_number": 123,
+            "cashback": 1234
+        }
+    )
+    return {
+        'status_code': status.HTTP_200_OK,
+        'message': 'Сообщение отправлено',
+        'res': res
+    }
+
+
+@router.post('/client/sendMail',
+             tags=["WhatsApp"])
+async def client_send_quality_grade(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        model: ModelClientWA
+):
+    session: AsyncSession = db_session.get()
+    client = await Client.get_client_by_phone(
+        session=session,
+        phone=model.phoneNumber
+    )
+    template = await MessageTemplate.get_message_template(
+        session=session,
+        channel="Email",
+        event_type=EventType.points_credited_email,
+        local=model.local,
+        audience_type="client"
+    )
+    mail = Mail()
+    #print(template.body_template.format(name=client.name, cashback="100"))
+    msg = template.body_template.format(name=client.name, cashback="100").encode('utf-8').strip()
+    await mail.send_message(
+        message=msg,
+        subject=template.title_template,
+        to_address=[model.email]
     )
     return {
         'status_code': status.HTTP_200_OK,

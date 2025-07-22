@@ -61,6 +61,8 @@ class ModelPurchaseClient(BaseModel):
     shiftNumber: typing.Optional[int] = None
     ticketPrintUrl: typing.Optional[str] = None
     bonus: typing.List[ModelClientBonus] = None
+    siteId: typing.Optional[str] = None
+    mcId: typing.Optional[str] = None
 
 
 class ModelClientPurchaseReturn(BaseModel):
@@ -78,7 +80,9 @@ class ModelClientPurchaseReturn(BaseModel):
     shiftNumber: typing.Optional[int] = None
     ticketPrintUrl: typing.Optional[str] = None
     bonus: typing.List[ModelClientBonus] = None
-
+    siteId: typing.Optional[str] = None
+    mcId: typing.Optional[str] = None
+    
 
 class ModelUser(BaseModel):
     telegramId: typing.Optional[int] = None
@@ -111,3 +115,5 @@ class ModelStaff(BaseModel):
 class ModelClientWA(BaseModel):
     phoneNumber: typing.Optional[str] = None
     message: typing.Optional[str] = None
+    email: typing.Optional[str] = None
+    local: typing.Optional[str] = None
