@@ -226,7 +226,7 @@ async def send_template_wa(
         result = await wb.send_template_by_phone(
             phone=client.phone_number,
             bot_id=settings.wb_cred.wb_bot_id,
-            json=template
+            template=template
         )
         if result.get("status_code") == 400:
             message = "Номер телефона не активен 24ч"
