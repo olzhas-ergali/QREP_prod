@@ -448,7 +448,8 @@ async def get_client_bonus_history(
 
 @router.get("/api/v2/qr-code/generate-id",
             tags=['client'],
-            summary="Генерация qr-code"
+            summary="Генерация qr-code",
+            deprecated=True
             )
 async def get_generate_id(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
