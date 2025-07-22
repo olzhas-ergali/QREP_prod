@@ -73,6 +73,7 @@ class BaseApi:
             )
             print(response.status)
             if response.status == 400:
+                logging.info(await response.text())
                 logging.info("STATUS CODE -> 400")
                 return {
                     "status_code": 400
