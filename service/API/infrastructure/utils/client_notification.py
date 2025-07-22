@@ -222,6 +222,7 @@ async def send_template_wa(
     message = ""
     status = "Good"
     logging.info(template)
+    result = None
     try:
         result = await wb.send_template_by_phone(
             phone=client.phone_number,
@@ -246,4 +247,6 @@ async def send_template_wa(
     session.add(log)
     await session.commit()
     await session.close()
+
+    return result
     
