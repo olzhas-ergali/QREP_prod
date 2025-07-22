@@ -221,6 +221,7 @@ async def send_template_wa(
         template = template.replace("%" + key + "%", val)
     message = ""
     status = "Good"
+    logging.info(template)
     try:
         result = await wb.send_template_by_phone(
             phone=client.phone_number,
