@@ -1,3 +1,4 @@
+import json
 import logging
 
 from service.tgbot.lib.SendPlusAPI.base import BaseApi, MethodRequest
@@ -20,12 +21,12 @@ class SendPlus(BaseApi):
             self,
             phone: str,
             bot_id: str,
-            json: dict = None
+            template: dict | str = None
     ):
         url = self.url.format(method='contacts/sendTemplateByPhone')
-        local = await self.get_local_by_phone(
-            phone=phone
-        )
+        # local = await self.get_local_by_phone(
+        #     phone=phone
+        # )
         result = await self.request_session(
             method=MethodRequest.post,
             url=url,
@@ -37,7 +38,7 @@ class SendPlus(BaseApi):
             json={
                 "bot_id": bot_id,
                 "phone": phone,
-                "template": json.get(local)
+                "template": json.load(template)
             }
         )
 
