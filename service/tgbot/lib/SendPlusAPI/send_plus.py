@@ -38,7 +38,7 @@ class SendPlus(BaseApi):
             json={
                 "bot_id": bot_id,
                 "phone": phone,
-                "template": json.load(template)
+                "template": json.loads(template)
             }
         )
 
