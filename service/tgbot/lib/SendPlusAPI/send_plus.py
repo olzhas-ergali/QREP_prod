@@ -1,5 +1,6 @@
 import json
 import logging
+import asyncio
 
 from service.tgbot.lib.SendPlusAPI.base import BaseApi, MethodRequest
 
@@ -42,7 +43,7 @@ class SendPlus(BaseApi):
                 "template": json.loads(template)
             }
         )
-
+        await asyncio.sleep(0.3)
         return result
 
     async def send_by_phone(
