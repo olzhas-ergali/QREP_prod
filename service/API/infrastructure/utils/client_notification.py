@@ -241,7 +241,7 @@ async def send_template_wa(
         event_type=event_type,
         status=status,
         error_message=message,
-        message_content=template
+        message_content=local
     )
     session.add(log)
     await session.commit()
