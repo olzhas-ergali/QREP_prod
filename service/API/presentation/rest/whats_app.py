@@ -284,7 +284,7 @@ async def client_send_quality_grade(
     )
     mail = Mail()
     #print(template.body_template.format(name=client.name, cashback="100"))
-    msg = template.body_template.format(name=client.name, cashback="100").encode('utf-8').strip()
+    msg = template.body_template.format(client_name=client.name, cashback="100").encode('utf-8').strip()
     await mail.send_message(
         message=msg,
         subject=template.title_template,
