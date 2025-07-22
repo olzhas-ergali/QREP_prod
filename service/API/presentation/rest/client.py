@@ -446,28 +446,28 @@ async def get_client_bonus_history(
     return answer
 
 
-@router.get("/api/v2/qr-code/generate-id",
-            tags=['client'],
-            summary="Генерация qr-code",
-            deprecated=True
-            )
-async def get_generate_id(
-        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str
-):
-    session: AsyncSession = db_session.get()
-    client = await Client.get_client_by_phone(
-        session=session,
-        phone=parse_phone(phone)
-    )
-    code = await Cods.get_cody_by_phone(client.phone_number, session)
-    if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds() / 60 > 15:
-        code = await generate_code(session, phone_number=client.phone_number)
-
-    return {
-        "qrCode": code.code,
-        "expiresAt": code.created_at + datetime.timedelta(minutes=15)
-    }
+# @router.get("/api/v2/qr-code/generate-id",
+#             tags=['client'],
+#             summary="Генерация qr-code",
+#             deprecated=True
+#             )
+# async def get_generate_id(
+#         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+#         phone: str
+# ):
+#     session: AsyncSession = db_session.get()
+#     client = await Client.get_client_by_phone(
+#         session=session,
+#         phone=parse_phone(phone)
+#     )
+#     code = await Cods.get_cody_by_phone(client.phone_number, session)
+#     if not code or (code and code.is_active) or (datetime.datetime.now() - code.created_at).total_seconds() / 60 > 15:
+#         code = await generate_code(session, phone_number=client.phone_number)
+#
+#     return {
+#         "qrCode": code.code,
+#         "expiresAt": code.created_at + datetime.timedelta(minutes=15)
+#     }
 
 
 @router.post("/client/reviews",
