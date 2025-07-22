@@ -61,6 +61,7 @@ class BaseApi:
                 data={"grant_type": "client_credentials"},
                 auth=aiohttp.BasicAuth(client_id, client_secret)
             )
+            logging.info(response)
             data = await response.read()
             data = json.loads(data)
             print(data)
