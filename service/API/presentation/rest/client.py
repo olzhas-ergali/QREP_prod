@@ -3,6 +3,7 @@ import datetime
 import re
 import regex
 import logging
+import uuid
 
 from service.API.config import settings
 
