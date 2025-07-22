@@ -218,7 +218,7 @@ async def send_template_wa(
     )
     template = template_wa.body_template
     for key, val in formats.items():
-        template = template.replace("%" + key + "%", val)
+        template = template.replace("%" + key + "%", str(val))
     message = ""
     status = "Good"
     logging.info(template)
