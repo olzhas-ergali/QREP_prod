@@ -23,6 +23,8 @@ from service.API.infrastructure.utils.generate import generate_code
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
 from service.API.infrastructure.utils.smpt import Mail
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
+from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
+                                                                  send_template_wa)
 from service.tgbot.lib.SendPlusAPI.templates import templates
 
 router = APIRouter()
@@ -213,39 +215,48 @@ async def client_send_quality_grade(
         session=session,
         phone=model.phoneNumber
     )
-    wb = SendPlus(
-        client_id=settings.wb_cred.client_id,
-        client_secret=settings.wb_cred.client_secret,
-        waba_bot_id=settings.wb_cred.wb_bot_id
-    )
-    template = await MessageTemplate.get_message_template(
+    # wb = SendPlus(
+    #     client_id=settings.wb_cred.client_id,
+    #     client_secret=settings.wb_cred.client_secret,
+    #     waba_bot_id=settings.wb_cred.wb_bot_id
+    # )
+    # template = await MessageTemplate.get_message_template(
+    #     session=session,
+    #     channel="WhatsApp",
+    #     event_type=EventType.points_debited_whatsapp,
+    #     local=model.local,
+    #     audience_type="client"
+    # )
+    # #С вашего бонусного счёта списано {cashback} кэшбека при оплате заказа {order_number}Спасибо, что выбираете Qazaq Republic 💙
+    # # template.body_template.format(
+    # #     cashback="100",
+    # #     order_number="123")
+    # res = await wb.send_by_phone(
+    #     phone=model.phoneNumber,
+    #     bot_id=settings.wb_cred.wb_bot_id,
+    #     text=model.message
+    # )
+    # log = MessageLog(
+    #     id=uuid.uuid4(),
+    #     client_id=client.id if client else 2,
+    #     channel="WhatsApp",
+    #     event_type=EventType.points_debited_whatsapp,
+    #     status="Good",
+    #     message_content=template.body_template.format(
+    #         order_number="123",
+    #         cashback="100")
+    # )
+    # session.add(log)
+
+    res = await send_template_wa(
         session=session,
-        channel="WhatsApp",
         event_type=EventType.points_debited_whatsapp,
-        local=model.local,
-        audience_type="client"
+        client=client,
+        formats={
+            "order_number": "",
+            "cashback": 1234
+        }
     )
-    #С вашего бонусного счёта списано {cashback} кэшбека при оплате заказа {order_number}Спасибо, что выбираете Qazaq Republic 💙
-    # template.body_template.format(
-    #     cashback="100",
-    #     order_number="123")
-    res = await wb.send_by_phone(
-        phone=model.phoneNumber,
-        bot_id=settings.wb_cred.wb_bot_id,
-        text=model.message
-    )
-    log = MessageLog(
-        id=uuid.uuid4(),
-        client_id=client.id if client else 2,
-        channel="WhatsApp",
-        event_type=EventType.points_debited_whatsapp,
-        status="Good",
-        message_content=template.body_template.format(
-            order_number="123",
-            cashback="100")
-    )
-    session.add(log)
-    await session.commit()
     return {
         'status_code': status.HTTP_200_OK,
         'message': 'Сообщение отправлено',

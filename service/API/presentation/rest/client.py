@@ -844,7 +844,7 @@ async def client_create(
 
 
 @router.post('/client/verification',
-             tags=['client'],
+             tags=["WhatsApp"],
              deprecated=True)
 async def client_send_verification_code(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
