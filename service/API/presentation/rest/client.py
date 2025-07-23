@@ -387,10 +387,11 @@ async def get_client_bonus_history(
                 session=session,
                 purchase_id=bonus.client_purchases_id
             )
-            if result <= 0:
-                continue
             purchase = await session.get(ClientPurchase, bonus.client_purchases_id)
             logging.info(bonus.client_purchases_id)
+            if result <= 0 or not purchase.mc_id:
+                continue
+
             # if bonus.client_purchases_return_id:
             #     logging.info(bonus.client_purchases_return_id)
             #     purchase = await ClientPurchaseReturn.get_by_purchase_id(session, bonus.client_purchases_id)
@@ -405,6 +406,7 @@ async def get_client_bonus_history(
             if bonus.expiration_date:
                 exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
             type_points = "accrual" if bonus.accrued_points else "write_off"
+
             if not mc_ids.get(purchase.mc_id + "_" + type_points):
                 mc_ids[purchase.mc_id + "_" + type_points] = {
                     "purchase_id": bonus.client_purchases_id,
