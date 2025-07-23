@@ -241,7 +241,7 @@ async def send_template_wa(
         status = "Error"
     log = MessageLog(
         id=uuid.uuid4(),
-        client_id=client.id if client else 412249576,
+        client_id=client.id if client else 5,
         channel="WhatsApp",
         event_type=event_type,
         status=status,
