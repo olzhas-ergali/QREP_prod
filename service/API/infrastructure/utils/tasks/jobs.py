@@ -20,11 +20,11 @@ async def bonus_notification(
     clients_credits = {}
     for r in client_bonuses:
         if not clients_credits.get(r.client_purchases_id):
-            purchase = await ClientPurchase.get_by_purchase_id(
-                session=session,
-                purchase_id=r.client_purchases_id
-            )
-            order_number = purchase.mc_id if purchase.mc_id else purchase.ticket_print_url
+            # purchase = await ClientPurchase.get_by_purchase_id(
+            #     session=session,
+            #     purchase_id=r.client_purchases_id
+            # )
+            # order_number = purchase.mc_id if purchase.mc_id else purchase.ticket_print_url
             clients_credits[r.client_purchases_id] = {
                 "client_id": r.client_id,
                 "purchase_id": r.client_purchases_id,
@@ -34,7 +34,6 @@ async def bonus_notification(
                 "activation_date": r.activation_date,
                 "formats_wa": {
                     "cashback": r.accrued_points,
-                    "order_number": order_number or ""
                 },
                 "formats_email": {
                     "cashback": r.accrued_points
@@ -55,12 +54,12 @@ async def bonus_notification(
             client_id=value.get('client_id')
         )
         value.get("formats_email")["client_name"] = client.name
-        # await send_notification_wa(
-        #     session=session,
-        #     event_type=EventType.points_credited_whatsapp,
-        #     client=client,
-        #     formats=value.get("formats_wa")
-        # )
+        await send_notification_wa(
+            session=session,
+            event_type=EventType.points_credited_whatsapp,
+            client=client,
+            formats=value.get("formats_wa")
+        )
         await send_notification_email(
             session=session,
             event_type=EventType.points_credited_email,
@@ -77,11 +76,11 @@ async def bonus_notification(
         )
         for r in client_bonuses:
             if not clients_debits.get(r.client_purchases_id):
-                purchase = await ClientPurchase.get_by_purchase_id(
-                    session=session,
-                    purchase_id=r.client_purchases_id
-                )
-                order_number = purchase.mc_id if purchase.mc_id else purchase.ticket_print_url
+                # purchase = await ClientPurchase.get_by_purchase_id(
+                #     session=session,
+                #     purchase_id=r.client_purchases_id
+                # )
+                # order_number = purchase.mc_id if purchase.mc_id else purchase.ticket_print_url
                 clients_debits[r.client_purchases_id] = {
                     "client_id": r.client_id,
                     "purchase_id": r.client_purchases_id,
@@ -93,8 +92,7 @@ async def bonus_notification(
 
                 if day == -1:
                     clients_debits[r.client_purchases_id]["formats"] = {
-                        "cashback": r.accrued_points,
-                        "order_number": order_number or ""
+                        "cashback": r.accrued_points
                     }
                 else:
                     clients_debits[r.client_purchases_id]["formats"] = {
@@ -125,12 +123,12 @@ async def bonus_notification(
                 client=client,
                 formats=value.get("formats")
             )
-        #else:
-            # await send_notification_wa(
-            #     session=session,
-            #     event_type=EventType.points_debited_whatsapp,
-            #     client=client,
-            #     formats=value.get("formats")
-            # )
+        else:
+            await send_notification_wa(
+                session=session,
+                event_type=EventType.points_debited_whatsapp,
+                client=client,
+                formats=value.get("formats")
+            )
     await session.close()
 

@@ -201,16 +201,18 @@ async def send_template_wa(
         event_type: EventType,
         formats: dict,
         client: Client,
-        phone_number: str = None
+        phone_number: str = None,
+        local: str = None
 ):
     wb = SendPlus(
         client_id=settings.wb_cred.client_id,
         client_secret=settings.wb_cred.client_secret,
         waba_bot_id=settings.wb_cred.wb_bot_id
     )
-    local = 'rus'
-    if client:
-        local = await wb.get_local_by_phone(client.phone_number)
+    if not local:
+        local = 'rus'
+        if client:
+            local = await wb.get_local_by_phone(client.phone_number)
 
     logging.info(local)
     template_wa = await MessageTemplate.get_message_template(
