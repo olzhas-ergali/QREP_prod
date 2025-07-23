@@ -200,7 +200,8 @@ async def send_template_wa(
         session: AsyncSession,
         event_type: EventType,
         formats: dict,
-        client: Client
+        client: Client,
+        phone_number: str = None
 ):
     wb = SendPlus(
         client_id=settings.wb_cred.client_id,
@@ -228,7 +229,7 @@ async def send_template_wa(
     result = None
     try:
         result = await wb.send_template_by_phone(
-            phone=client.phone_number,
+            phone=client.phone_number if client else phone_number,
             bot_id=settings.wb_cred.wb_bot_id,
             template=template
         )
