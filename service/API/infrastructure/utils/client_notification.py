@@ -207,7 +207,10 @@ async def send_template_wa(
         client_secret=settings.wb_cred.client_secret,
         waba_bot_id=settings.wb_cred.wb_bot_id
     )
-    local = await wb.get_local_by_phone(client.phone_number)
+    local = 'rus'
+    if client:
+        local = await wb.get_local_by_phone(client.phone_number)
+
     logging.info(local)
     template_wa = await MessageTemplate.get_message_template(
         session=session,
