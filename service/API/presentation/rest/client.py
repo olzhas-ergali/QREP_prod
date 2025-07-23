@@ -757,7 +757,6 @@ async def client_create(
                     "statusСode": 400,
                     "message": "Не правильный формат даты"
                 }
-            birth_date = datetime.datetime.strptime(model_client.birthDate, "%Y-%m-%d")
             downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
             if date.date() >= datetime.datetime.now().date():
                 return {
