@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
 from service.API.infrastructure.database.models import Client, ClientPurchase, ClientPurchaseReturn
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
-from service.API.infrastructure.utils.client_notification import send_notification_wa, send_notification_email
+from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
+                                                                  send_template_wa)
 
 
 async def bonus_notification(
@@ -54,7 +55,7 @@ async def bonus_notification(
             client_id=value.get('client_id')
         )
         value.get("formats_email")["client_name"] = client.name
-        await send_notification_wa(
+        await send_template_wa(
             session=session,
             event_type=EventType.points_credited_whatsapp,
             client=client,
@@ -124,7 +125,7 @@ async def bonus_notification(
                 formats=value.get("formats")
             )
         else:
-            await send_notification_wa(
+            await send_template_wa(
                 session=session,
                 event_type=EventType.points_debited_whatsapp,
                 client=client,
