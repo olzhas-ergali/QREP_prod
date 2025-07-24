@@ -921,7 +921,7 @@ async def client_send_verification_code(
         local = await wb.get_local_by_phone(
             phone=verification.phoneNumber
         )
-    logging.info(isinstance(verification_temp.get(local), str))
+    #logging.info(isinstance(verification_temp.get(local), str))
     await wb.send_template_by_phone(
         phone=verification.phoneNumber,
         bot_id=settings.wb_cred.wb_bot_id,
