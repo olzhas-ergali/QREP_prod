@@ -93,14 +93,14 @@ async def add_purchases(
                 client=client
             )
 
-            await send_template_wa(
-                session=session,
-                event_type=EventType.points_debited_whatsapp,
-                client=client,
-                formats={
-                    "cashback": client_bonus.write_off_points
-                }
-            )
+            # await send_template_wa(
+            #     session=session,
+            #     event_type=EventType.points_debited_whatsapp,
+            #     client=client,
+            #     formats={
+            #         "cashback": client_bonus.write_off_points
+            #     }
+            # )
         elif client_bonus.accrued_points > 0:
             if client_p is None or len(client_p) == 0:
                 await send_notification_email(
