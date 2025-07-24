@@ -123,7 +123,7 @@ async def bonus_notification(
                 client=client,
                 formats=value.get("formats")
             )
-        else:
+        #else:
             # await send_notification_wa(
             #     session=session,
             #     event_type=EventType.points_debited_whatsapp,
