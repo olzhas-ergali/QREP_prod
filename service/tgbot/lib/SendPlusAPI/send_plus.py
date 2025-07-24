@@ -28,7 +28,7 @@ class SendPlus(BaseApi):
         # local = await self.get_local_by_phone(
         #     phone=phone
         # )
-        logging.info(json.loads(template))
+        #logging.info(json.loads(template))
         result = await self.request_session(
             method=MethodRequest.post,
             url=url,
