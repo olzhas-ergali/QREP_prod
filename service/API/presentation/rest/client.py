@@ -23,7 +23,7 @@ from service.API.infrastructure.database.models import Client, ClientReview, Cli
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
 from service.API.infrastructure.utils.parse import parse_phone, is_valid_date, parse_date
-from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite, ModelTemplate
+from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite, ModelTemplate, ModelVerification
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.database.notification import MessageTemplate, EventType
@@ -846,12 +846,10 @@ async def client_create(
 
 
 @router.post('/client/verification',
-             tags=["WhatsApp"],
-             deprecated=True)
+             tags=["WhatsApp"])
 async def client_send_verification_code(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
-        phone: str,
-        code: str
+        verification: ModelVerification
 ):
     verification_temp = {
         'kaz': {
@@ -862,7 +860,7 @@ async def client_send_verification_code(
                     "parameters": [
                         {
                             "type": "text",
-                            "text": code
+                            "text": verification.code
                         }
                     ]
                 },
@@ -873,7 +871,7 @@ async def client_send_verification_code(
                     "parameters": [
                         {
                             "type": "text",
-                            "text": code
+                            "text": verification.code
                         }
                     ]
                 }
@@ -891,7 +889,7 @@ async def client_send_verification_code(
                     "parameters": [
                         {
                             "type": "text",
-                            "text": code
+                            "text": verification.code
                         }
                     ]
                 },
@@ -902,7 +900,7 @@ async def client_send_verification_code(
                     "parameters": [
                         {
                             "type": "text",
-                            "text": code
+                            "text": verification.code
                         }
                     ]
                 }
@@ -918,10 +916,16 @@ async def client_send_verification_code(
         client_secret=settings.wb_cred.client_secret,
         waba_bot_id=settings.wb_cred.wb_bot_id
     )
+    local = verification.local if verification.local else "rus"
+    if not verification.local:
+        local = await wb.get_local_by_phone(
+            phone=verification.phoneNumber
+        )
+    #logging.info(isinstance(verification_temp.get(local), str))
     await wb.send_template_by_phone(
-        phone=phone,
+        phone=verification.phoneNumber,
         bot_id=settings.wb_cred.wb_bot_id,
-        template=verification_temp
+        template=verification_temp.get(local)
     )
     return {
         'status_code': status.HTTP_200_OK,

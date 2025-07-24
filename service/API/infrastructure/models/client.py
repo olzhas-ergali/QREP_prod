@@ -50,3 +50,8 @@ class ModelTemplate(BaseModel):
     body_template: typing.Optional[str] = None
     local: typing.Optional[str] = None
 
+
+class ModelVerification(BaseModel):
+    phoneNumber: typing.Optional[str] = None
+    code: typing.Optional[str] = None
+    local: typing.Optional[str] = None

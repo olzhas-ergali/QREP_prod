@@ -250,7 +250,7 @@ async def client_send_quality_grade(
 
     res = await send_template_wa(
         session=session,
-        event_type=EventType.points_debited_whatsapp,
+        event_type=EventType.points_credited_whatsapp,
         client=client,
         phone_number=model.phoneNumber,
         local=model.local,

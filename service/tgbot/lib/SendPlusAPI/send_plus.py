@@ -28,7 +28,7 @@ class SendPlus(BaseApi):
         # local = await self.get_local_by_phone(
         #     phone=phone
         # )
-        logging.info(json.loads(template))
+        #logging.info(json.loads(template))
         result = await self.request_session(
             method=MethodRequest.post,
             url=url,
@@ -40,7 +40,7 @@ class SendPlus(BaseApi):
             json={
                 "bot_id": bot_id,
                 "phone": phone,
-                "template": json.loads(template)
+                "template": json.loads(template) if isinstance(template, str) else template
             }
         )
         await asyncio.sleep(0.3)
