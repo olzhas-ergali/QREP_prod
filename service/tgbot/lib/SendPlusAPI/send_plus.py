@@ -40,7 +40,7 @@ class SendPlus(BaseApi):
             json={
                 "bot_id": bot_id,
                 "phone": phone,
-                "template": json.loads(template)
+                "template": json.loads(template) if isinstance(template, str) else template
             }
         )
         await asyncio.sleep(0.3)
