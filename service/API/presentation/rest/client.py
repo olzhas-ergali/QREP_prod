@@ -852,7 +852,7 @@ async def client_send_verification_code(
         verification: ModelVerification
 ):
     verification_temp = {
-        'kaz': {
+        'kz': {
             "name": "auth_code_kz",
             "components": [
                 {
@@ -881,8 +881,37 @@ async def client_send_verification_code(
                 "code": "kk"
             }
         },
-        'rus': {
+        'ru': {
             "name": "auth_code_ru",
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": verification.code
+                        }
+                    ]
+                },
+                {
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": 0,
+                    "parameters": [
+                        {
+                            "type": "text",
+                            "text": verification.code
+                        }
+                    ]
+                }
+            ],
+            "language": {
+                "policy": "deterministic",
+                "code": "ru"
+            }
+        },
+        "en": {
+            "name": "auth_code",
             "components": [
                 {
                     "type": "body",
@@ -911,16 +940,23 @@ async def client_send_verification_code(
             }
         }
     }
+
+    locales = {
+        'rus': 'ru',
+        'kaz': 'kz',
+        'eng': 'en'
+    }
     wb = SendPlus(
         client_id=settings.wb_cred.client_id,
         client_secret=settings.wb_cred.client_secret,
         waba_bot_id=settings.wb_cred.wb_bot_id
     )
-    local = verification.local if verification.local else "rus"
+    local = verification.local
     if not verification.local:
         local = await wb.get_local_by_phone(
             phone=verification.phoneNumber
         )
+        local = locales.get(local, 'ru')
     #logging.info(isinstance(verification_temp.get(local), str))
     await wb.send_template_by_phone(
         phone=verification.phoneNumber,
