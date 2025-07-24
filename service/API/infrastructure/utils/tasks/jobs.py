@@ -54,12 +54,12 @@ async def bonus_notification(
             client_id=value.get('client_id')
         )
         value.get("formats_email")["client_name"] = client.name
-        # await send_notification_wa(
-        #     session=session,
-        #     event_type=EventType.points_credited_whatsapp,
-        #     client=client,
-        #     formats=value.get("formats_wa")
-        # )
+        await send_notification_wa(
+            session=session,
+            event_type=EventType.points_credited_whatsapp,
+            client=client,
+            formats=value.get("formats_wa")
+        )
         await send_notification_email(
             session=session,
             event_type=EventType.points_credited_email,
@@ -123,12 +123,12 @@ async def bonus_notification(
                 client=client,
                 formats=value.get("formats")
             )
-        #else:
-            # await send_notification_wa(
-            #     session=session,
-            #     event_type=EventType.points_debited_whatsapp,
-            #     client=client,
-            #     formats=value.get("formats")
-            # )
+        else:
+            await send_notification_wa(
+                session=session,
+                event_type=EventType.points_debited_whatsapp,
+                client=client,
+                formats=value.get("formats")
+            )
     await session.close()
 
