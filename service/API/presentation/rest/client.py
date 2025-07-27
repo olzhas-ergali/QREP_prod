@@ -936,7 +936,7 @@ async def client_send_verification_code(
             ],
             "language": {
                 "policy": "deterministic",
-                "code": "ru"
+                "code": "en"
             }
         }
     }
