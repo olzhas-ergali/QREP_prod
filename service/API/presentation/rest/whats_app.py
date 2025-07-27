@@ -195,8 +195,9 @@ async def get_client_purchases(
                 "future_bonus": future_bonus if future_bonus > 0 else 0
             }
         return {
-            "status_code": 204,
-            "answer": 0
+            "status_code": 200,
+            "bonus": 0,
+            "future_bonus": 0
         }
     return {
         "status_code": 204,
