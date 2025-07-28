@@ -77,7 +77,8 @@ async def show_client_purchases(
             "Итог скидки": "Жалпы жеңілдік",
             "Итого с учетом скидки": "Жеңілдікпен қоса барлығы",
             "Дата покупки": "Сатып алу күні",
-            "Ссылка на чек": "Түбіртек сілтемесі"
+            "Ссылка на чек": "Түбіртек сілтемесі",
+            "Дата возврата": "Тауар қайтару күні"
         }
     }
     local_texts = local_texts.get(local, {})
@@ -97,29 +98,34 @@ async def show_client_purchases(
         for purchase in purchases:
             products = purchase.products
             for product in products:
-                is_return = await is_return_client_purchases(
+                purchase_return = await is_return_client_purchases(
                     session=session,
                     purchase_id=purchase.id,
                     product_id=product['id'],
                     price=product.get('price') - product.get('discountPrice')
                 )
-                if not is_return:
-                    if len(text) > 800:
-                        all_text.append(text)
-                        text = ""
+                #if not is_return:
+                if len(text) > 800:
+                    all_text.append(text)
+                    text = ""
 
-                    text += (f"{local_texts.get('Название товара', 'Название товара')}: {product['name']}\n"
-                             f"{local_texts.get('Количество', 'Количество')}: {product['count']}\n")
-                    if product['discount']:
-                        total = int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))
-                        text += (f"{local_texts.get('Цена', 'Цена')}: {product['price']}\n"
-                                 f"{local_texts.get('Скидка', 'Скидка')}: {product['discountPercent']}%\n"
-                                 f"{local_texts.get('Итог скидки', 'Итог скидки')}: {product['price'] - total}\n"
-                                 f"{local_texts.get('Итого с учетом скидки', 'Итого с учетом скидки')}: {int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))}\n")
-                    else:
-                        text += f"{local_texts.get('Цена', 'Цена')}: {product['price']}\n"
+                text += (f"{local_texts.get('Название товара', 'Название товара')}: {product['name']}\n"
+                         f"{local_texts.get('Количество', 'Количество')}: {product['count']}\n")
+                if product['discount']:
+                    total = int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))
+                    text += (f"{local_texts.get('Цена', 'Цена')}: {product['price']}\n"
+                             f"{local_texts.get('Скидка', 'Скидка')}: {product['discountPercent']}%\n"
+                             f"{local_texts.get('Итог скидки', 'Итог скидки')}: {product['price'] - total}\n"
+                             f"{local_texts.get('Итого с учетом скидки', 'Итого с учетом скидки')}: {int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))}\n")
+                else:
+                    text += f"{local_texts.get('Цена', 'Цена')}: {product['price']}\n"
+                if not purchase_return:
                     text += (f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
                              f"{local_texts.get('Ссылка на чек', 'Ссылка на чек')}: {purchase.ticket_print_url if purchase.ticket_print_url else ''}\n\n")
+                else:
+                    text += (
+                        f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
+                        f"{local_texts.get('Дата возврата', 'Дата возврата')}: {str(purchase_return.created_date).split(' ')[0]}\n\n")
 
     if text != "":
         all_text.append(text)

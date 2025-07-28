@@ -246,7 +246,7 @@ async def is_return_client_purchases(
         purchase_id: str,
         product_id: str,
         price: int
-) -> bool:
+) -> ClientPurchaseReturn | None:
     stmt = select(ClientPurchaseReturn).where(
         ClientPurchaseReturn.purchase_id == purchase_id
     )
@@ -257,6 +257,6 @@ async def is_return_client_purchases(
         products = purchase.products
         for product in products:
             if product['id'] == product_id and product['price'] == price:
-                return True
+                return purchase
 
-    return False
+    return None
