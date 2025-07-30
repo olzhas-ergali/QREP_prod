@@ -140,7 +140,7 @@ async def show_client_purchases(
                     index = return_products.index(product['id'])
                     text += (
                         f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
-                        f"{local_texts.get('Дата возврата', 'Дата возврата')}: {str(dates[index].created_date).split(' ')[0]}\n\n")
+                        f"{local_texts.get('Дата возврата', 'Дата возврата')}: {str(dates[index]).split(' ')[0]}\n\n")
                     return_products.pop(index)
                     dates.pop(index)
     if text != "":
