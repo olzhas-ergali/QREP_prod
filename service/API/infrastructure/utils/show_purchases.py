@@ -105,7 +105,8 @@ async def show_client_purchases(
             return_products = []
             if purchase_return:
                 for r in purchase_return:
-                    return_products.append(r.products.get('id'))
+                    for product in r.products:
+                        return_products.append(product.get('id'))
             for product in products:
                 # purchase_return = await is_return_client_purchases(
                 #     session=session,
