@@ -7,7 +7,8 @@ from service.API.infrastructure.database.commands.staff import (get_all_purchase
                                                                 get_purchases_by_month, is_return_purchases)
 from service.API.infrastructure.database.commands.client import (get_all_client_purchases,
                                                                  get_client_purchases_by_month,
-                                                                 is_return_client_purchases)
+                                                                 is_return_client_purchases,
+                                                                 get_return_client_purchases)
 
 
 async def show_purchases(
@@ -97,14 +98,23 @@ async def show_client_purchases(
     if purchases:
         for purchase in purchases:
             products = purchase.products
+            purchase_return = await get_return_client_purchases(
+                session=session,
+                purchase_id=purchase.id
+            )
+            return_products = []
+            if purchase_return:
+                for r in purchase_return:
+                    return_products.append(r.products.get('id'))
             for product in products:
-                purchase_return = await is_return_client_purchases(
-                    session=session,
-                    purchase_id=purchase.id,
-                    product_id=product['id'],
-                    price=product.get('price') - product.get('discountPrice')
-                )
-                #if not is_return:
+                # purchase_return = await is_return_client_purchases(
+                #     session=session,
+                #     purchase_id=purchase.id,
+                #     product_id=product['id'],
+                #     price=product.get('price') - product.get('discountPrice')
+                # )
+                # if not is_return:
+
                 if len(text) > 800:
                     all_text.append(text)
                     text = ""
@@ -119,10 +129,12 @@ async def show_client_purchases(
                              f"{local_texts.get('Итого с учетом скидки', 'Итого с учетом скидки')}: {int(product['price'] - (product['price'] * (product['discountPercent'] / 100)))}\n")
                 else:
                     text += f"{local_texts.get('Цена', 'Цена')}: {product['price']}\n"
-                if not purchase_return:
-                    text += (f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
-                             f"{local_texts.get('Ссылка на чек', 'Ссылка на чек')}: {purchase.ticket_print_url if purchase.ticket_print_url else ''}\n\n")
+                if product['id'] not in return_products:
+                    text += (
+                        f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
+                        f"{local_texts.get('Ссылка на чек', 'Ссылка на чек')}: {purchase.ticket_print_url if purchase.ticket_print_url else ''}\n\n")
                 else:
+                    return_products.pop(return_products.index(product['id']))
                     text += (
                         f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
                         f"{local_texts.get('Дата возврата', 'Дата возврата')}: {str(purchase_return.created_date).split(' ')[0]}\n\n")

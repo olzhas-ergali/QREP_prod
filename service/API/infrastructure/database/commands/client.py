@@ -256,7 +256,21 @@ async def is_return_client_purchases(
     for purchase in purchases:
         products = purchase.products
         for product in products:
-            if product['id'] == product_id and product['price'] == price:
+            #product['price'] == price
+            if product['id'] == product_id:
                 return purchase
 
     return None
+
+
+async def get_return_client_purchases(
+        session: AsyncSession,
+        purchase_id: str
+) -> typing.Sequence[ClientPurchaseReturn]:
+    stmt = select(ClientPurchaseReturn).where(
+        ClientPurchaseReturn.purchase_id == purchase_id
+    )
+    response = await session.execute(stmt)
+    purchases = response.scalars().all()
+
+    return purchases
