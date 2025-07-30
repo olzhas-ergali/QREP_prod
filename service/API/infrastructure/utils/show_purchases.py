@@ -103,10 +103,12 @@ async def show_client_purchases(
                 purchase_id=purchase.id
             )
             return_products = []
+            dates = []
             if purchase_return:
                 for r in purchase_return:
                     for product in r.products:
                         return_products.append(product.get('id'))
+                        dates.append(r.created_date)
             for product in products:
                 # purchase_return = await is_return_client_purchases(
                 #     session=session,
@@ -135,11 +137,12 @@ async def show_client_purchases(
                         f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
                         f"{local_texts.get('Ссылка на чек', 'Ссылка на чек')}: {purchase.ticket_print_url if purchase.ticket_print_url else ''}\n\n")
                 else:
-                    return_products.pop(return_products.index(product['id']))
+                    index = return_products.index(product['id'])
                     text += (
                         f"{local_texts.get('Дата покупки', 'Дата покупки')}: {str(purchase.created_date).split(' ')[0]}\n"
-                        f"{local_texts.get('Дата возврата', 'Дата возврата')}: {str(purchase_return.created_date).split(' ')[0]}\n\n")
-
+                        f"{local_texts.get('Дата возврата', 'Дата возврата')}: {str(dates[index].created_date).split(' ')[0]}\n\n")
+                    return_products.pop(index)
+                    dates.pop(index)
     if text != "":
         all_text.append(text)
     return all_text
