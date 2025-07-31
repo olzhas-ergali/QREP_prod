@@ -958,14 +958,15 @@ async def client_send_verification_code(
         )
         local = locales.get(local, 'ru')
     #logging.info(isinstance(verification_temp.get(local), str))
-    await wb.send_template_by_phone(
+    result = await wb.send_template_by_phone(
         phone=verification.phoneNumber,
         bot_id=settings.wb_cred.wb_bot_id,
         template=verification_temp.get(local)
     )
     return {
         'status_code': status.HTTP_200_OK,
-        'message': 'Сообщение отправлено'
+        'message': 'Сообщение отправлено',
+        'result': result
     }
 
 
