@@ -50,19 +50,21 @@ class ClientBonusPoints(Base):
             session: AsyncSession,
             client_id: int,
             sort,
-            order: typing.Callable = asc,
+            is_purchase: str = None,
+            order: typing.Callable = asc
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             and_(
                 client_id == ClientBonusPoints.client_id,
                 datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date),
-                ClientBonusPoints.client_purchases_id.isnot(None)
+                ClientBonusPoints.client_purchases_id.isnot(is_purchase)
             )
         ).order_by(order(sort))
         #ClientBonusPoints.expiration_date
         response = await session.execute(stmt)
 
         return response.scalars().all()
+
 
     @classmethod
     async def get_all_by_client_id(

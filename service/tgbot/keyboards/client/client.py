@@ -2,7 +2,7 @@ import typing
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from service.tgbot.keyboards.query_cb import GenderCallback
+from service.tgbot.keyboards.query_cb import GenderCallback, SkipCallback
 from service.tgbot.keyboards import generate
 from service.tgbot.keyboards.query_cb import ChoiceCallback
 
@@ -39,6 +39,22 @@ async def get_genders_ikb(
 
     markup.add(man)
     markup.add(women)
+    return markup
+
+
+async def get_skip_btn(
+        _: typing.Callable[[str], str],
+
+):
+    markup = InlineKeyboardMarkup()
+    skip = InlineKeyboardButton(
+        text=_("Жен"),
+        callback_data=GenderCallback.new(
+            handler='F',
+            action='gender'
+        )
+    )
+    markup.add(skip)
     return markup
 
 

@@ -59,3 +59,8 @@ LocalCallback = CallbackData(
     "lang",
     'action'
 )
+
+SkipCallback = CallbackData(
+    'handler',
+    'action'
+)
