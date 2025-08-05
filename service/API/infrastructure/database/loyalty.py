@@ -58,7 +58,7 @@ class ClientBonusPoints(Base):
             datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date),
         ]
         if is_purchase:
-            condition.append(ClientBonusPoints.client_purchases_id.isnot(is_purchase))
+            condition.append(ClientBonusPoints.client_purchases_id.isnot(None))
         stmt = select(ClientBonusPoints).where(
             and_(*condition)
         ).order_by(order(sort))
