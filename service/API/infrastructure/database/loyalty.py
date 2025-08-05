@@ -51,12 +51,13 @@ class ClientBonusPoints(Base):
             client_id: int,
             sort,
             order: typing.Callable = asc,
+            is_purchase: str = None
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             and_(
                 client_id == ClientBonusPoints.client_id,
                 datetime.datetime.now().date() >= func.cast(ClientBonusPoints.activation_date, Date),
-                ClientBonusPoints.client_purchases_id.isnot(None)
+                ClientBonusPoints.client_purchases_id.isnot(is_purchase)
             )
         ).order_by(order(sort))
         #ClientBonusPoints.expiration_date
