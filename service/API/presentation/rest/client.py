@@ -246,7 +246,7 @@ async def get_bonus_points(
         session=session,
         client_id=client_b.id,
         sort=ClientBonusPoints.expiration_date,
-        is_purchase='00000000-0000-0000-0000-000000000000'
+        is_purchase=not None
     )
     total_earned = 0
     total_spent = 0

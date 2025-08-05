@@ -51,7 +51,7 @@ class ClientBonusPoints(Base):
             client_id: int,
             sort,
             order: typing.Callable = asc,
-            is_purchase: str = None
+            is_purchase: bool = None
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             and_(
