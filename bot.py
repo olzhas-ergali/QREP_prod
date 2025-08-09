@@ -122,13 +122,13 @@ async def main():
     #     minutes=1,
     #     args=(db.pool, bot),
     # )
-    scheduler.add_job(
-        staff_task.push_staff_about_dismissal,
-        'cron',
-        hour=10,
-        minute=00,
-        args=(db.pool, bot)
-    )
+    # scheduler.add_job(
+    #     staff_task.push_staff_about_dismissal,
+    #     'cron',
+    #     hour=10,
+    #     minute=00,
+    #     args=(db.pool, bot)
+    # )
     # bot['redis'] = redis
 
     # register_all_middlewares(dp)

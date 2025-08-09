@@ -109,25 +109,40 @@ async def get_my_bonus_handler(
     _ = callback.bot.get('i18n')
     await state.finish()
     await callback.message.delete()
-    client_bonuses = await ClientBonusPoints.get_by_client_id(session=session, client_id=user.id)
+    client_bonuses = await ClientBonusPoints.get_all_by_client_id(session=session, client_id=user.id)
     available_bonus = 0
+    future_bonus = 0
     if client_bonuses:
         total_earned = 0
         total_spent = 0
+        total_future_spent = 0
+        total_future_earned = 0
         for bonus in client_bonuses:
             logging.info(f"accrued_points: {bonus.accrued_points}")
             logging.info(f"write_off_points: {bonus.write_off_points}")
-            total_earned += bonus.accrued_points if bonus.accrued_points else 0
-            total_spent += bonus.write_off_points if bonus.write_off_points else 0
+            if datetime.datetime.now().date() >= bonus.activation_date.date():
+                total_earned += bonus.accrued_points if bonus.accrued_points else 0
+                total_spent += bonus.write_off_points if bonus.write_off_points else 0
+            else:
+                total_future_earned += bonus.accrued_points if bonus.accrued_points else 0
+                total_future_spent += bonus.write_off_points if bonus.write_off_points else 0
         if total_earned > 0:
             available_bonus += total_earned
         if total_spent > 0:
             available_bonus -= total_spent
+        if total_future_earned > 0:
+            future_bonus += total_future_earned
+        if total_future_spent > 0:
+            future_bonus -= total_future_spent
     await callback.message.answer(
         _('''
-Ваш баланс кэшбэка: {cashback}\n
-Если сумма равна 0 ₸ — это значит, что вы ещё не совершали покупок или кэшбэк ещё не начислен (ожидает завершения возвратного периода — 14 дней).
-''').format(cashback=available_bonus if available_bonus > 0 else 0)
+Ваш баланс кэшбэка: {cashback} 
+Если сумма равна 0 , это может означать, что:
+• вы ещё не совершали покупок, или
+• кэшбэк по вашему заказу ещё не начислен — он будет зачислен на бонусный счёт через 14 дней после покупки.
+
+Ожидаемая сумма начисления: {future_bonus}
+''').format(cashback=available_bonus if available_bonus > 0 else 0, future_bonus=future_bonus)
     )
     btns = await get_faq_btns('main', _)
     await callback.message.answer(

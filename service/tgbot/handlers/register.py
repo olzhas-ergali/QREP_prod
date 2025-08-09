@@ -84,6 +84,12 @@ def register_client(dp):
         state=AuthClientState.waiting_phone
     )
 
+    dp.register_callback_query_handler(
+        client.auth.get_fio_handler,
+        query_cb.UniversalCallback.filter(action='confirm'),
+        state=AuthClientState.waiting_phone
+    )
+
     dp.register_message_handler(
         client.auth.get_years_handler,
         state=AuthClientState.waiting_name
@@ -117,6 +123,12 @@ def register_client(dp):
         client.auth.auth_email_handler,
         query_cb.GenderCallback.filter(action='gender'),
         state=AuthClientState.waiting_gender
+    )
+
+    dp.register_callback_query_handler(
+        client.auth.auth_client_handler,
+        query_cb.UniversalCallback.filter(action='email'),
+        state=AuthClientState.waiting_email
     )
 
     dp.register_message_handler(

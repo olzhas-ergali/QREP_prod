@@ -5,7 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
 from service.API.infrastructure.database.models import Client, ClientPurchase, ClientPurchaseReturn
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
-from service.API.infrastructure.utils.client_notification import send_notification_wa, send_notification_email
+from service.API.infrastructure.utils.client_notification import (send_notification_wa,
+                                                                  send_notification_email,
+                                                                  send_template_wa,
+                                                                  send_template_wa2,
+                                                                  send_template_telegram)
 
 
 async def bonus_notification(
@@ -18,6 +22,10 @@ async def bonus_notification(
         data=datetime.datetime.now().date()
     )
     clients_credits = {}
+    activities = {
+        'telegram': send_template_telegram,
+        'wb': send_template_wa2
+    }
     for r in client_bonuses:
         if not clients_credits.get(r.client_purchases_id):
             # purchase = await ClientPurchase.get_by_purchase_id(
@@ -54,6 +62,12 @@ async def bonus_notification(
             client_id=value.get('client_id')
         )
         value.get("formats_email")["client_name"] = client.name
+        await activities.get(client.activity)(
+            session=session,
+            event_type=EventType.points_credited_whatsapp if client.activity == 'wb' else EventType.points_telegram_credited,
+            client=client,
+            formats=value.get("formats_wa")
+        )
         # await send_notification_wa(
         #     session=session,
         #     event_type=EventType.points_credited_whatsapp,
@@ -123,7 +137,13 @@ async def bonus_notification(
                 client=client,
                 formats=value.get("formats")
             )
-        #else:
+        else:
+            await activities.get(client.activity)(
+                session=session,
+                event_type=EventType.points_debited_whatsapp,
+                client=client,
+                formats=value.get("formats")
+            )
             # await send_notification_wa(
             #     session=session,
             #     event_type=EventType.points_debited_whatsapp,

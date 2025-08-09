@@ -3,7 +3,7 @@ import typing
 import uuid
 
 from sqlalchemy import (Column, Integer, BigInteger, ForeignKey, Text, DateTime,
-                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc, Date)
+                        func, String, Boolean, select, UUID, DECIMAL, True_, desc, asc, Date, and_)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.tgbot.models.database.base import Base
@@ -67,6 +67,22 @@ class ClientBonusPoints(Base):
         ).order_by(asc(ClientBonusPoints.expiration_date))
 
         response = await session.execute(stmt)
+        return response.scalars().all()
+
+    @classmethod
+    async def get_all_by_client_id(
+            cls,
+            session: AsyncSession,
+            client_id: int
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            and_(
+                client_id == ClientBonusPoints.client_id,
+                datetime.datetime.now().date() <= func.cast(ClientBonusPoints.expiration_date, Date)
+            )
+        ).order_by(asc(ClientBonusPoints.expiration_date))
+        response = await session.execute(stmt)
+
         return response.scalars().all()
 
 

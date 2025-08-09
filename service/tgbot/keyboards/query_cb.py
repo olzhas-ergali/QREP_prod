@@ -60,7 +60,7 @@ LocalCallback = CallbackData(
     'action'
 )
 
-SkipCallback = CallbackData(
-    'handler',
+UniversalCallback = CallbackData(
+    'universal',
     'action'
 )

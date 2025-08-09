@@ -67,7 +67,6 @@ class ClientBonusPoints(Base):
 
         return response.scalars().all()
 
-
     @classmethod
     async def get_all_by_client_id(
             cls,

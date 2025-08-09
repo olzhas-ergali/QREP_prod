@@ -1,3 +1,4 @@
+from aiogram import Bot
 import typing
 import uuid
 from typing import Optional, Sequence
@@ -6,12 +7,13 @@ from datetime import datetime
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from service.API.config import settings
 from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn, Client
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
 from service.API.infrastructure.models.purchases import ModelClientBonus, ModelPurchaseClient, ModelClientPurchaseReturn
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
 from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
-                                                                  send_template_wa)
+                                                                  send_template_wa, send_template_telegram, send_template_wa2)
 
 
 async def add_purchases(
@@ -57,12 +59,17 @@ async def add_purchases(
         shift_number=purchases_model.shiftNumber,
         ticket_print_url=purchases_model.ticketPrintUrl,
         site_id=purchases_model.siteId,
-        mc_id=purchases_model.mcId
+        ms_id=purchases_model.msId
     )
     session.add(purchases)
     await session.commit()
-    order_number = purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+    order_number = purchases.ms_id if purchases.ms_id else purchases.ticket_print_url
     #client_bonus = None
+    #send_template_wa
+    activities = {
+        'telegram': send_template_telegram,
+        'wb': send_template_wa2
+    }
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()
@@ -92,7 +99,14 @@ async def add_purchases(
                 },
                 client=client
             )
-
+            await activities.get(client.activity)(
+                session=session,
+                event_type=EventType.points_debited_whatsapp if client.activity == 'wb' else EventType.points_telegram_debited,
+                client=client,
+                formats={
+                    "cashback": client_bonus.write_off_points
+                }
+            )
             # await send_template_wa(
             #     session=session,
             #     event_type=EventType.points_debited_whatsapp,
@@ -180,7 +194,7 @@ async def add_return_purchases(
         shift_number=purchase_return_model.shiftNumber,
         ticket_print_url=purchase_return_model.ticketPrintUrl,
         site_id=purchase_return_model.siteId,
-        mc_id=purchase_return_model.mcId
+        ms_id=purchase_return_model.msId
     )
     session.add(purchases)
     await session.commit()
