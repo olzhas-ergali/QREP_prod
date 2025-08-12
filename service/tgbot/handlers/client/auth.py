@@ -61,12 +61,13 @@ async def auth_fio_handler(
             #     user.gender = client.gender
             # user.name = client.name
             # user.birthday_date = client.birthday_date
-            client.id = user.id
+            user_id = user.id
             await session.delete(user)
             await session.commit()
 
             #user.phone_number = phone_number
             #await user.save(session)
+            client.id = user_id
             await client.save(session)
             await start_handler(
                 message=message,
