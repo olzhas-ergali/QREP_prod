@@ -282,7 +282,7 @@ async def send_template_telegram(
         local=client.local if client.local and client.local != "" else 'rus',
         audience_type="client"
     )
-    status = "Good",
+    status = "Good"
     message = ""
     try:
         await bot.send_message(
