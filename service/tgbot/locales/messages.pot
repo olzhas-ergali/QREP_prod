@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: QR_staff_bot 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-08-06 16:02+0600\n"
+"POT-Creation-Date: 2025-08-12 11:53+0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1267,13 +1267,13 @@ msgstr ""
 msgid "Отправляем файл..."
 msgstr ""
 
-#: misc/client/show_purchases.py:44 misc/staff/show_purchases.py:30
+#: misc/client/show_purchases.py:56 misc/staff/show_purchases.py:30
 msgid ""
 "Название товара: {name}\n"
 "Количество: {count}\n"
 msgstr ""
 
-#: misc/client/show_purchases.py:48
+#: misc/client/show_purchases.py:60
 msgid ""
 "Цена: {price}\n"
 "Скидка: {discountPercent}%\n"
@@ -1281,14 +1281,21 @@ msgid ""
 "Итого с учетом скидки: {totalDiscount}"
 msgstr ""
 
-#: misc/client/show_purchases.py:58 misc/staff/show_purchases.py:60
+#: misc/client/show_purchases.py:70 misc/staff/show_purchases.py:60
 msgid "Цена: {price}\n"
 msgstr ""
 
-#: misc/client/show_purchases.py:59
+#: misc/client/show_purchases.py:72
 msgid ""
 "Дата покупки: {created_date}\n"
 "Ссылка на чек: {ticket_print_url}\n"
+"\n"
+msgstr ""
+
+#: misc/client/show_purchases.py:78
+msgid ""
+"Дата покупки: {created_date}\n"
+"Дата возврата: {return_date}\n"
 "\n"
 msgstr ""
 
