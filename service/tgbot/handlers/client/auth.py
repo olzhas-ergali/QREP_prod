@@ -55,20 +55,22 @@ async def auth_fio_handler(
         phone=phone_number
     ):
         if client.id != user.id:
-            try:
-                user.gender = client.gender.decode("utf-8")
-            except:
-                user.gender = client.gender
-            user.name = client.name
-            user.birthday_date = client.birthday_date
-            await session.delete(client)
+            # try:
+            #     user.gender = client.gender.decode("utf-8")
+            # except:
+            #     user.gender = client.gender
+            # user.name = client.name
+            # user.birthday_date = client.birthday_date
+            client.id = user.id
+            await session.delete(user)
             await session.commit()
 
-            user.phone_number = phone_number
-            await user.save(session)
+            #user.phone_number = phone_number
+            #await user.save(session)
+            await client.save(session)
             await start_handler(
                 message=message,
-                user=user,
+                user=client,
                 state=state,
                 session=session
             )
