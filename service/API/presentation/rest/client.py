@@ -379,18 +379,18 @@ async def get_client_bonus_history(
     logging.info(f"ClinetID -> {client_b.phone_number}")
     logging.info(f"Lens -> {len(client_bonuses)}")
     #history = []
-    mc_ids = {}
+    ms_ids = {}
     for i, bonus in enumerate(client_bonuses):
         total_earned += bonus.accrued_points if bonus.accrued_points else 0
         total_spent += bonus.write_off_points if bonus.write_off_points else 0
-        if i >= offset and len(mc_ids) < limit:
+        if i >= offset and len(ms_ids) < limit:
             result = await ClientBonusPoints.get_sum_purchases_by_id(
                 session=session,
                 purchase_id=bonus.client_purchases_id
             )
             purchase = await session.get(ClientPurchase, bonus.client_purchases_id)
             logging.info(bonus.client_purchases_id)
-            if result <= 0 or not purchase.mc_id:
+            if result <= 0 or not purchase.ms_id:
                 continue
 
             # if bonus.client_purchases_return_id:
@@ -408,12 +408,12 @@ async def get_client_bonus_history(
                 exp_date = bonus.expiration_date.strftime("%Y-%m-%d")
             type_points = "accrual" if bonus.accrued_points else "write_off"
 
-            if not mc_ids.get(purchase.mc_id + "_" + type_points):
-                mc_ids[purchase.mc_id + "_" + type_points] = {
+            if not ms_ids.get(purchase.ms_id + "_" + type_points):
+                ms_ids[purchase.ms_id + "_" + type_points] = {
                     "purchase_id": bonus.client_purchases_id,
                     "source": bonus.source,
                     "siteId": purchase.site_id if purchase else None,
-                    "mcId": purchase.mc_id if purchase else None,
+                    "mcId": purchase.ms_id if purchase else None,
                     "operationDate": bonus.operation_date,
                     "createdAt": bonus.created_at,
                     "type": "accrual" if bonus.accrued_points else "write_off",
@@ -422,7 +422,7 @@ async def get_client_bonus_history(
                     "bonusExpirationDate": exp_date
                 }
             else:
-                mc_ids.get(purchase.mc_id + "_" + type_points)['points'] += points
+                ms_ids.get(purchase.ms_id + "_" + type_points)['points'] += points
             # history.append(
             #
             # )
@@ -441,7 +441,7 @@ async def get_client_bonus_history(
             "clientId": client_b.id,
             "clientName": client_b.name,
             "balance": available_bonus if available_bonus > 0 else 0,
-            "history": [val for k, val in mc_ids.items()]
+            "history": [val for k, val in ms_ids.items()]
         }
     }
 
