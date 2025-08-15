@@ -175,8 +175,8 @@ async def get_client_purchases(
             for bonus in client_bonuses:
                 logging.info(f"accrued_points: {bonus.accrued_points}")
                 logging.info(f"write_off_points: {bonus.write_off_points}")
-                if bonus.expiration_date.date() <= datetime.now().date():
-                    if datetime.now().date() >= bonus.activation_date.date() or bonus.expiration_date.date() is None:
+                if bonus.expiration_date.date() is None or bonus.expiration_date.date() <= datetime.now().date():
+                    if datetime.now().date() >= bonus.activation_date.date():
                         total_earned += bonus.accrued_points if bonus.accrued_points else 0
                         total_spent += bonus.write_off_points if bonus.write_off_points else 0
                     else:
