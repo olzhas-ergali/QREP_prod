@@ -75,10 +75,10 @@ class ClientBonusPoints(Base):
     ) -> typing.Sequence['ClientBonusPoints']:
         stmt = select(ClientBonusPoints).where(
             and_(
-                client_id == ClientBonusPoints.client_id,
-                datetime.datetime.now().date() <= func.cast(ClientBonusPoints.expiration_date, Date)
+                client_id == ClientBonusPoints.client_id
             )
         ).order_by(asc(ClientBonusPoints.expiration_date))
+        #                datetime.datetime.now().date() <= func.cast(ClientBonusPoints.expiration_date, Date)
         response = await session.execute(stmt)
 
         return response.scalars().all()
