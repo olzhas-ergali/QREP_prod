@@ -78,7 +78,7 @@ async def add_purchases(
     if promo and datetime.now().date() <= promo.end_date.date() and datetime.now().date() >= promo.start_date.date():
         price_sum = 0
         for p in purchases.products:
-            price_sum += p.get('sum') or p.get('price')
+            price_sum += (p.get('sum') or p.get('price')) * p.get('count')
         if price_sum >= 25000:
             promo = await generate_promo_code(
                 session=session,
@@ -234,7 +234,7 @@ async def add_return_purchases(
         promo = await PromoContests.get_active_promo(session=session)
         price_sum = 0
         for p in purchase_return_model.products:
-            price_sum += p.get('sum') or p.get('price')
+            price_sum += (p.get('sum') or p.get('price')) * p.get('count')
         promo.amount_effective = promo.amount_effective - price_sum
         if promo.amount_effective < 25000 and datetime.now().date() <= promo.date_exception.date():
             promo.annulled_at = datetime.now()
