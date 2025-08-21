@@ -15,7 +15,7 @@ from sqlalchemy import desc, asc
 from starlette import status
 from starlette.responses import RedirectResponse
 
-from service.API.infrastructure.database.cods import Cods
+from service.API.infrastructure.database.checks import PromoContests
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
@@ -23,7 +23,8 @@ from service.API.infrastructure.database.models import Client, ClientReview, Cli
 from service.API.infrastructure.utils.client_notification import (send_notification_from_client,
                                                                   push_client_answer_operator)
 from service.API.infrastructure.utils.parse import parse_phone, is_valid_date, parse_date
-from service.API.infrastructure.models.client import ModelAuth, ModelReview, ModelLead, ModelAuthSite, ModelTemplate, ModelVerification
+from service.API.infrastructure.models.client import (ModelAuth, ModelReview, ModelLead,
+                                                      ModelAuthSite, ModelTemplate, ModelVerification, ModelPromo)
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.database.notification import MessageTemplate, EventType
@@ -34,7 +35,6 @@ from service.tgbot.lib.bitrixAPI.leads import Leads
 from service.tgbot.data.faq import grade_text, grade_text_kaz
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
 from service.tgbot.lib.SendPlusAPI.templates import templates
-from service.API.infrastructure.utils.generate import generate_code
 from service.API.infrastructure.utils.types import Sort, Order
 
 router = APIRouter()
@@ -1016,7 +1016,7 @@ async def add_template_process(
 
 @router.get('/client/get_credits',
             tags=['dev'])
-async def add_template_process(
+async def get_credits_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         date_in: str
 ):
@@ -1053,7 +1053,7 @@ async def add_template_process(
 
 @router.get('/client/get_debits',
             tags=['dev'])
-async def add_template_process(
+async def get_debits_process(
         credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
         days: int
 ):
@@ -1101,3 +1101,20 @@ async def add_template_process(
 
     return results
 
+
+@router.post('/dev/promo/add',
+             tags=['dev'])
+async def add_promo_contests(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        model: ModelPromo
+):
+    session: AsyncSession = db_session.get()
+    promo = PromoContests(
+        contest_name=model.contestName,
+        start_date=model.startDate,
+        end_date=model.endDate,
+        date_exception=model.dateException if model.dateException else model.endDate,
+        is_active=True
+    )
+    session.add(promo)
+    await session.commit()

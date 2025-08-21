@@ -25,6 +25,7 @@ class EventType(enum.Enum):
     qr_wellcome_message = "qr_wellcome_message"
     points_telegram_debited = "points_telegram_debited"
     points_telegram_credited = "points_telegram_credited"
+    promo_message = "promo_message"
 
 
 class TriggerSource(enum.Enum):

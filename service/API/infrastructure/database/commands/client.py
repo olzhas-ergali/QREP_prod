@@ -10,10 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from service.API.config import settings
 from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn, Client
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
+from service.API.infrastructure.database.checks import PromoCheckParticipation, Status, PromoContests
 from service.API.infrastructure.models.purchases import ModelClientBonus, ModelPurchaseClient, ModelClientPurchaseReturn
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
 from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
                                                                   send_template_wa, send_template_telegram, send_template_wa2)
+from service.API.infrastructure.utils.generate import generate_promo_code
 
 
 async def add_purchases(
@@ -70,6 +72,31 @@ async def add_purchases(
         'telegram': send_template_telegram,
         'wb': send_template_wa2
     }
+    promo = await PromoContests.get_active_promo(session=session)
+    # date_start = datetime.strptime("27.08.2025", "%d.%m.%Y").date()
+    # date_end = datetime.strptime("27.09.2025", "%d.%m.%Y").date()
+    if promo and datetime.now().date() <= promo.end_date and datetime.now().date() >= promo.start_date:
+        price_sum = 0
+        for p in purchases.products:
+            price_sum += p.get('sum') or p.get('price')
+        if price_sum >= 25000:
+            promo = await generate_promo_code(
+                session=session,
+                purchase_id=purchases.id,
+                client_id=client.id,
+                price=price_sum,
+                promo_id=promo.promo_id
+            )
+            #"Вы участвуете в конкурсе Номер вашего участия: {promo_code}"
+            await send_notification_email(
+                session=session,
+                event_type=EventType.promo_message,
+                formats={
+                    "promo_code": promo.participation_number
+                },
+                client=client
+            )
+
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()
@@ -198,6 +225,30 @@ async def add_return_purchases(
     )
     session.add(purchases)
     await session.commit()
+    promo = await PromoCheckParticipation.get_promo_by_check_id(
+        session=session,
+        client_id=client.id,
+        purchase_id=purchases.purchase_id
+    )
+    if promo:
+        promo = await PromoContests.get_active_promo(session=session)
+        price_sum = 0
+        for p in purchase_return_model.products:
+            price_sum += p.get('sum') or p.get('price')
+        promo.amount_effective = promo.amount_effective - price_sum
+        if promo.amount_effective < 25000 and datetime.now().date() <= promo.date_exception.date():
+            promo.annulled_at = datetime.now()
+            promo.annul_reason = 'return'
+            promo.status = Status.annulled
+            #Ваш возврат оформлен Номер участия {promo_code} аннулирован
+            await send_notification_email(
+                session=session,
+                event_type=EventType.promo_message,
+                formats={
+                    "promo_code": promo.participation_number
+                },
+                client=client
+            )
     await ClientBonusPoints().delete_by_return_purchase_id(
         session=session,
         purchase_id=purchase_return_model.returnId
