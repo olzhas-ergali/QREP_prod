@@ -43,14 +43,13 @@ async def get_genders_ikb(
 
 
 async def get_universal_btn(
-        action: str,
-        text: str
+        text: str,
+        action: str
 ):
     markup = InlineKeyboardMarkup()
     btn = InlineKeyboardButton(
         text=text,
         callback_data=UniversalCallback.new(
-            universal="",
             action=action
         )
     )
