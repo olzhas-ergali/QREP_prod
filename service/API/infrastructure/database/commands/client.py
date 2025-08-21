@@ -75,7 +75,7 @@ async def add_purchases(
     promo = await PromoContests.get_active_promo(session=session)
     # date_start = datetime.strptime("27.08.2025", "%d.%m.%Y").date()
     # date_end = datetime.strptime("27.09.2025", "%d.%m.%Y").date()
-    if promo and datetime.now().date() <= promo.end_date and datetime.now().date() >= promo.start_date:
+    if promo and datetime.now().date() <= promo.end_date.date() and datetime.now().date() >= promo.start_date.date():
         price_sum = 0
         for p in purchases.products:
             price_sum += p.get('sum') or p.get('price')
