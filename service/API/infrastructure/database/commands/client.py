@@ -243,7 +243,7 @@ async def add_return_purchases(
             #Ваш возврат оформлен Номер участия {promo_code} аннулирован
             await send_notification_email(
                 session=session,
-                event_type=EventType.promo_message,
+                event_type=EventType.promo_message_annulled,
                 formats={
                     "promo_code": promo.participation_number
                 },
