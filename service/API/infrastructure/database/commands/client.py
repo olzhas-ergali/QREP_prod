@@ -72,10 +72,10 @@ async def add_purchases(
         'telegram': send_template_telegram,
         'wb': send_template_wa2
     }
-    promo = await PromoContests.get_active_promo(session=session)
+    promo_contests = await PromoContests.get_active_promo(session=session)
     # date_start = datetime.strptime("27.08.2025", "%d.%m.%Y").date()
     # date_end = datetime.strptime("27.09.2025", "%d.%m.%Y").date()
-    if promo and datetime.now().date() <= promo.end_date.date() and datetime.now().date() >= promo.start_date.date():
+    if promo_contests and datetime.now().date() <= promo_contests.end_date.date() and datetime.now().date() >= promo_contests.start_date.date():
         price_sum = 0
         for p in purchases.products:
             price_sum += (p.get('sum') or p.get('price')) * p.get('count')
@@ -85,7 +85,7 @@ async def add_purchases(
                 purchase_id=purchases.id,
                 client_id=client.id,
                 price=price_sum,
-                promo_id=promo.promo_id
+                promo_id=promo_contests.promo_id
             )
             #"Вы участвуете в конкурсе Номер вашего участия: {promo_code}"
             await send_notification_email(
@@ -231,12 +231,12 @@ async def add_return_purchases(
         purchase_id=purchases.purchase_id
     )
     if promo:
-        promo = await PromoContests.get_active_promo(session=session)
+        promo_contests = await PromoContests.get_active_promo(session=session)
         price_sum = 0
         for p in purchase_return_model.products:
             price_sum += (p.get('sum') or p.get('price')) * p.get('count')
         promo.amount_effective = promo.amount_effective - price_sum
-        if promo.amount_effective < 25000 and datetime.now().date() <= promo.date_exception.date():
+        if promo.amount_effective < 25000 and datetime.now().date() <= promo_contests.date_exception.date():
             promo.annulled_at = datetime.now()
             promo.annul_reason = 'return'
             promo.status = Status.annulled
