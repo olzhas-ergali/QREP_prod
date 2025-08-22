@@ -55,9 +55,9 @@ async def generate_promo_code(
     while time.time() < end_time:
 
         try:
-            unique_code = "QR2025-".join(random.choices(string.digits, k=6))
+            unique_code = "".join(random.choices(string.digits, k=6))
             code_model = PromoCheckParticipation(
-                participation_number=unique_code,
+                participation_number="QR2025-" + unique_code,
                 promo_id=promo_id,
                 check_id=purchase_id,
                 client_id=client_id,
