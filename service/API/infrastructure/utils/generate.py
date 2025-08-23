@@ -3,6 +3,7 @@ import logging
 import random
 import string
 import time
+import uuid
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,6 +58,7 @@ async def generate_promo_code(
         try:
             unique_code = "".join(random.choices(string.digits, k=6))
             code_model = PromoCheckParticipation(
+                participation_id=uuid.uuid4(),
                 participation_number="QR2025-" + unique_code,
                 promo_id=promo_id,
                 check_id=purchase_id,
