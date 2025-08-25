@@ -53,6 +53,7 @@ async def add_purchases(
 
     purchases = ClientPurchase(
         id=purchases_model.purchaseId,
+        source=purchases_model.source,
         source_system=purchases_model.sourceSystem,
         user_id=user_id,
         products=purchases_model.products,
@@ -212,6 +213,7 @@ async def add_return_purchases(
         await session.commit()
     purchases = ClientPurchaseReturn(
         purchase_id=purchase_return_model.purchaseId,
+        source=purchase_return_model.source,
         source_system=purchase_return_model.sourceSystem,
         user_id=user_id,
         products=purchase_return_model.products,
