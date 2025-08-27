@@ -75,3 +75,20 @@ class PromoCheckParticipation(Base):
         )
         return await session.scalar(stmt)
 
+
+class WhitelistDeliveryItemIds(Base):
+    __tablename__ = 'whitelist_delivery_items'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
+    name = Column(String)
+
+    @classmethod
+    async def get_delivery_ids(
+            cls,
+            session: AsyncSession
+    ) -> typing.List:
+        stmt = select(WhitelistDeliveryItemIds)
+        response = await session.execute(stmt)
+        items = response.scalars()
+        ids = [i.id for i in items]
+
+        return ids

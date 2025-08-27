@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from service.API.config import settings
 from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn, Client
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
-from service.API.infrastructure.database.checks import PromoCheckParticipation, Status, PromoContests
+from service.API.infrastructure.database.checks import PromoCheckParticipation, Status, PromoContests, WhitelistDeliveryItemIds
 from service.API.infrastructure.models.purchases import ModelClientBonus, ModelPurchaseClient, ModelClientPurchaseReturn
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
 from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
@@ -79,7 +79,9 @@ async def add_purchases(
     if promo_contests and datetime.now().date() <= promo_contests.end_date.date() and datetime.now().date() >= promo_contests.start_date.date():
         price_sum = 0
         for p in purchases.products:
-            price_sum += p.get('sum')
+            ids = await WhitelistDeliveryItemIds.get_delivery_ids(session)
+            if p.get("id") not in ids:
+                price_sum += p.get('sum')
         if price_sum >= 25000:
             promo = await generate_promo_code(
                 session=session,
