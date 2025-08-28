@@ -97,7 +97,8 @@ async def add_purchases(
                 session=session,
                 event_type=EventType.promo_message,
                 formats={
-                    "promo_code": promo.participation_number
+                    "promo_code": promo.participation_number,
+                    "name": client.name
                 },
                 client=client
             )
@@ -251,7 +252,8 @@ async def add_return_purchases(
                 session=session,
                 event_type=EventType.promo_message_annulled,
                 formats={
-                    "promo_code": promo.participation_number
+                    "promo_code": promo.participation_number,
+                    "name": client.name
                 },
                 client=client
             )
