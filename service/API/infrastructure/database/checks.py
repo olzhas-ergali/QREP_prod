@@ -89,6 +89,6 @@ class WhitelistDeliveryItemIds(Base):
         stmt = select(WhitelistDeliveryItemIds)
         response = await session.execute(stmt)
         items = response.scalars()
-        ids = [i.id for i in items]
+        ids = [str(i.id) for i in items]
 
         return ids
