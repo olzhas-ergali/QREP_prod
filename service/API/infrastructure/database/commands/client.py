@@ -82,7 +82,7 @@ async def add_purchases(
         price_sum = 0
         for p in purchases.products:
             ids = await WhitelistDeliveryItemIds.get_delivery_ids(session)
-            logging.info(p.get("id") + " " + p.get("name"))
+            logging.info(p.get("id") + " " + p.get("name") + " " + ids)
             price_sum += p.get('sum') if p.get("id") not in ids else 0
         if price_sum >= 25000:
             promo = await generate_promo_code(
