@@ -15,7 +15,7 @@ from sqlalchemy import desc, asc
 from starlette import status
 from starlette.responses import RedirectResponse
 
-from service.API.infrastructure.database.checks import PromoContests
+from service.API.infrastructure.database.checks import PromoContests, WhitelistDeliveryItemIds
 from service.API.domain.authentication import security, validate_security
 from service.API.infrastructure.database.commands import client
 from service.API.infrastructure.database.session import db_session
@@ -1118,3 +1118,12 @@ async def add_promo_contests(
     )
     session.add(promo)
     await session.commit()
+
+
+@router.get("/dev/white-list/ids",
+            tags=['dev'])
+async def get_white_list_ids(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)]
+):
+    session: AsyncSession = db_session.get()
+    return await WhitelistDeliveryItemIds.get_delivery_ids(session=session)
