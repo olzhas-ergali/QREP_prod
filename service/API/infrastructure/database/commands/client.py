@@ -73,7 +73,7 @@ async def add_purchases(
     #send_template_wa
     activities = {
         'telegram': send_template_telegram,
-        'wb': send_template_wa2
+        'wb': send_template_wa
     }
     promo_contests = await PromoContests.get_active_promo(session=session)
     # date_start = datetime.strptime("27.08.2025", "%d.%m.%Y").date()
@@ -132,7 +132,7 @@ async def add_purchases(
                 },
                 client=client
             )
-            await activities.get(client.activity)(
+            await activities.get("wb")(
                 session=session,
                 event_type=EventType.points_debited_whatsapp if client.activity == 'wb' else EventType.points_telegram_debited,
                 client=client,
