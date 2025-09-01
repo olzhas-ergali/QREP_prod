@@ -280,7 +280,7 @@ class ClientPurchase(Base):
         lazy='selectin'
     )
     site_id = Column(String)
-    mc_id = Column(String)
+    ms_id = Column(String)
 
     @classmethod
     async def get_by_client_id(
@@ -340,7 +340,7 @@ class ClientPurchaseReturn(Base):
         lazy='selectin'
     )
     site_id = Column(String)
-    mc_id = Column(String)
+    ms_id = Column(String)
 
     @classmethod
     async def get_by_purchase_id(

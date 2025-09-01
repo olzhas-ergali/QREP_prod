@@ -2,7 +2,7 @@ import typing
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from service.tgbot.keyboards.query_cb import GenderCallback
+from service.tgbot.keyboards.query_cb import GenderCallback, UniversalCallback
 from service.tgbot.keyboards import generate
 from service.tgbot.keyboards.query_cb import ChoiceCallback
 
@@ -39,6 +39,21 @@ async def get_genders_ikb(
 
     markup.add(man)
     markup.add(women)
+    return markup
+
+
+async def get_universal_btn(
+        text: str,
+        action: str
+):
+    markup = InlineKeyboardMarkup()
+    btn = InlineKeyboardButton(
+        text=text,
+        callback_data=UniversalCallback.new(
+            action=action
+        )
+    )
+    markup.add(btn)
     return markup
 
 

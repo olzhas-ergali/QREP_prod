@@ -196,6 +196,17 @@ async def send_notification_wa(
     await session.close()
 
 
+async def send_template_wa2(
+        session: AsyncSession,
+        event_type: EventType,
+        formats: dict,
+        client: Client,
+        phone_number: str = None,
+        local: str = None
+):
+    pass
+
+
 async def send_template_wa(
         session: AsyncSession,
         event_type: EventType,
@@ -255,4 +266,43 @@ async def send_template_wa(
     await session.close()
 
     return result
-    
+
+
+async def send_template_telegram(
+        session: AsyncSession,
+        event_type: EventType,
+        formats: dict,
+        client: Client
+):
+    bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
+    template = await MessageTemplate.get_message_template(
+        session=session,
+        channel="Telegram",
+        event_type=event_type,
+        local=client.local if client.local and client.local != "" else 'rus',
+        audience_type="client"
+    )
+    status = "Good"
+    message = ""
+    try:
+        await bot.send_message(
+            text=template.body_template.format(**formats),
+            chat_id=client.id
+        )
+    except Exception as ex:
+        status = "Error"
+        message = ex
+    log = MessageLog(
+        id=uuid.uuid4(),
+        client_id=client.id if client else 5,
+        channel="Telegram",
+        event_type=event_type,
+        status=status,
+        error_message=message,
+        message_content=client.local
+    )
+    session.add(log)
+    await session.commit()
+    await session.close()
+
+

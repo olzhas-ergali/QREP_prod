@@ -15,7 +15,7 @@ from service.tgbot.misc.parse import parse_phone, is_mail_valid
 from service.tgbot.misc.delete import remove
 from service.tgbot.modules.OneС.Function_1C import authorization
 from service.tgbot.keyboards.client.calendar import make_ikb_calendar, make_year_ikb
-from service.tgbot.keyboards.client.client import get_genders_ikb
+from service.tgbot.keyboards.client.client import get_genders_ikb, get_universal_btn
 
 
 async def auth_phone_handler(
@@ -55,20 +55,23 @@ async def auth_fio_handler(
         phone=phone_number
     ):
         if client.id != user.id:
-            try:
-                user.gender = client.gender.decode("utf-8")
-            except:
-                user.gender = client.gender
-            user.name = client.name
-            user.birthday_date = client.birthday_date
-            await session.delete(client)
+            # try:
+            #     user.gender = client.gender.decode("utf-8")
+            # except:
+            #     user.gender = client.gender
+            # user.name = client.name
+            # user.birthday_date = client.birthday_date
+            user_id = user.id
+            await session.delete(user)
             await session.commit()
 
-            user.phone_number = phone_number
-            await user.save(session)
+            #user.phone_number = phone_number
+            #await user.save(session)
+            client.id = user_id
+            await client.save(session)
             await start_handler(
                 message=message,
-                user=user,
+                user=client,
                 state=state,
                 session=session
             )
@@ -97,10 +100,28 @@ async def auth_fio_handler(
             _("Чтобы зарегистрироваться в программе лояльности QR+, пожалуйста, "
               "ответьте на несколько вопросов. Это займёт не более минуты 😊")
         )
+
         await message.answer(
-            _("Пожалуйста, укажите ваше ФИО:")
+            _("Прежде чем начать, пожалуйста, ознакомьтесь с "
+              "политикой конфиденциальности\nhttps://qazaqrepublic.com/ru/privacy и подтвердите согласие."
+              "\n\nНажмите «Принять», чтобы продолжить.",),
+            reply_markup=await get_universal_btn(_("Принять"), 'confirm')
         )
-        await AuthClientState.waiting_name.set()
+
+
+async def get_fio_handler(
+        callback: CallbackQuery
+        # user: Client,
+        # session: AsyncSession,
+        # state: FSMContext,
+        # reg: RegTemp
+):
+    _ = callback.message.bot.get("i18n")
+    await callback.message.delete()
+    await callback.message.answer(
+        _("Пожалуйста, укажите ваше ФИО:")
+    )
+    await AuthClientState.waiting_name.set()
 
 
 async def get_years_handler(
@@ -218,7 +239,8 @@ async def auth_email_handler(
     await state.update_data(gender=callback_data.get('gender'))
     await query.message.delete()
     await query.message.answer(
-        _("Остался последний шаг — укажите e-mail, чтобы получать напоминания о кэшбеке.")
+        _("Остался последний шаг — укажите e-mail, чтобы получать напоминания о кэшбеке."),
+        reply_markup=await get_universal_btn(_("Пропустить"), 'email')
     )
     await AuthClientState.waiting_email.set()
     reg.state = "AuthClientState.waiting_email"
@@ -229,20 +251,26 @@ async def auth_email_handler(
 
 
 async def auth_client_handler(
-        message: Message,
+        message: Message | CallbackQuery,
         user: Client,
         state: FSMContext,
         session: AsyncSession,
         reg: RegTemp
 ):
     _ = message.bot.get("i18n")
-    await message.delete()
-    if not is_mail_valid(message.text):
-        await message.answer(
-            _("📧 Похоже, email указан с ошибкой. Пример корректного адреса: test@example.com")
-        )
     data = reg.state_data
-    user.email = message.text
+    if isinstance(message, Message):
+        await message.delete()
+        if not is_mail_valid(message.text):
+            await message.answer(
+                _("📧 Похоже, email указан с ошибкой. Пример корректного адреса: test@example.com"),
+                reply_markup=await get_universal_btn(_("Пропустить"), 'email')
+            )
+        user.email = message.text
+    if isinstance(message, CallbackQuery):
+        user.email = "test@example.com"
+        await message.message.delete()
+        message = message.message
     user.phone_number = data.get('phone')
     user.name = data.get('name')
     user.gender = data.get('gender')

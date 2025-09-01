@@ -59,3 +59,8 @@ LocalCallback = CallbackData(
     "lang",
     'action'
 )
+
+UniversalCallback = CallbackData(
+    'universal',
+    'action'
+)

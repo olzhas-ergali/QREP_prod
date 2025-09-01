@@ -1,3 +1,4 @@
+import typing
 from datetime import datetime
 from typing import Sequence, Optional
 from sqlalchemy import select, extract
@@ -51,3 +52,16 @@ async def is_return_purchases(
                 return True
 
     return False
+
+
+async def get_return_client_purchases(
+        session: AsyncSession,
+        purchase_id: str
+) -> typing.Sequence[ClientPurchaseReturn]:
+    stmt = select(ClientPurchaseReturn).where(
+        ClientPurchaseReturn.purchase_id == purchase_id
+    )
+    response = await session.execute(stmt)
+    purchases = response.scalars().all()
+
+    return purchases

@@ -62,7 +62,7 @@ class ModelPurchaseClient(BaseModel):
     ticketPrintUrl: typing.Optional[str] = None
     bonus: typing.List[ModelClientBonus] = None
     siteId: typing.Optional[str] = None
-    mcId: typing.Optional[str] = None
+    msId: typing.Optional[str] = None
 
 
 class ModelClientPurchaseReturn(BaseModel):
@@ -81,7 +81,7 @@ class ModelClientPurchaseReturn(BaseModel):
     ticketPrintUrl: typing.Optional[str] = None
     bonus: typing.List[ModelClientBonus] = None
     siteId: typing.Optional[str] = None
-    mcId: typing.Optional[str] = None
+    msId: typing.Optional[str] = None
     
 
 class ModelUser(BaseModel):

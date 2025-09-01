@@ -5,6 +5,7 @@ from fastapi import Query, Body
 from pydantic import BaseModel
 from service.API.infrastructure.database.notification import EventType
 
+
 class ModelClient(BaseModel):
     telegramId: typing.Optional[int] = None
 
@@ -55,3 +56,10 @@ class ModelVerification(BaseModel):
     phoneNumber: typing.Optional[str] = None
     code: typing.Optional[str] = None
     local: typing.Optional[str] = None
+
+
+class ModelPromo(BaseModel):
+    contestName: typing.Optional[str] = None
+    startDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
+    endDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
+    dateException: typing.Optional[datetime.datetime] = None

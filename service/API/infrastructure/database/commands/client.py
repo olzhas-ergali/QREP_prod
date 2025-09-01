@@ -1,3 +1,6 @@
+import logging
+
+from aiogram import Bot
 import typing
 import uuid
 from typing import Optional, Sequence
@@ -6,12 +9,15 @@ from datetime import datetime
 from sqlalchemy import select, update, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from service.API.config import settings
 from service.API.infrastructure.database.models import ClientPurchase, ClientPurchaseReturn, Client
 from service.API.infrastructure.database.loyalty import ClientBonusPoints
+from service.API.infrastructure.database.checks import PromoCheckParticipation, Status, PromoContests, WhitelistDeliveryItemIds
 from service.API.infrastructure.models.purchases import ModelClientBonus, ModelPurchaseClient, ModelClientPurchaseReturn
 from service.API.infrastructure.database.notification import MessageLog, MessageTemplate, EventType
 from service.API.infrastructure.utils.client_notification import (send_notification_wa, send_notification_email,
-                                                                  send_template_wa)
+                                                                  send_template_wa, send_template_telegram, send_template_wa2)
+from service.API.infrastructure.utils.generate import generate_promo_code
 
 
 async def add_purchases(
@@ -49,6 +55,7 @@ async def add_purchases(
 
     purchases = ClientPurchase(
         id=purchases_model.purchaseId,
+        source=purchases_model.source,
         source_system=purchases_model.sourceSystem,
         user_id=user_id,
         products=purchases_model.products,
@@ -57,12 +64,45 @@ async def add_purchases(
         shift_number=purchases_model.shiftNumber,
         ticket_print_url=purchases_model.ticketPrintUrl,
         site_id=purchases_model.siteId,
-        mc_id=purchases_model.mcId
+        ms_id=purchases_model.msId
     )
     session.add(purchases)
     await session.commit()
-    order_number = purchases.mc_id if purchases.mc_id else purchases.ticket_print_url
+    order_number = purchases.ms_id if purchases.ms_id else purchases.ticket_print_url
     #client_bonus = None
+    #send_template_wa
+    activities = {
+        'telegram': send_template_telegram,
+        'wb': send_template_wa2
+    }
+    promo_contests = await PromoContests.get_active_promo(session=session)
+    # date_start = datetime.strptime("27.08.2025", "%d.%m.%Y").date()
+    # date_end = datetime.strptime("27.09.2025", "%d.%m.%Y").date()
+    if promo_contests and datetime.now().date() <= promo_contests.end_date.date() and datetime.now().date() >= promo_contests.start_date.date():
+        price_sum = 0
+        for p in purchases.products:
+            ids = await WhitelistDeliveryItemIds.get_delivery_ids(session)
+            #logging.info(p.get("id") + " " + p.get("name"))
+            price_sum += p.get('sum') if p.get("id") not in ids else 0
+        if price_sum >= 25000:
+            promo = await generate_promo_code(
+                session=session,
+                purchase_id=purchases.id,
+                client_id=client.id,
+                price=price_sum,
+                promo_id=promo_contests.promo_id
+            )
+            #"Вы участвуете в конкурсе Номер вашего участия: {promo_code}"
+            await send_notification_email(
+                session=session,
+                event_type=EventType.promo_message,
+                formats={
+                    "promo_code": promo.participation_number,
+                    "name": client.name
+                },
+                client=client
+            )
+
     for bonus in bonuses:
         client_bonus = ClientBonusPoints()
         client_bonus.id = uuid.uuid4()
@@ -92,15 +132,22 @@ async def add_purchases(
                 },
                 client=client
             )
-
-            await send_template_wa(
+            await activities.get(client.activity)(
                 session=session,
-                event_type=EventType.points_debited_whatsapp,
+                event_type=EventType.points_debited_whatsapp if client.activity == 'wb' else EventType.points_telegram_debited,
                 client=client,
                 formats={
                     "cashback": client_bonus.write_off_points
                 }
             )
+            # await send_template_wa(
+            #     session=session,
+            #     event_type=EventType.points_debited_whatsapp,
+            #     client=client,
+            #     formats={
+            #         "cashback": client_bonus.write_off_points
+            #     }
+            # )
         elif client_bonus.accrued_points > 0:
             if client_p is None or len(client_p) == 0:
                 await send_notification_email(
@@ -171,6 +218,7 @@ async def add_return_purchases(
         await session.commit()
     purchases = ClientPurchaseReturn(
         purchase_id=purchase_return_model.purchaseId,
+        source=purchase_return_model.source,
         source_system=purchase_return_model.sourceSystem,
         user_id=user_id,
         products=purchase_return_model.products,
@@ -180,10 +228,35 @@ async def add_return_purchases(
         shift_number=purchase_return_model.shiftNumber,
         ticket_print_url=purchase_return_model.ticketPrintUrl,
         site_id=purchase_return_model.siteId,
-        mc_id=purchase_return_model.mcId
+        ms_id=purchase_return_model.msId
     )
     session.add(purchases)
     await session.commit()
+    promo = await PromoCheckParticipation.get_promo_by_check_id(
+        session=session,
+        client_id=client.id,
+        purchase_id=purchases.purchase_id
+    )
+    if promo:
+        promo_contests = await PromoContests.get_active_promo(session=session)
+        price_sum = 0
+        for p in purchase_return_model.products:
+            price_sum += p.get('sum')
+        promo.amount_effective = promo.amount_effective - price_sum
+        if promo.amount_effective < 25000 and datetime.now().date() <= promo_contests.date_exception.date():
+            promo.annulled_at = datetime.now()
+            promo.annul_reason = 'return'
+            promo.status = Status.annulled
+            #Ваш возврат оформлен Номер участия {promo_code} аннулирован
+            await send_notification_email(
+                session=session,
+                event_type=EventType.promo_message_annulled,
+                formats={
+                    "promo_code": promo.participation_number,
+                    "name": client.name
+                },
+                client=client
+            )
     await ClientBonusPoints().delete_by_return_purchase_id(
         session=session,
         purchase_id=purchase_return_model.returnId
