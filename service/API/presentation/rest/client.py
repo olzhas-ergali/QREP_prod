@@ -722,10 +722,14 @@ async def client_create(
         "message": "Клиент успешно обновлен"
     }
     if not model_client.phoneNumber:
-        return {
-            "statusСode": 400,
-            "message": "Не заполнен телефон"
-        }
+        raise HTTPException(
+            status_code=400,
+            detail="Не заполнен телефон"
+        )
+        # return {
+        #     "statusСode": 400,
+        #     "message": "Не заполнен телефон"
+        # }
     try:
         bot = Bot(token=settings.tg_bot.bot_token, parse_mode='HTML')
         if not (client := await Client.get_client_by_phone(
@@ -734,10 +738,14 @@ async def client_create(
         ):
             client = Client()
             if not re.match(r'(?<!\d)\d{8,15}(?!\d)', parse_phone(model_client.phoneNumber)):
-                return {
-                    "statusСode": 400,
-                    "message": "Не правильный формат номера"
-                }
+                raise HTTPException(
+                    status_code=400,
+                    detail="Не правильный формат номера"
+                )
+                # return {
+                #     "statusСode": 400,
+                #     "message": "Не правильный формат номера"
+                # }
             client.phone_number = parse_phone(model_client.phoneNumber)
             client.source = model_client.source
             client.is_active = True
@@ -754,50 +762,78 @@ async def client_create(
         if model_client.birthDate:
             date = await parse_date(model_client.birthDate)
             if date is None:
-                return {
-                    "statusСode": 400,
-                    "message": "Не правильный формат даты"
-                }
+                raise HTTPException(
+                    status_code=400,
+                    detail="Не правильный формат даты"
+                )
+                # return {
+                #     "statusСode": 400,
+                #     "message": "Не правильный формат даты"
+                # }
             downgrade_date = datetime.datetime.strptime("01.01.1900", "%d.%m.%Y")
             if date.date() >= datetime.datetime.now().date():
-                return {
-                    "statusСode": 400,
-                    "message": "Дата рождения не может быть позже текущей даты"
-                }
+                raise HTTPException(
+                    status_code=400,
+                    detail="Дата рождения не может быть позже текущей даты"
+                )
+                # return {
+                #     "statusСode": 400,
+                #     "message": "Дата рождения не может быть позже текущей даты"
+                # }
             if date < downgrade_date:
-                return {
-                    "statusСode": 400,
-                    "message": "Дата рождения не может быть раньше 01.01.1900"
-                }
+                raise HTTPException(
+                    status_code=400,
+                    detail="Дата рождения не может быть раньше 01.01.1900"
+                )
+                # return {
+                #     "statusСode": 400,
+                #     "message": "Дата рождения не может быть раньше 01.01.1900"
+                # }
             client.birthday_date = date
         if model_client.gender:
             if model_client.gender != 'F' and model_client.gender != 'M':
-                return {
-                    "statusСode": 400,
-                    "message": "Не правильно заполнен гендер"
-                }
+                raise HTTPException(
+                    status_code=400,
+                    detail="Не правильно заполнен гендер"
+                )
+                # return {
+                #     "statusСode": 400,
+                #     "message": "Не правильно заполнен гендер"
+                # }
             client.gender = model_client.gender
         if model_client.email:
             if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', model_client.email):
-                return {
-                    "statusСode": 400,
-                    "message": "Не правильный email"
-                }
+                raise HTTPException(
+                    status_code=400,
+                    detail="Не правильный email"
+                )
+                # return {
+                #     "statusСode": 400,
+                #     "message": "Не правильный email"
+                # }
             client.email = model_client.email
         else:
-            return {
-                "statusСode": 400,
-                "message": "Не заполнен email"
-            }
+            raise HTTPException(
+                status_code=400,
+                detail="Не заполнен email"
+            )
+            # return {
+            #     "statusСode": 400,
+            #     "message": "Не заполнен email"
+            # }
         session.add(client)
         await session.commit()
         return answer
     except HTTPException as ex:
         print(ex)
-        return {
-            "statusСode": 400,
-            "message": "Некорректный формат данных"
-        }
+        raise HTTPException(
+            status_code=400,
+            detail="Некорректный формат данных"
+        )
+        # return {
+        #     "statusСode": 400,
+        #     "message": "Некорректный формат данных"
+        # }
 
 
 @router.get("/client/validation_date",

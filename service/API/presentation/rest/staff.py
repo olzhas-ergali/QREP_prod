@@ -138,11 +138,14 @@ async def get_user_info_process(
             "activity": client.activity,
             "isStaff": False
         }
-
-    return {
-        "status_code": 404,
-        "message": "Пользователь с указанным номером не найден."
-    }
+    HTTPException(
+        status_code=404,
+        detail="Пользователь с указанным номером не найден."
+    )
+    # return {
+    #     "status_code": 404,
+    #     "message": "Пользователь с указанным номером не найден."
+    # }
 
 
 @router.post('/api/employees', tags=['staff'], summary="Метод что бы добавить сотрудника")
