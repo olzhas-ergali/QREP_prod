@@ -134,7 +134,8 @@ async def add_purchases(
             )
             await activities.get("wb")(
                 session=session,
-                event_type=EventType.points_debited_whatsapp if client.activity == 'wb' else EventType.points_telegram_debited,
+                event_type=EventType.points_debited_whatsapp,
+                #if client.activity == 'wb' else EventType.points_telegram_debited,
                 client=client,
                 formats={
                     "cashback": client_bonus.write_off_points

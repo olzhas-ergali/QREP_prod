@@ -64,7 +64,8 @@ async def bonus_notification(
         value.get("formats_email")["client_name"] = client.name
         await activities.get("wb")(
             session=session,
-            event_type=EventType.points_credited_whatsapp if client.activity == 'wb' else EventType.points_telegram_credited,
+            event_type=EventType.points_credited_whatsapp,
+            #if client.activity == 'wb' else EventType.points_telegram_credited,
             client=client,
             formats=value.get("formats_wa")
         )
