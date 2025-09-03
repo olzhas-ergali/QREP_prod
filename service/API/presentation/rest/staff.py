@@ -138,7 +138,7 @@ async def get_user_info_process(
             "activity": client.activity,
             "isStaff": False
         }
-    HTTPException(
+    raise HTTPException(
         status_code=404,
         detail="Пользователь с указанным номером не найден."
     )
