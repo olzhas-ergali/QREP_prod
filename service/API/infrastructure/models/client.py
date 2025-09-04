@@ -69,4 +69,3 @@ class ModelNewsletter(BaseModel):
     title: typing.Optional[str] = None
     body: typing.Optional[str] = None
     ids: typing.List[str] = None
-    formats: typing.Optional[dict] = None

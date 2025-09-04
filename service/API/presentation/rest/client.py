@@ -1185,7 +1185,9 @@ async def send_newsletter_functions(
             title=model.title,
             body=model.body,
             client=c,
-            formats=model.formats
+            formats={
+                "name": c.name
+            }
         )
 
 
