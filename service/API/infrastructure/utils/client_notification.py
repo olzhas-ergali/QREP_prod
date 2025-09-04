@@ -102,9 +102,11 @@ async def push_client_answer_operator(
 
 async def send_notification_email(
         session: AsyncSession,
-        event_type: EventType,
         formats: dict,
-        client: Client
+        client: Client,
+        event_type: EventType = None,
+        title: str = None,
+        body: str = None
 ):
     wb = SendPlus(
         client_id=settings.wb_cred.client_id,
@@ -114,21 +116,24 @@ async def send_notification_email(
     mail = Mail()
     local = await wb.get_local_by_phone(client.phone_number)
     logging.info(local)
-    template = await MessageTemplate.get_message_template(
-        session=session,
-        channel="Email",
-        event_type=event_type,
-        local=local if local and local != "" else 'rus',
-        audience_type="client"
-    )
+    if event_type:
+        template = await MessageTemplate.get_message_template(
+            session=session,
+            channel="Email",
+            event_type=event_type,
+            local=local if local and local != "" else 'rus',
+            audience_type="client"
+        )
+        body = template.body_template.format(**formats)
+        title = template.title_template
     status = "Error"
     message = "Email doesn't exist"
     if client.email:
         status = "Good"
         message = ""
         await mail.send_message(
-            message=template.body_template.format(**formats),
-            subject=template.title_template,
+            message=body,
+            subject=title,
             to_address=[client.email]
         )
     log = MessageLog(
@@ -138,7 +143,7 @@ async def send_notification_email(
         event_type=event_type,
         status=status,
         error_message=message,
-        message_content=template.body_template.format(**formats)
+        message_content=body
     )
 
     session.add(log)

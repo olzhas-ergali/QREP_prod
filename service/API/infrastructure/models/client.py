@@ -63,3 +63,10 @@ class ModelPromo(BaseModel):
     startDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     endDate: typing.Optional[datetime.datetime] = datetime.datetime.now()
     dateException: typing.Optional[datetime.datetime] = None
+
+
+class ModelNewsletter(BaseModel):
+    title: typing.Optional[str] = None
+    body: typing.Optional[str] = None
+    ids: typing.List[str] = None
+    formats: typing.Optional[dict] = None

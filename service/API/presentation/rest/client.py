@@ -24,7 +24,8 @@ from service.API.infrastructure.utils.client_notification import (send_notificat
                                                                   push_client_answer_operator)
 from service.API.infrastructure.utils.parse import parse_phone, is_valid_date, parse_date
 from service.API.infrastructure.models.client import (ModelAuth, ModelReview, ModelLead,
-                                                      ModelAuthSite, ModelTemplate, ModelVerification, ModelPromo)
+                                                      ModelAuthSite, ModelTemplate, ModelVerification,
+                                                      ModelPromo, ModelNewsletter)
 from service.API.infrastructure.models.purchases import (ModelPurchase, ModelPurchaseReturn,
                                                          ModelPurchaseClient, ModelClientPurchaseReturn)
 from service.API.infrastructure.database.notification import MessageTemplate, EventType
@@ -36,6 +37,7 @@ from service.tgbot.data.faq import grade_text, grade_text_kaz
 from service.tgbot.lib.SendPlusAPI.send_plus import SendPlus
 from service.tgbot.lib.SendPlusAPI.templates import templates
 from service.API.infrastructure.utils.types import Sort, Order
+from service.API.infrastructure.utils.client_notification import send_notification_email
 
 router = APIRouter()
 
@@ -1164,3 +1166,26 @@ async def get_white_list_ids(
 ):
     session: AsyncSession = db_session.get()
     return await WhitelistDeliveryItemIds.get_delivery_ids(session=session)
+
+
+@router.post("/dev/send/newsletter",
+             tags=['dev'])
+async def send_newsletter_functions(
+        credentials: typing.Annotated[HTTPBasicCredentials, Depends(validate_security)],
+        model: ModelNewsletter
+):
+    session: AsyncSession = db_session.get()
+    for client_id in model.ids:
+        c = await Client.get_client_by_id(
+            client_id=client_id,
+            session=session
+        )
+        await send_notification_email(
+            session=session,
+            title=model.title,
+            body=model.body,
+            client=c,
+            formats=model.formats
+        )
+
+
