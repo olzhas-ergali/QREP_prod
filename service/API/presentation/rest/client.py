@@ -1183,11 +1183,9 @@ async def send_newsletter_functions(
         await send_notification_email(
             session=session,
             title=model.title,
-            body=model.body,
+            body=model.body.format(name=c.name),
             client=c,
-            formats={
-                "name": c.name
-            }
+            formats={}
         )
     return {
         "message": "Сообщение отправлено"
