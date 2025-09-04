@@ -1189,5 +1189,7 @@ async def send_newsletter_functions(
                 "name": c.name
             }
         )
-
+    return {
+        "message": "Сообщение отправлено"
+    }
 
