@@ -59,7 +59,7 @@ async def bonus_notification(
     for key, value in clients_credits.items():
         client = await Client.get_client_by_id(
             session=session,
-            client_id=value.get('client_id')
+            client_id=int(value.get('client_id'))
         )
         value.get("formats_email")["client_name"] = client.name
         await activities.get("wb")(
@@ -128,7 +128,7 @@ async def bonus_notification(
     for key, value in clients_debits.items():
         client = await Client.get_client_by_id(
             session=session,
-            client_id=value.get('client_id')
+            client_id=int(value.get('client_id'))
         )
         value.get("formats")["client_name"] = client.name
         if value.get("formats").get('days_left'):

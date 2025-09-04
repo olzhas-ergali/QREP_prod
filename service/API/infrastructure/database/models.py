@@ -249,7 +249,7 @@ class Client(Base):
     async def get_client_by_id(
             cls,
             session: AsyncSession,
-            client_id: str
+            client_id: int
     ) -> 'Client':
         stmt = select(Client).where(
             client_id == Client.id
