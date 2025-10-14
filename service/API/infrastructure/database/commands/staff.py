@@ -7,6 +7,7 @@ from typing import Sequence, Optional
 
 from aiogram import Bot
 from sqlalchemy import select, update, extract
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from service.API.infrastructure.database.models import (User, Purchase, UserTemp, PurchaseReturn, Client,
@@ -291,14 +292,24 @@ async def add_employees(
         position_name: typing.Optional[str] = None,
         bot: typing.Optional[Bot] = None
 ):
+    clean_date_receipt = date_receipt if date_receipt else None
+    clean_date_dismissal = date_dismissal if date_dismissal else None
+
+    if clean_date_receipt and clean_date_dismissal:
+        if clean_date_receipt > clean_date_dismissal:
+            raise HTTPException(
+                status_code=400,
+                detail="Ошибка: Дата приема на работу не может быть позже даты увольнения."
+            )
+
     now = datetime.now()
     await add_staff_vacation(
         session,
         iin,
         fullname,
-        date_receipt,
+        clean_date_receipt,
         id_staff,
-        date_dismissal is not None
+        clean_date_dismissal is not None
     )
     if not (user := await session.get(UserTemp, id_staff)):
         user = UserTemp(
@@ -331,9 +342,9 @@ async def add_employees(
 '''
         }
         if date_dismissal:
-            user_tg.date_dismissal = date_dismissal
-            user_tg.iin = None if date_dismissal.date() == now.date() else user_tg.iin
-            user_tg.is_active = False if date_dismissal.date() == now.date() else True
+            user_tg.date_dismissal = clean_date_dismissal
+            user_tg.iin = None if clean_date_dismissal.date() == now.date() else user_tg.iin
+            user_tg.is_active = False if clean_date_dismissal.date() == now.date() else True
         else:
             #user_tg.phone_number = phone
             user.name = fullname
@@ -361,8 +372,8 @@ async def add_employees(
     user.iin = iin
     user.name = fullname
     user.author = author
-    user.date_receipt = date_receipt
-    user.date_dismissal = date_dismissal
+    user.date_receipt = clean_date_receipt
+    user.date_dismissal = clean_date_receipt
     user.update_data = datetime.today()
     user.organization_id = organization_id
     user.organization_name = organization_name
