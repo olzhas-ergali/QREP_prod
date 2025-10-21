@@ -12,6 +12,12 @@ class RevenueDateModel(BaseModel):
     documentType: typing.Optional[str] = None
     checks: typing.Optional[int] = None
     returns: typing.Optional[int] = None
+    
+    # --- Новые поля ---
+    countreturns: typing.Optional[int] = 0
+    amountWithVATreturns: typing.Optional[float] = 0.0
+    amountWithoutVATreturns: typing.Optional[float] = 0.0
+    
     data: typing.List[dict] = None
 
     #productName: typing.Optional[str] = None

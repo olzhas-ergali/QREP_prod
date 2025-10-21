@@ -36,6 +36,12 @@ async def add_revenue_date(
             rh.document_type = revenue.documentType
             rh.checks = revenue.checks
             rh.returns = revenue.returns
+            
+            # --- Добавляем обработку новых полей ---
+            rh.countreturns = revenue.countreturns
+            rh.amountWithVATreturns = revenue.amountWithVATreturns
+            rh.amountWithoutVATreturns = revenue.amountWithoutVATreturns
+            
             session.add(rh)
             await session.commit()
         for r_item in revenue.data:

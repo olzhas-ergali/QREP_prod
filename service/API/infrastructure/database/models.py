@@ -4,7 +4,7 @@ import uuid
 
 from sqlalchemy import (BigInteger, Column, String, select, Date,
                         DateTime, func, Integer, ForeignKey, Boolean,
-                        ARRAY, JSON, not_, desc, VARCHAR, Text, CHAR, and_, UUID, DECIMAL)
+                        ARRAY, JSON, not_, desc, VARCHAR, Text, CHAR, and_, UUID, DECIMAL, NUMERIC)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import relationship, mapped_column
@@ -446,15 +446,11 @@ class RevenueHeaders(Base):
     period = mapped_column(DateTime, server_default=func.now())
     checks = mapped_column(Integer)
     returns = mapped_column(Integer)
-
-    @classmethod
-    async def get_revenue_headers_by_doc_id(
-            cls,
-            session: AsyncSession,
-            document_id: str
-    ) -> typing.Optional['RevenueHeaders']:
-        stmt = select(RevenueHeaders).where(document_id == RevenueHeaders.document_id)
-        return await session.scalar(stmt)
+    
+    # --- Новые поля ---
+    countreturns = mapped_column(Integer, server_default='0')
+    amountWithVATreturns = mapped_column(NUMERIC(10, 2), server_default='0.00')
+    amountWithoutVATreturns = mapped_column(NUMERIC(10, 2), server_default='0.00')
 
 
 class ClientsApp(Base):
