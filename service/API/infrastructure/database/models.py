@@ -451,6 +451,20 @@ class RevenueHeaders(Base):
     countreturns = mapped_column(Integer, server_default='0')
     amountWithVATreturns = mapped_column(NUMERIC(10, 2), server_default='0.00')
     amountWithoutVATreturns = mapped_column(NUMERIC(10, 2), server_default='0.00')
+    
+    # --- Новые поля по ТЗ ---
+    amount_document = mapped_column(NUMERIC(10, 2), server_default='0.00')
+    amount_card = mapped_column(NUMERIC(10, 2), server_default='0.00') 
+    amount_certificate = mapped_column(NUMERIC(10, 2), server_default='0.00')
+
+    @classmethod
+    async def get_revenue_headers_by_doc_id(
+            cls,
+            session: AsyncSession,
+            document_id: str
+    ) -> 'RevenueHeaders':
+        stmt = select(RevenueHeaders).where(RevenueHeaders.document_id == document_id)
+        return await session.scalar(stmt)
 
 
 class ClientsApp(Base):

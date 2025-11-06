@@ -18,6 +18,11 @@ class RevenueDateModel(BaseModel):
     amountWithVATreturns: typing.Optional[float] = 0.0
     amountWithoutVATreturns: typing.Optional[float] = 0.0
     
+    # --- Новые поля по ТЗ ---
+    amountDocument: typing.Optional[float] = 0.0
+    amountCard: typing.Optional[float] = 0.0
+    amountCertificate: typing.Optional[float] = 0.0
+    
     data: typing.List[dict] = None
 
     #productName: typing.Optional[str] = None
