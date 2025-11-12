@@ -18,7 +18,7 @@ async def add_revenue_date(
     msg = "Данные успешно добавлены в базу данных"
     try:
         documents = await Revenue.get_revenue_by_doc_id(session=session, document_id=revenue.documentId)
-        rh = await RevenueHeaders().get_revenue_headers_by_doc_id(session=session, document_id=revenue.documentId)
+        rh = await RevenueHeaders.get_revenue_headers_by_doc_id(session=session, document_id=revenue.documentId)
         if rh:
             await session.delete(rh)
             await session.commit()
