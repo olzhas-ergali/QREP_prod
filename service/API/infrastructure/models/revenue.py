@@ -2,7 +2,7 @@ import datetime
 import typing
 import uuid
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RevenueDateModel(BaseModel):
@@ -13,17 +13,22 @@ class RevenueDateModel(BaseModel):
     checks: typing.Optional[int] = None
     returns: typing.Optional[int] = None
     
-    # --- Новые поля ---
-    countreturns: typing.Optional[int] = 0
-    amountWithVATreturns: typing.Optional[float] = 0.0
-    amountWithoutVATreturns: typing.Optional[float] = 0.0
+    # --- Исправляем маппинг ---
+    # Внутри кода используем snake_case, но принимаем ключи от 1С через alias
+    count_returns: typing.Optional[int] = Field(default=0, alias="countreturns")
     
-    # --- Новые поля по ТЗ ---
+    # 1С шлет "amountWithVATreturns"
+    amount_with_vat_returns: typing.Optional[float] = Field(default=0.0, alias="amountWithVATreturns")
+    
+    # 1С шлет "amountWithoutVATreturns" (судя по твоему логу)
+    amount_without_vat_returns: typing.Optional[float] = Field(default=0.0, alias="amountWithoutVATreturns")
+    
+    # --- Поля по ТЗ (если они приходят в CamelCase, добавь алиасы) ---
     amountDocument: typing.Optional[float] = 0.0
     amountCard: typing.Optional[float] = 0.0
     amountCertificate: typing.Optional[float] = 0.0
     
-    data: typing.List[dict] = None
+    data: typing.List[dict] = Field(default_factory=list)
 
     #productName: typing.Optional[str] = None
     #productId: typing.Optional[str] = None

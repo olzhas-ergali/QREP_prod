@@ -443,19 +443,20 @@ class RevenueHeaders(Base):
     id = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     document_id = mapped_column(UUID(as_uuid=True))
     document_type = mapped_column(String)
-    period = mapped_column(DateTime, server_default=func.now())
+    period = mapped_column(DateTime, nullable=True, default=func.now())
     checks = mapped_column(Integer)
     returns = mapped_column(Integer)
     
-    # --- Новые поля ---
-    countreturns = mapped_column(Integer, server_default='0')
-    amountWithVATreturns = mapped_column(NUMERIC(10, 2), server_default='0.00')
-    amountWithoutVATreturns = mapped_column(NUMERIC(10, 2), server_default='0.00')
+    # --- Поля для возвратов "день-в-день" (по новому ТЗ) ---
+    delete_status = mapped_column(Boolean, nullable=True, default=False)
+    count_returns = mapped_column(Integer, nullable=True, default=0)
+    amount_with_vat_returns = mapped_column(NUMERIC(10, 2), nullable=True, default=0.00)
+    amount_without_vat_returns = mapped_column(NUMERIC(10, 2), nullable=True, default=0.00)
     
-    # --- Новые поля по ТЗ ---
-    amount_document = mapped_column(NUMERIC(10, 2), server_default='0.00')
-    amount_card = mapped_column(NUMERIC(10, 2), server_default='0.00') 
-    amount_certificate = mapped_column(NUMERIC(10, 2), server_default='0.00')
+    # --- Новые поля по ТЗ (суммы документа, карт, сертификатов) ---
+    amount_document = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00)
+    amount_card = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00) 
+    amount_certificate = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00)
 
     @classmethod
     async def get_revenue_headers_by_doc_id(
