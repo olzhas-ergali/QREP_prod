@@ -1,0 +1,54 @@
+# Python
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment
+.env
+.env.local
+*.env
+
+# Logs
+*.log
+logs/
+logfile.log
+migration.log
+
+# Database dumps and backups
+*.sql
+*.dump
+*.db
+backup_*.sql
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# Node modules (if any)
+node_modules/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Migrations (if you want to exclude)
+# alembic/versions/*.py

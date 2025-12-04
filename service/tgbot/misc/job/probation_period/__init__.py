@@ -1,0 +1,1 @@
+from .start import notification_about_lessons
