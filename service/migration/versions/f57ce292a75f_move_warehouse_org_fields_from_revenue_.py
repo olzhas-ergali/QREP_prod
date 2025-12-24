@@ -25,10 +25,7 @@ def upgrade() -> None:
     # op.drop_table('vacancies')
     # op.drop_table('tokens')
     # op.drop_table('users_temp_old')
-    op.drop_column('revenue_data', 'warehouse_name')
-    op.drop_column('revenue_data', 'organization')
-    op.drop_column('revenue_data', 'organization_id')
-    op.drop_column('revenue_data', 'warehouse_id')
+
     op.add_column('revenue_headers', sa.Column('warehouse_name', sa.String(), nullable=True))
     op.add_column('revenue_headers', sa.Column('warehouse_id', sa.UUID(), nullable=True))
     op.add_column('revenue_headers', sa.Column('organization', sa.String(), nullable=True))
@@ -43,6 +40,11 @@ def upgrade() -> None:
         FROM revenue_data d
         WHERE h.document_id = d.document_id
     """)
+
+    op.drop_column('revenue_data', 'warehouse_name')
+    op.drop_column('revenue_data', 'organization')
+    op.drop_column('revenue_data', 'organization_id')
+    op.drop_column('revenue_data', 'warehouse_id')
     # op.alter_column('users', 'staff_id',
     #            existing_type=sa.UUID(),
     #            nullable=False)
@@ -59,14 +61,15 @@ def downgrade() -> None:
     # op.alter_column('users', 'staff_id',
     #            existing_type=sa.UUID(),
     #            nullable=True)
-    op.drop_column('revenue_headers', 'organization_id')
-    op.drop_column('revenue_headers', 'organization')
-    op.drop_column('revenue_headers', 'warehouse_id')
-    op.drop_column('revenue_headers', 'warehouse_name')
+
     op.add_column('revenue_data', sa.Column('warehouse_id', sa.UUID(), autoincrement=False, nullable=True))
     op.add_column('revenue_data', sa.Column('organization_id', sa.UUID(), autoincrement=False, nullable=True))
     op.add_column('revenue_data', sa.Column('organization', sa.VARCHAR(), autoincrement=False, nullable=True))
     op.add_column('revenue_data', sa.Column('warehouse_name', sa.VARCHAR(), autoincrement=False, nullable=True))
+    op.drop_column('revenue_headers', 'organization_id')
+    op.drop_column('revenue_headers', 'organization')
+    op.drop_column('revenue_headers', 'warehouse_id')
+    op.drop_column('revenue_headers', 'warehouse_name')
     # op.create_table('users_temp_old',
     # sa.Column('id_staff', sa.VARCHAR(), autoincrement=False, nullable=False),
     # sa.Column('phone_number', sa.VARCHAR(), autoincrement=False, nullable=True),
