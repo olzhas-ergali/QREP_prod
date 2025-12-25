@@ -49,17 +49,18 @@ async def add_revenue_date(
             rh.amount_card = revenue.amountCard 
             rh.amount_certificate = revenue.amountCertificate
             # --- Перенос warehouse и organization в rh
-            # if revenue.data:
-            #     first_item = revenue.data[0]
-            #     rh.warehouse_name = first_item.get('warehouseName')
-            #     rh.warehouse_id = first_item.get('warehouseId')
-            #     rh.organization = first_item.get('organization')
-            #     rh.organization_id = first_item.get('organizationId')
-            rh.warehouse_name = revenue.warehouseName
-            rh.warehouse_id = UUID(str(revenue.warehouseId)) if revenue.warehouseId else None
+            if revenue.data:
+                first_item = revenue.data[0]
+                rh.warehouse_name = first_item.get('warehouseName')
+                rh.warehouse_id = first_item.get('warehouseId')
+                rh.organization = first_item.get('organization')
+                rh.organization_id = first_item.get('organizationId')
+            else:
+                rh.warehouse_name = revenue.warehouseName
+                rh.warehouse_id = UUID(str(revenue.warehouseId)) if revenue.warehouseId else None
 
-            rh.organization = revenue.organization
-            rh.organization_id = UUID(str(revenue.organizationId)) if revenue.organizationId else None
+                rh.organization = revenue.organization
+                rh.organization_id = UUID(str(revenue.organizationId)) if revenue.organizationId else None
             
             session.add(rh)
             await session.commit()
