@@ -45,7 +45,7 @@ def load_config(path):
 
     return Config(
         tg_bot=TgBot(
-            token=env.str("BOT_TOKEN"),
+            token=env.str("STAFF_BOT_TOKEN"),
             admin_ids=list(map(int, env.list("ADMINS"))),
             use_redis=env.bool("USE_REDIS"),
             redis_host=env.str("REDIS_HOST")

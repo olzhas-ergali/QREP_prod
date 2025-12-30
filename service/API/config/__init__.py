@@ -125,7 +125,7 @@ settings = Settings(
         pwd=env.str('PASSWORD_AUTH')
     ),
     tg_bot=TgbotSettings(
-        bot_token=env.str('BOT_TOKEN')
+        bot_token=env.str('STAFF_BOT_TOKEN')
     ),
     bitrix=Bitrix(
         token=env.str('BITRIX_TOKEN'),
