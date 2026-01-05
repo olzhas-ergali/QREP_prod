@@ -111,7 +111,8 @@ class ModelUserTemp(BaseModel):
     department: typing.Optional[str] = None
     business_unit: typing.Optional[str] = Field(None, alias='businessUnit')
     work_city: typing.Optional[str] = Field(None, alias='workCity')
-    phone: typing.Optional[str] = None # Это поле не из JSON, но используется в старом коде, оставляем
+    phone: typing.Optional[str] = None  # Это поле не из JSON, но используется в старом коде, оставляем
+    commentTransfer: typing.Optional[str] = None  # Комментарий к переводу сотрудника
 
 
 class ModelStaff(BaseModel):

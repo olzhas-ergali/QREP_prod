@@ -380,13 +380,10 @@ class Revenue(Base):
     product_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
     param_name = mapped_column(String)
     param_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
-
-    # Убрал/закоментил 4 поля ниже
-    # warehouse_name = mapped_column(String)
-    # warehouse_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
-    # organization = mapped_column(String)
-    # organization_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
-
+    warehouse_name = mapped_column(String)
+    warehouse_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    organization = mapped_column(String)
+    organization_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
     partner = mapped_column(String)
     phone = mapped_column(String)
     activity_type = mapped_column(String)
@@ -439,13 +436,6 @@ class RevenueHeaders(Base):
     amount_document = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00)
     amount_card = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00) 
     amount_certificate = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00)
-
-    # --- Новые поля, смещенные из Revenue
-
-    warehouse_name = mapped_column(String)
-    warehouse_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
-    organization = mapped_column(String)
-    organization_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
 
     @classmethod
     async def get_revenue_headers_by_doc_id(
@@ -514,3 +504,84 @@ class ClientMailing(Base):
 
         return await session.scalar(stmt)
 
+
+
+class StaffReview(Base):
+    __tablename__ = "staff_review"
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    staff_id = Column(
+        BigInteger,
+        ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE')
+    )
+    staff_review = Column(
+        Text
+    )
+    staff_grade = Column(
+        Integer
+    )
+    staff_grade_str = Column(
+        String
+    )
+    created_at = Column(DateTime, server_default=func.now())
+    
+    # Связь с таблицей Users
+    user = relationship(
+        'User',
+        foreign_keys=[staff_id],
+        uselist=True,
+        lazy='selectin'
+    )
+
+    @classmethod
+    async def get_review_by_id(
+            cls,
+            session: AsyncSession,
+            review_id: int
+    ) -> 'StaffReview':
+        stmt = select(StaffReview).where(
+            review_id == StaffReview.id
+        )
+        return await session.scalar(stmt)
+
+
+# Справочник типов переводов сотрудников
+class DimTransferTypes(Base):
+    __tablename__ = 'dim_transfer_types'
+
+    transfer_type_id = Column(Integer, primary_key=True)
+    transfer_type_name = Column(String, nullable=False)
+
+
+# Таблица истории переводов сотрудников
+class EmployeeTransfers(Base):
+    __tablename__ = 'employee_transfers'
+
+    transfer_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    staff_id = Column(UUID(as_uuid=True), nullable=False)  # Логическая связь с user_profiles.staff_id
+    transfer_date = Column(DateTime, nullable=True)
+    transfer_type_id = Column(Integer, ForeignKey('dim_transfer_types.transfer_type_id'), nullable=True)
+
+    # Старые значения (из user_profiles до обновления)
+    old_department = Column(String, nullable=True)
+    old_position = Column(String, nullable=True)  # position_name
+    old_city = Column(String, nullable=True)
+    old_unit = Column(String, nullable=True)
+    old_organization = Column(String, nullable=True)  # organization_id как строка
+
+    # Новые значения (из JSON)
+    new_department = Column(String, nullable=True)
+    new_position = Column(String, nullable=True)  # positionName из JSON
+    new_city = Column(String, nullable=True)
+    new_unit = Column(String, nullable=True)
+    new_organization = Column(String, nullable=True)  # organizationId из JSON
+
+    update_author = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    source = Column(String, nullable=True)
+    comment = Column(String, nullable=True)  # commentTransfer из JSON
+
+    update_date = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Связь со справочником типов
+    transfer_type = relationship("DimTransferTypes", lazy="joined")
