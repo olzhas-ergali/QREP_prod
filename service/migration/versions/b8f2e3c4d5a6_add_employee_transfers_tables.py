@@ -1,7 +1,7 @@
 """add employee transfers tables
 
 Revision ID: b8f2e3c4d5a6
-Revises: 19708d2daa51
+Revises: f57ce292a75f
 Create Date: 2025-12-24 12:00:00.000000
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = 'b8f2e3c4d5a6'
-down_revision: Union[str, None] = '19708d2daa51'
+down_revision: Union[str, None] = 'f57ce292a75f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
