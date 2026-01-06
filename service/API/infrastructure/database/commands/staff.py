@@ -179,62 +179,48 @@ async def add_employees(
             # Определение типа перевода
             transfer_type_id = determine_transfer_type(changes)
 
-            # --- ЛОГИКА ROLLBACK ---
-            # Проверяем последнюю запись в employee_transfers
+            # --- ЛОГИКА УДАЛЕНИЯ ОШИБОЧНОГО ПЕРЕВОДА ---
+            # Если был перевод того же сотрудника менее 24 часов назад — удаляем его
             last_transfer_stmt = select(EmployeeTransfers).where(
                 EmployeeTransfers.staff_id == user_data.idStaff
             ).order_by(desc(EmployeeTransfers.created_at)).limit(1)
 
             last_transfer = await session.scalar(last_transfer_stmt)
 
-            # Условие отката:
-            # 1. Прошло меньше 24 часов с последнего перевода
-            # 2. Новые данные (JSON) совпадают с данными ДО последнего перевода (old_...)
-            is_rollback = False
             if last_transfer and last_transfer.created_at:
                 time_diff = (now - last_transfer.created_at).total_seconds()
                 if time_diff < 86400:  # < 24 часов
-                    # Проверяем, возвращаем ли мы сотрудника в состояние "как было до последнего перевода"
-                    # old_position хранит position_name, поэтому сравниваем с positionName
-                    if (normalize(user_data.department) == normalize(last_transfer.old_department) and
-                        normalize(user_data.positionName) == normalize(last_transfer.old_position) and
-                        normalize(user_data.work_city) == normalize(last_transfer.old_city) and
-                        normalize(user_data.business_unit) == normalize(last_transfer.old_unit) and
-                        normalize(user_data.organizationId) == normalize(last_transfer.old_organization)):
-                        is_rollback = True
+                    # Удаляем предыдущий ошибочный перевод
+                    await session.delete(last_transfer)
+                    rollback_performed = True
 
-            if is_rollback:
-                # Удаляем последнюю ошибочную запись о переводе
-                await session.delete(last_transfer)
-                rollback_performed = True
-            else:
-                # Создаем новую запись о переводе
-                new_transfer = EmployeeTransfers(
-                    staff_id=user_data.idStaff,
-                    transfer_date=user_data.updateDate or now,
-                    transfer_type_id=transfer_type_id,
+            # Создаем новую запись о переводе
+            new_transfer = EmployeeTransfers(
+                staff_id=user_data.idStaff,
+                transfer_date=user_data.updateDate or now,
+                transfer_type_id=transfer_type_id,
 
-                    # Старые значения (из user_profiles до обновления)
-                    old_department=existing_profile.department,
-                    old_position=existing_profile.position_name,
-                    old_city=existing_profile.work_city,
-                    old_unit=existing_profile.business_unit,
-                    old_organization=str(existing_profile.organization_id) if existing_profile.organization_id else None,
+                # Старые значения (из user_profiles до обновления)
+                old_department=existing_profile.department,
+                old_position=existing_profile.position_name,
+                old_city=existing_profile.work_city,
+                old_unit=existing_profile.business_unit,
+                old_organization=str(existing_profile.organization_id) if existing_profile.organization_id else None,
 
-                    # Новые значения (из JSON)
-                    new_department=user_data.department,
-                    new_position=user_data.positionName,
-                    new_city=user_data.work_city,
-                    new_unit=user_data.business_unit,
-                    new_organization=user_data.organizationId,
+                # Новые значения (из JSON)
+                new_department=user_data.department,
+                new_position=user_data.positionName,
+                new_city=user_data.work_city,
+                new_unit=user_data.business_unit,
+                new_organization=user_data.organizationId,
 
-                    update_author=user_data.author,
-                    is_active=(clean_date_dismissal is None),
-                    source="1C",
-                    comment=user_data.commentTransfer
-                )
-                session.add(new_transfer)
-                transfer_created = True
+                update_author=user_data.author,
+                is_active=(clean_date_dismissal is None),
+                source="1C",
+                comment=user_data.commentTransfer
+            )
+            session.add(new_transfer)
+            transfer_created = True
 
     # --- СТАНДАРТНАЯ ЛОГИКА ОБНОВЛЕНИЯ/СОЗДАНИЯ ЗАПИСЕЙ ---
 
