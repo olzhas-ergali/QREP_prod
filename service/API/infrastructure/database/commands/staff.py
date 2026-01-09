@@ -35,6 +35,7 @@ def determine_transfer_type(changes: dict) -> int:
     4 - Изменение Города (только city)
     5 - Перевод в другую организацию (только organization)
     6 - Комплексный перевод (два и более изменений)
+    7 - Увольнение (обрабатывается отдельно в add_employees)
     """
     changed_keys = [k for k, v in changes.items() if v]
 
@@ -164,6 +165,21 @@ async def add_employees(
 
     # ЛОГИКА СРАВНЕНИЯ И ПЕРЕВОДОВ (ТОЛЬКО ЕСЛИ СОТРУДНИК УЖЕ СУЩЕСТВУЕТ)
     if existing_profile:
+        # --- ЛОГИКА УДАЛЕНИЯ ОШИБОЧНОГО ПЕРЕВОДА (ВСЕГДА ПРОВЕРЯЕМ) ---
+        # Если был перевод того же сотрудника менее 24 часов назад — удаляем его
+        last_transfer_stmt = select(EmployeeTransfers).where(
+            EmployeeTransfers.staff_id == user_data.idStaff
+        ).order_by(desc(EmployeeTransfers.created_at)).limit(1)
+
+        last_transfer = await session.scalar(last_transfer_stmt)
+
+        if last_transfer and last_transfer.created_at:
+            time_diff = (now - last_transfer.created_at).total_seconds()
+            if time_diff < 86400:  # < 24 часов
+                # Удаляем предыдущий ошибочный перевод
+                await session.delete(last_transfer)
+                rollback_performed = True
+
         # Сравниваем атрибуты с нормализацией (trim + lowercase)
         changes = {
             'department': normalize(existing_profile.department) != normalize(user_data.department),
@@ -175,24 +191,21 @@ async def add_employees(
 
         has_changes = any(changes.values())
 
-        if has_changes:
+        # Проверка на увольнение: было активен, стал уволен
+        is_dismissal = (
+            existing_profile.is_active and
+            clean_date_dismissal is not None and
+            existing_profile.date_dismissal is None
+        )
+
+        if has_changes or is_dismissal:
             # Определение типа перевода
-            transfer_type_id = determine_transfer_type(changes)
-
-            # --- ЛОГИКА УДАЛЕНИЯ ОШИБОЧНОГО ПЕРЕВОДА ---
-            # Если был перевод того же сотрудника менее 24 часов назад — удаляем его
-            last_transfer_stmt = select(EmployeeTransfers).where(
-                EmployeeTransfers.staff_id == user_data.idStaff
-            ).order_by(desc(EmployeeTransfers.created_at)).limit(1)
-
-            last_transfer = await session.scalar(last_transfer_stmt)
-
-            if last_transfer and last_transfer.created_at:
-                time_diff = (now - last_transfer.created_at).total_seconds()
-                if time_diff < 86400:  # < 24 часов
-                    # Удаляем предыдущий ошибочный перевод
-                    await session.delete(last_transfer)
-                    rollback_performed = True
+            if is_dismissal and not has_changes:
+                transfer_type_id = 7  # Увольнение
+            elif is_dismissal and has_changes:
+                transfer_type_id = 6  # Комплексный (увольнение + другие изменения)
+            else:
+                transfer_type_id = determine_transfer_type(changes)
 
             # Создаем новую запись о переводе
             new_transfer = EmployeeTransfers(
