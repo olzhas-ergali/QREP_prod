@@ -401,10 +401,13 @@ class Revenue(Base):
     product_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
     param_name = mapped_column(String)
     param_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
-    warehouse_name = mapped_column(String)
-    warehouse_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
-    organization = mapped_column(String)
-    organization_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+
+    # Убрал/закоментил 4 поля ниже
+    # warehouse_name = mapped_column(String)
+    # warehouse_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    # organization = mapped_column(String)
+    # organization_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+
     partner = mapped_column(String)
     phone = mapped_column(String)
     activity_type = mapped_column(String)
@@ -457,6 +460,13 @@ class RevenueHeaders(Base):
     amount_document = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00)
     amount_card = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00) 
     amount_certificate = mapped_column(NUMERIC(15, 2), nullable=True, default=0.00)
+
+    # --- Новые поля, смещенные из Revenue ---
+    
+    warehouse_name = mapped_column(String)
+    warehouse_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    organization = mapped_column(String)
+    organization_id = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
 
     @classmethod
     async def get_revenue_headers_by_doc_id(

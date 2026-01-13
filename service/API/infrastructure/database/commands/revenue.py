@@ -1,5 +1,6 @@
 import typing
 from datetime import datetime
+from uuid import UUID
 
 from typing import Sequence, Optional
 
@@ -47,6 +48,21 @@ async def add_revenue_date(
             rh.amount_document = revenue.amountDocument 
             rh.amount_card = revenue.amountCard 
             rh.amount_certificate = revenue.amountCertificate
+
+            # --- Перенос warehouse и organization из Revenue в RevenueHeaders ---
+            if revenue.data:
+                first_item = revenue.data[0]
+                rh.warehouse_name = first_item.get('warehouseName')
+                rh.warehouse_id = first_item.get('warehouseId')
+                rh.organization = first_item.get('organization')
+                rh.organization_id = first_item.get('organizationId')
+            else:
+                rh.warehouse_name = revenue.warehouseName
+                rh.warehouse_id = UUID(str(revenue.warehouseId)) if revenue.warehouseId else None
+
+                rh.organization = revenue.organization
+                rh.organization_id = UUID(str(revenue.organizationId)) if revenue.organizationId else None
+
             
             session.add(rh)
             await session.commit()
@@ -64,14 +80,16 @@ async def add_revenue_date(
                 r.revenue_with_vat = r_item.get('revenueWithVAT')
                 r.revenue_without_vat = r_item.get('revenueWithoutVAT')
                 r.phone = r_item.get('phone')
-                r.warehouse_name = r_item.get('warehouseName')
-                r.warehouse_id = r_item.get('warehouseId')
+                # -- Закоментил 2 поля ниже ---
+                # r.warehouse_name = r_item.get('warehouseName')
+                # r.warehouse_id = r_item.get('warehouseId')
                 r.product_id = r_item.get('productId')
                 r.product_name = r_item.get('productName')
                 r.currency = r_item.get('currency')
                 r.activity_type = r_item.get('activityType')
-                r.organization = r_item.get('organization')
-                r.organization_id = r_item.get('organizationId')
+                # -- Закоментил 2 поля ниже ---
+                # r.organization = r_item.get('organization')
+                # r.organization_id = r_item.get('organizationId')
                 r.param_id = r_item.get('paramId')
                 r.param_name = r_item.get('paramName')
                 r.partner = r_item.get('partner')

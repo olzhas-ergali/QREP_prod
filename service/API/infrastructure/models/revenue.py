@@ -34,10 +34,12 @@ class RevenueDateModel(BaseModel):
     #productId: typing.Optional[str] = None
     #paramName: typing.Optional[str] = None
     #paramId: typing.Optional[str] = None
-    #warehouseName: typing.Optional[str] = None
-    #warehouseId: typing.Optional[str] = None
-    #organization: typing.Optional[str] = None
-    #organizationId: typing.Optional[str] = None
+
+    # --- Раскоментил 4 поля ниже, согласно новой логике ---
+    warehouseName: typing.Optional[str] = None
+    warehouseId: typing.Optional[str] = None
+    organization: typing.Optional[str] = None
+    organizationId: typing.Optional[str] = None
     #partner: typing.Optional[str] = None
     #phone: typing.Optional[str] = None
     #activityType: typing.Optional[str] = None
