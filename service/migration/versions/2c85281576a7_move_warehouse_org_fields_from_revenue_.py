@@ -38,11 +38,24 @@ def upgrade() -> None:
         FROM revenue_data d
         WHERE h.document_id = d.document_id
     """)
+    # Удаление столбцов с каскадным удалением зависимостей
+    op.execute("""
+        ALTER TABLE revenue_data DROP COLUMN warehouse_id CASCADE;
+    """)
+    op.execute("""
+        ALTER TABLE revenue_data DROP COLUMN organization CASCADE;
+    """)
+    op.execute("""
+        ALTER TABLE revenue_data DROP COLUMN warehouse_name CASCADE;
+    """)
+    op.execute("""
+        ALTER TABLE revenue_data DROP COLUMN organization_id CASCADE;
+    """)
 
-    op.drop_column('revenue_data', 'warehouse_id')
-    op.drop_column('revenue_data', 'organization')
-    op.drop_column('revenue_data', 'warehouse_name')
-    op.drop_column('revenue_data', 'organization_id')
+    # op.drop_column('revenue_data', 'warehouse_id')
+    # op.drop_column('revenue_data', 'organization')
+    # op.drop_column('revenue_data', 'warehouse_name')
+    # op.drop_column('revenue_data', 'organization_id')
 
     # op.alter_column('revenue_headers', 'count_returns',
     #            existing_type=sa.INTEGER(),
