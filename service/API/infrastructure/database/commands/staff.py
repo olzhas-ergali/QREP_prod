@@ -79,13 +79,13 @@ async def get_item_count(
     discount = None
     if user.profile.position_id:
         discount = await get_user_discount(session, user.profile.position_id)
-    
+
     monthly_limit = 3
     discount_percentage = 30.0
     if discount:
         monthly_limit = discount.monthly_limit
         discount_percentage = discount.discount_percentage
-        
+
     stmt = select(Purchase).where(
         ((datetime.now().month == extract('month', Purchase.created_date)) &
          (Purchase.user_id == user.id) & (datetime.now().year == extract('year', Purchase.created_date)))
@@ -200,6 +200,9 @@ async def add_employees(
 
             last_transfer = await session.scalar(last_transfer_stmt)
 
+            # Сохраняем оригинальные old_* значения из последнего перевода (для использования при создании нового)
+            rollback_old_values = None
+
             # Условие отката:
             # 1. Прошло меньше 24 часов с последнего перевода
             # 2. Новые данные (JSON) совпадают с данными ДО последнего перевода (old_*)
@@ -208,8 +211,15 @@ async def add_employees(
             if last_transfer and last_transfer.created_at:
                 time_diff = (now - last_transfer.created_at).total_seconds()
                 if time_diff < 86400:  # < 24 часов
+                    # Сохраняем old_* значения ДО любых операций
+                    rollback_old_values = {
+                        'department': last_transfer.old_department,
+                        'position': last_transfer.old_position,
+                        'city': last_transfer.old_city,
+                        'unit': last_transfer.old_unit,
+                        'organization': last_transfer.old_organization
+                    }
                     # Проверяем, возвращаем ли мы сотрудника в состояние "как было до последнего перевода"
-                    # old_position хранит position_name, поэтому сравниваем с positionName из JSON
                     if (normalize(user_data.department) == normalize(last_transfer.old_department) and
                         normalize(user_data.positionName) == normalize(last_transfer.old_position) and
                         normalize(user_data.work_city) == normalize(last_transfer.old_city) and
@@ -223,18 +233,24 @@ async def add_employees(
                 await session.delete(last_transfer)
                 rollback_performed = True
             else:
+                # Если есть предыдущий перевод < 24ч - удаляем его (ошибочный)
+                if rollback_old_values and last_transfer:
+                    await session.delete(last_transfer)
+                    rollback_performed = True
+
                 # Создаем новую запись о переводе
+                # При наличии rollback_old_values используем их для old_* полей
                 new_transfer = EmployeeTransfers(
                     staff_id=user_data.idStaff,
                     transfer_date=user_data.updateDate or now,
                     transfer_type_id=transfer_type_id,
 
-                    # Старые значения (из user_profiles до обновления)
-                    old_department=existing_profile.department,
-                    old_position=existing_profile.position_name,
-                    old_city=existing_profile.work_city,
-                    old_unit=existing_profile.business_unit,
-                    old_organization=str(existing_profile.organization_id) if existing_profile.organization_id else None,
+                    # Старые значения (из rollback или из профиля)
+                    old_department=rollback_old_values['department'] if rollback_old_values else existing_profile.department,
+                    old_position=rollback_old_values['position'] if rollback_old_values else existing_profile.position_name,
+                    old_city=rollback_old_values['city'] if rollback_old_values else existing_profile.work_city,
+                    old_unit=rollback_old_values['unit'] if rollback_old_values else existing_profile.business_unit,
+                    old_organization=rollback_old_values['organization'] if rollback_old_values else (str(existing_profile.organization_id) if existing_profile.organization_id else None),
 
                     # Новые значения (из JSON)
                     new_department=user_data.department,
@@ -449,7 +465,7 @@ async def add_purchases(session: AsyncSession, **kwargs):
 
 async def add_return_purchases(session: AsyncSession, **kwargs):
     return {}
-    
+
 async def add_user_temp(session: AsyncSession, **kwargs):
     return {}
 
