@@ -68,6 +68,7 @@ async def add_purchases(
     )
     session.add(purchases)
     await session.commit()
+    await session.refresh(purchases)  # избегаем MissingGreenlet: после commit объект expired, lazy load created_date в цикле по bonus запрещён в async
     order_number = purchases.ms_id if purchases.ms_id else purchases.ticket_print_url
     #client_bonus = None
     #send_template_wa
@@ -233,6 +234,7 @@ async def add_return_purchases(
     )
     session.add(purchases)
     await session.commit()
+    await session.refresh(purchases)  # избегаем MissingGreenlet при обращении к purchases.created_date в цикле по bonus
     promo = await PromoCheckParticipation.get_promo_by_check_id(
         session=session,
         client_id=client.id,
