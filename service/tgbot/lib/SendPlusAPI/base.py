@@ -58,8 +58,11 @@ class BaseApi:
             response = await session.request(
                 method=MethodRequest.post,
                 url=token_url,
-                data={"grant_type": "client_credentials"},
-                auth=aiohttp.BasicAuth(client_id, client_secret)
+                json={
+                    "grant_type": "client_credentials",
+                    "client_id": client_id,
+                    "client_secret": client_secret
+                }
             )
             logging.info(response)
             data = await response.read()
