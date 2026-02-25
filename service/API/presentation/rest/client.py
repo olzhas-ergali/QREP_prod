@@ -251,7 +251,9 @@ async def get_bonus_points(
         is_purchase=False
     )
     total_earned = 0
-    total_spent = 0
+    total_spent = 0  # алгебраическая сумма (списания − возвраты) для формулы баланса
+    total_spent_amount = 0  # только списания (≥ 0), для ответа
+    total_refunded = 0  # только возвраты (≥ 0), для ответа
     available_bonus = 0
     soon_expiring = []
     expired_bonus = 0
@@ -259,12 +261,15 @@ async def get_bonus_points(
     logging.info(f"Lens -> {len(client_bonuses)}")
     for bonus in client_bonuses:
         logging.info(f"BonusActivationDate -> {bonus.activation_date}")
-        #accrued_points = bonus.accrued_points if bonus.accrued_points > 0 else 0
-        #write_off_points = bonus.write_off_points if bonus.write_off_points > 0 else 0
         logging.info(f"accrued_points: {bonus.accrued_points}")
         logging.info(f"write_off_points: {bonus.write_off_points}")
         total_earned += bonus.accrued_points if bonus.accrued_points else 0
-        total_spent += bonus.write_off_points if bonus.write_off_points else 0
+        if bonus.write_off_points:
+            total_spent += bonus.write_off_points
+            if bonus.write_off_points > 0:
+                total_spent_amount += bonus.write_off_points
+            else:
+                total_refunded += -bonus.write_off_points
         #available_bonus += accrued_points if accrued_points else -write_off_points
         if len(soon_expiring) < 5 and bonus.expiration_date:
             #if isinstance(bonus.expiration_date, datetime.datetime):
@@ -280,19 +285,21 @@ async def get_bonus_points(
                 )
         if bonus.expiration_date and bonus.expiration_date.date() <= datetime.datetime.now().date():
             expired_bonus += bonus.accrued_points
-    if total_earned > 0:
-        available_bonus += total_earned
-    if total_spent > 0:
-        available_bonus -= total_spent
+    # Баланс = начисления − списания. total_spent алгебраический (возвраты дают отрицательные
+    # write_off_points), поэтому при возвратах баланс корректно увеличивается; старый guard
+    # «if total_spent > 0» приводил к завышенному балансу.
+    available_bonus = total_earned - total_spent
+    available_bonus = max(0, available_bonus)
 
     answer = {
         'clientId': client_b.id,
         'phoneNumber': client_b.phone_number,
-        "availableBonus": available_bonus if available_bonus > 0 else 0,
+        "availableBonus": available_bonus,
         "pendingBonus": 0.0,
         "expiredBonus": expired_bonus,
         "totalEarned": total_earned,
-        "totalSpent": total_spent,
+        "totalSpent": total_spent_amount,
+        "totalRefunded": total_refunded,
         "soonExpiring": soon_expiring,
         "nextExpirationDate": soon_expiring[0].get('expiresAt') if soon_expiring else None
     }
@@ -429,10 +436,9 @@ async def get_client_bonus_history(
             #
             # )
 
-    if total_earned > 0:
-        available_bonus += total_earned
-    if total_spent > 0:
-        available_bonus -= total_spent
+    # Баланс = начисления − списания (total_spent может быть < 0 при возвратах)
+    available_bonus = total_earned - total_spent
+    available_bonus = max(0, available_bonus)
     answer = {
         "meta": {
             "total": len(client_bonuses),
@@ -442,7 +448,7 @@ async def get_client_bonus_history(
         "data": {
             "clientId": client_b.id,
             "clientName": client_b.name,
-            "balance": available_bonus if available_bonus > 0 else 0,
+            "balance": available_bonus,
             "history": [val for k, val in ms_ids.items()]
         }
     }

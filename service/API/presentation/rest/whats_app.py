@@ -183,18 +183,15 @@ async def get_client_purchases(
                 else:
                     total_future_earned += bonus.accrued_points if bonus.accrued_points else 0
                     total_future_spent += bonus.write_off_points if bonus.write_off_points else 0
-            if total_earned > 0:
-                available_bonus += total_earned
-            if total_spent > 0:
-                available_bonus -= total_spent
-            if total_future_earned > 0:
-                future_bonus += total_future_earned
-            if total_future_spent > 0:
-                future_bonus -= total_future_spent
+            # Баланс = начисления − списания (total_spent может быть < 0 при возвратах)
+            available_bonus = total_earned - total_spent
+            available_bonus = max(0, available_bonus)
+            future_bonus = total_future_earned - total_future_spent
+            future_bonus = max(0, future_bonus)
             return {
                 "status_code": 200,
-                "bonus": available_bonus if available_bonus > 0 else 0,
-                "future_bonus": future_bonus if future_bonus > 0 else 0
+                "bonus": available_bonus,
+                "future_bonus": future_bonus
             }
         return {
             "status_code": 200,
