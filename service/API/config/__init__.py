@@ -82,6 +82,7 @@ class Mail:
     MAIL_PASSWORD: str
     MAIL_PORT: int
     MAIL_ENCRYPTION: str
+    MAIL_TLS_INSECURE: bool = False
 
 
 @dataclass
@@ -141,7 +142,8 @@ settings = Settings(
         MAIL_PORT=env.int('MAIL_PORT'),
         MAIL_USERNAME=env.str('MAIL_USERNAME'),
         MAIL_PASSWORD=env.str('MAIL_PASSWORD'),
-        MAIL_ENCRYPTION=env.str('MAIL_ENCRYPTION')
+        MAIL_ENCRYPTION=env.str('MAIL_ENCRYPTION', 'ssl'),
+        MAIL_TLS_INSECURE=env.bool('MAIL_TLS_INSECURE', False),
     )
 )
 
