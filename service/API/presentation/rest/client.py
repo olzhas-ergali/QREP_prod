@@ -285,7 +285,9 @@ async def get_bonus_points(
                 )
         if bonus.expiration_date and bonus.expiration_date.date() <= datetime.datetime.now().date():
             expired_bonus += bonus.accrued_points
-    # Баланс = начисления − списания (total_spent может быть < 0 при возвратах)
+    # Баланс = начисления − списания. total_spent алгебраический (возвраты дают отрицательные
+    # write_off_points), поэтому при возвратах баланс корректно увеличивается; старый guard
+    # «if total_spent > 0» приводил к завышенному балансу.
     available_bonus = total_earned - total_spent
     available_bonus = max(0, available_bonus)
 
