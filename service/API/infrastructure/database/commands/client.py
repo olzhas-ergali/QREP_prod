@@ -41,7 +41,49 @@ async def add_purchases(
         )
     if client:
         user_id = client.id
-    if await session.get(ClientPurchase, purchases_model.purchaseId) is not None:
+    existing_purchase = await session.get(ClientPurchase, purchases_model.purchaseId)
+    if existing_purchase is not None:
+        if bonuses:
+            existing_bonuses = await ClientBonusPoints.get_by_client_purchase_id(
+                session, purchases_model.purchaseId
+            )
+            existing_row_numbers = {b.row_number for b in existing_bonuses}
+            to_insert = [b for b in bonuses if b.rowNumber not in existing_row_numbers]
+            if to_insert:
+                await session.refresh(existing_purchase)
+                purchase_created_date = existing_purchase.created_date
+                bonus_user_id = user_id if user_id is not None else existing_purchase.user_id
+                for bonus in to_insert:
+                    client_bonus = ClientBonusPoints()
+                    client_bonus.id = uuid.uuid4()
+                    client_bonus.client_id = bonus_user_id
+                    client_bonus.loyalty_program = bonus.rule
+                    client_bonus.loyalty_program_id = bonus.ruleId
+                    client_bonus.operation_date = (
+                        bonus.activationDate if bonus.accruedPoints > 0 else purchase_created_date
+                    )
+                    client_bonus.source = purchases_model.source
+                    client_bonus.document_id = purchases_model.purchaseId
+                    client_bonus.accrued_points = bonus.accruedPoints
+                    client_bonus.write_off_points = bonus.writeOffPoints
+                    client_bonus.client_purchases_id = purchases_model.purchaseId
+                    client_bonus.row_number = bonus.rowNumber
+                    client_bonus.document_type = purchases_model.documentType
+                    client_bonus.expiration_date = bonus.expirationDate
+                    client_bonus.activation_date = bonus.activationDate
+                    session.add(client_bonus)
+                    await session.commit()
+                return {
+                    "message": "Добавлены недостающие бонусы по чеку",
+                    "purchaseId": purchases_model.purchaseId,
+                    "telegramId": user_id,
+                    "addedRows": len(to_insert),
+                }
+            return {
+                "message": "Чек уже записан, бонусы присутствуют",
+                "purchaseId": purchases_model.purchaseId,
+                "telegramId": user_id,
+            }
         return {
             "status_code": 500,
             "message": "Чек уже записан",

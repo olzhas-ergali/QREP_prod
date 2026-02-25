@@ -100,6 +100,19 @@ class ClientBonusPoints(Base):
         return response.scalars().all()
 
     @classmethod
+    async def get_by_client_purchase_id(
+            cls,
+            session: AsyncSession,
+            purchase_id: str
+    ) -> typing.Sequence['ClientBonusPoints']:
+        stmt = select(ClientBonusPoints).where(
+            ClientBonusPoints.client_purchases_id == purchase_id,
+            ClientBonusPoints.client_purchases_return_id.is_(None)
+        )
+        response = await session.execute(stmt)
+        return response.scalars().all()
+
+    @classmethod
     async def delete_by_return_purchase_id(
             cls,
             session: AsyncSession,
