@@ -22,6 +22,13 @@ class Organization(Base):
     organization_city = mapped_column(String, nullable=True)
     organization_bin = mapped_column(String, unique=True)
 
+
+# Справочник должностей (employee_positions)
+class EmployeePosition(Base):
+    __tablename__ = "employee_positions"
+    position_id = mapped_column(UUID(as_uuid=True), primary_key=True)
+    position_name = mapped_column(String, nullable=True)
+
 # 2. НОВАЯ ТАБЛИЦА: user_profiles
 class UserProfile(Base):
     __tablename__ = "user_profiles"

@@ -2,6 +2,7 @@
 
 import logging
 import typing
+import uuid as uuid_module
 from datetime import datetime
 from typing import Optional
 from aiogram import Bot
@@ -13,7 +14,7 @@ from sqlalchemy.dialects.postgresql import insert
 
 from service.API.infrastructure.database.models import (User, Purchase, UserTemp, PurchaseReturn, Client,
                                                         PositionDiscounts, UserProfile, Organization,
-                                                        EmployeeTransfers)
+                                                        EmployeePosition, EmployeeTransfers)
 
 from service.API.infrastructure.database.vacation import StaffVacation, VacationDays
 from service.API.infrastructure.models.purchases import ModelUserTemp
@@ -24,6 +25,19 @@ def normalize(text: str | None) -> str:
     if not text:
         return ""
     return str(text).strip().lower()
+
+
+def _safe_uuid(value: typing.Any) -> Optional[uuid_module.UUID]:
+    """Приведение к UUID; при невалидном значении возвращает None."""
+    if value is None:
+        return None
+    try:
+        s = str(value).strip()
+        if s.upper().startswith("UUID:"):
+            s = s[5:].strip()
+        return uuid_module.UUID(s)
+    except (ValueError, TypeError, AttributeError):
+        return None
 
 
 def determine_transfer_type(changes: dict) -> int:
@@ -155,12 +169,25 @@ async def add_employees(
     if clean_date_receipt and clean_date_dismissal and clean_date_receipt > clean_date_dismissal:
         raise HTTPException(status_code=400, detail="Дата приема не может быть позже даты увольнения.")
 
+    # Приведение id_staff, organization_id, position_id к UUID (при невалидном — логируем и продолжаем)
+    staff_uuid = _safe_uuid(user_data.idStaff)
+    if staff_uuid is None:
+        logging.warning("add_employees: невалидный idStaff (ожидается UUID), idStaff=%s", user_data.idStaff)
+        raise HTTPException(status_code=400, detail="Некорректный idStaff (ожидается UUID).")
+
+    org_uuid = _safe_uuid(user_data.organizationId)
+    position_uuid = _safe_uuid(user_data.positionId)
+    if org_uuid is None and user_data.organizationId:
+        logging.warning("add_employees: невалидный organizationId, пропуск записи в organizations: %s", user_data.organizationId)
+    if position_uuid is None and user_data.positionId:
+        logging.warning("add_employees: невалидный positionId, пропуск записи в employee_positions: %s", user_data.positionId)
+
     # Флаги для определения результата
     transfer_created = False
     rollback_performed = False
 
-    # 1. Поиск существующего профиля сотрудника
-    stmt = select(UserProfile).where(UserProfile.staff_id == user_data.idStaff)
+    # 1. Текущий профиль для сравнения (для переводов)
+    stmt = select(UserProfile).where(UserProfile.staff_id == staff_uuid)
     existing_profile = await session.scalar(stmt)
 
     # ЛОГИКА СРАВНЕНИЯ И ПЕРЕВОДОВ (ТОЛЬКО ЕСЛИ СОТРУДНИК УЖЕ СУЩЕСТВУЕТ)
@@ -195,7 +222,7 @@ async def add_employees(
             # --- ЛОГИКА ROLLBACK (ОТМЕНА ОШИБОЧНОГО ПЕРЕВОДА) ---
             # Проверяем последнюю запись в employee_transfers
             last_transfer_stmt = select(EmployeeTransfers).where(
-                EmployeeTransfers.staff_id == user_data.idStaff
+                EmployeeTransfers.staff_id == staff_uuid
             ).order_by(desc(EmployeeTransfers.created_at)).limit(1)
 
             last_transfer = await session.scalar(last_transfer_stmt)
@@ -241,7 +268,7 @@ async def add_employees(
                 # Создаем новую запись о переводе
                 # При наличии rollback_old_values используем их для old_* полей
                 new_transfer = EmployeeTransfers(
-                    staff_id=user_data.idStaff,
+                    staff_id=staff_uuid,
                     transfer_date=user_data.updateDate or now,
                     transfer_type_id=transfer_type_id,
 
@@ -267,100 +294,41 @@ async def add_employees(
                 session.add(new_transfer)
                 transfer_created = True
 
-    # --- СТАНДАРТНАЯ ЛОГИКА ОБНОВЛЕНИЯ/СОЗДАНИЯ ЗАПИСЕЙ ---
+    # --- Порядок по ТЗ: staff_vacation → users_temp → vacation_days → organizations → employee_positions → user_profiles → employee_transfers (уже выше при has_changes) → commit ---
 
-    # 1. Организация
-    org_stmt = insert(Organization).values(
-        organization_id=user_data.organizationId,
-        organization_name=user_data.organizationName,
-        organization_city=user_data.organizationCity,
-        organization_bin=user_data.organizationBin
-    ).on_conflict_do_update(
-        index_elements=['organization_id'],
-        set_={
-            'organization_name': user_data.organizationName,
-            'organization_city': user_data.organizationCity,
-            'organization_bin': user_data.organizationBin
-        }
-    )
-    await session.execute(org_stmt)
-
-    # 2. UserProfile (обновляем или создаем)
-    profile_stmt = insert(UserProfile).values(
-        staff_id=user_data.idStaff,
-        fullname=user_data.fullname,
-        iin=user_data.iin,
-        gender=user_data.gender,
-        birth_date=user_data.birthDate,
-        work_city=user_data.work_city,
-        position_id=user_data.positionId,
-        position_name=user_data.positionName,
-        department=user_data.department,
-        business_unit=user_data.business_unit,
-        organization_id=user_data.organizationId,
-        is_active=(clean_date_dismissal is None),
-        date_receipt=clean_date_receipt,
-        date_dismissal=clean_date_dismissal,
-        education=user_data.education,
-        is_admin=False
-    ).on_conflict_do_update(
-        index_elements=['staff_id'],
-        set_={
-            'fullname': user_data.fullname,
-            'gender': user_data.gender,
-            'birth_date': user_data.birthDate,
-            'work_city': user_data.work_city,
-            'position_id': user_data.positionId,
-            'position_name': user_data.positionName,
-            'department': user_data.department,
-            'business_unit': user_data.business_unit,
-            'organization_id': user_data.organizationId,
-            'is_active': (clean_date_dismissal is None),
-            'date_receipt': clean_date_receipt,
-            'date_dismissal': clean_date_dismissal,
-            'education': user_data.education
-        }
-    )
-    await session.execute(profile_stmt)
-
-    # 3. StaffVacation
+    # 1. StaffVacation (staff_vacation, vacation_days)
     vacation_stmt = insert(StaffVacation).values(
         fullname=user_data.fullname,
         iin=user_data.iin,
         date_receipt=clean_date_receipt,
-        guid=user_data.idStaff,
+        guid=str(staff_uuid),
         is_fired=(clean_date_dismissal is not None)
     ).on_conflict_do_update(
         index_elements=['iin'],
         set_={
             'fullname': user_data.fullname,
             'date_receipt': clean_date_receipt,
-            'guid': user_data.idStaff,
+            'guid': str(staff_uuid),
             'is_fired': (clean_date_dismissal is not None)
         }
     )
     await session.execute(vacation_stmt)
 
-    # 4. UserTemp (Лог запроса)
+    # 2. UserTemp (users_temp: get or create, обновить поля)
     temp_stmt = insert(UserTemp).values(
-        staff_id=user_data.idStaff,
+        staff_id=staff_uuid,
         phone_number=user_data.phone,
         author=user_data.author,
         update_date=user_data.updateDate,
-
-        # Новые поля
         fullname=user_data.fullname,
         iin=user_data.iin,
         date_receipt=user_data.dateOfReceipt,
-
         position_name=user_data.positionName,
         position_id=user_data.positionId,
-
         organization_name=user_data.organizationName,
-        organization_id=user_data.organizationId,
+        organization_id=str(org_uuid) if org_uuid else user_data.organizationId,
         organization_bin=user_data.organizationBin,
         organization_city=user_data.organizationCity,
-
         gender=user_data.gender,
         birth_date=user_data.birthDate,
         department=user_data.department,
@@ -379,7 +347,7 @@ async def add_employees(
             'position_name': user_data.positionName,
             'position_id': user_data.positionId,
             'organization_name': user_data.organizationName,
-            'organization_id': user_data.organizationId,
+            'organization_id': str(org_uuid) if org_uuid else user_data.organizationId,
             'organization_bin': user_data.organizationBin,
             'organization_city': user_data.organizationCity,
             'gender': user_data.gender,
@@ -392,30 +360,92 @@ async def add_employees(
     )
     await session.execute(temp_stmt)
 
-    # 5. Инициализация VacationDays (если нет)
+    # 3. Инициализация VacationDays (если нет)
     staff_vac_obj = await StaffVacation.get_by_iin(iin=user_data.iin, session=session)
-
     if staff_vac_obj:
         current_year = datetime.now().year
-
-        # Проверяем, есть ли запись в vacation_days за текущий год
         vac_days_stmt = select(VacationDays).where(
             (VacationDays.staff_vac_id == staff_vac_obj.id) &
             (VacationDays.year == current_year)
         )
         vac_days_exists = await session.scalar(vac_days_stmt)
-
-        # Если записи нет — создаем начальную с 0
         if not vac_days_exists:
             new_vac_days = VacationDays(
                 staff_vac_id=staff_vac_obj.id,
                 year=current_year,
-                days=0,          # Целые дни (для отображения)
-                dbl_days=0.0,    # Дробные дни (для точного счета)
+                days=0,
+                dbl_days=0.0,
                 vacation_start=None,
                 vacation_end=None
             )
             session.add(new_vac_days)
+
+    # 4. Organizations (upsert по organization_id)
+    if org_uuid is not None:
+        org_bin = user_data.organizationBin or str(org_uuid)
+        org_stmt = insert(Organization).values(
+            organization_id=org_uuid,
+            organization_name=user_data.organizationName,
+            organization_city=user_data.organizationCity,
+            organization_bin=org_bin
+        ).on_conflict_do_update(
+            index_elements=['organization_id'],
+            set_={
+                'organization_name': user_data.organizationName,
+                'organization_city': user_data.organizationCity,
+                'organization_bin': org_bin
+            }
+        )
+        await session.execute(org_stmt)
+
+    # 5. Employee positions (upsert по position_id)
+    if position_uuid is not None and (user_data.positionName or user_data.positionId):
+        pos_stmt = insert(EmployeePosition).values(
+            position_id=position_uuid,
+            position_name=user_data.positionName or str(user_data.positionId)
+        ).on_conflict_do_update(
+            index_elements=['position_id'],
+            set_={'position_name': user_data.positionName or str(user_data.positionId)}
+        )
+        await session.execute(pos_stmt)
+
+    # 6. User profiles (get or create + обновить все поля из запроса)
+    profile_stmt = insert(UserProfile).values(
+        staff_id=staff_uuid,
+        fullname=user_data.fullname,
+        iin=user_data.iin,
+        gender=user_data.gender,
+        birth_date=user_data.birthDate,
+        work_city=user_data.work_city,
+        position_id=user_data.positionId,
+        position_name=user_data.positionName,
+        department=user_data.department,
+        business_unit=user_data.business_unit,
+        organization_id=org_uuid,
+        is_active=(clean_date_dismissal is None),
+        date_receipt=clean_date_receipt,
+        date_dismissal=clean_date_dismissal,
+        education=user_data.education,
+        is_admin=False
+    ).on_conflict_do_update(
+        index_elements=['staff_id'],
+        set_={
+            'fullname': user_data.fullname,
+            'gender': user_data.gender,
+            'birth_date': user_data.birthDate,
+            'work_city': user_data.work_city,
+            'position_id': user_data.positionId,
+            'position_name': user_data.positionName,
+            'department': user_data.department,
+            'business_unit': user_data.business_unit,
+            'organization_id': org_uuid,
+            'is_active': (clean_date_dismissal is None),
+            'date_receipt': clean_date_receipt,
+            'date_dismissal': clean_date_dismissal,
+            'education': user_data.education
+        }
+    )
+    await session.execute(profile_stmt)
 
     await session.commit()
 
