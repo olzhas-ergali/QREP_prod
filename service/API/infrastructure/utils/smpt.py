@@ -2,8 +2,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.header import Header
 import aiosmtplib
-import smtplib, ssl
+
 from service.API.config import settings
+
+MAIL_CONNECT_TIMEOUT = 20
 
 
 class Mail:
@@ -41,7 +43,7 @@ class Mail:
         msg['From'] = self.__username
         msg['To'] = ', '.join(to_address)
         msg.attach(MIMEText(message, 'html', 'utf-8'))
-        await self.__server.connect()
+        await self.__server.connect(timeout=MAIL_CONNECT_TIMEOUT)
         await self.__server.send_message(msg)
         await self.__server.quit()
         # self.server.login(self.username, self.password)

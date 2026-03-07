@@ -3,9 +3,11 @@ import logging
 import typing
 
 import aiohttp
-import requests
 
 from service.tgbot import config
+
+SENDPULSE_TIMEOUT_TOTAL = 30
+SENDPULSE_TIMEOUT_CONNECT = 10
 
 
 class MethodRequest:
@@ -52,9 +54,9 @@ class BaseApi:
             f"dict - > {kwargs}"
         )
 
-        async with aiohttp.ClientSession() as session:
+        timeout = aiohttp.ClientTimeout(total=SENDPULSE_TIMEOUT_TOTAL, connect=SENDPULSE_TIMEOUT_CONNECT)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             token_url = 'https://api.sendpulse.com/oauth/access_token'
-            #print(client_id, client_secret)
             response = await session.request(
                 method=MethodRequest.post,
                 url=token_url,
@@ -69,6 +71,7 @@ class BaseApi:
                 method=method,
                 url=url,
                 headers={'Authorization': 'Bearer {}'.format(data.get('access_token'))},
+                timeout=timeout,
                 **kwargs
             )
             print(response.status)

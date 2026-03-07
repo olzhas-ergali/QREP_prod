@@ -13,7 +13,13 @@ __all__ = ("get_session", "engine", 'db_session', )
 from service.API.config import settings
 
 engine: AsyncEngine = create_async_engine(
-    settings.database.url, future=True, pool_pre_ping=True, echo=False
+    settings.database.url,
+    future=True,
+    pool_pre_ping=True,
+    echo=False,
+    pool_size=10,
+    max_overflow=20,
+    pool_recycle=3600,
 )
 SESSION_MAKER = async_sessionmaker(
     engine, expire_on_commit=False, autoflush=False
