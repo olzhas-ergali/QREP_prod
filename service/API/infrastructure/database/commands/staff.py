@@ -166,6 +166,9 @@ async def add_employees(
 
     clean_date_receipt = user_data.dateOfReceipt if user_data.dateOfReceipt and user_data.dateOfReceipt.year > 1 else None
     clean_date_dismissal = user_data.dateOfDismissal if user_data.dateOfDismissal and user_data.dateOfDismissal.year > 1 else None
+    # Дата увольнения не может быть равна дате приёма (приём ≠ увольнение)
+    if clean_date_receipt and clean_date_dismissal and clean_date_receipt.date() == clean_date_dismissal.date():
+        clean_date_dismissal = None
     if clean_date_receipt and clean_date_dismissal and clean_date_receipt > clean_date_dismissal:
         raise HTTPException(status_code=400, detail="Дата приема не может быть позже даты увольнения.")
 
